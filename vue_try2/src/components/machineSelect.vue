@@ -1,12 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 py-3">
-        <router-link to="/" class="text-blue-600 hover:text-blue-800">首页</router-link>
-      </div>
-    </header>
-
+    <top/>
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <h1 class="text-2xl font-semibold text-gray-900 mb-2">GB 19083-2003 4.1</h1>
@@ -73,7 +67,7 @@
 
 <script setup>
 import { ref } from 'vue'
-
+import Top from './Top.vue'
 const dialogVisible = ref(false)
 const form = ref({
   type: ''
@@ -98,6 +92,7 @@ const handleEdit = (index, row) => {
   form.value.type = row.type
   dialogVisible.value = true
 }
+
 </script>
 
 <style scoped>

@@ -19,10 +19,84 @@
         if(key.match('3')) router.push('/Regulations')
         console.log(key, keyPath)
     }
+
+    //表格内容}
+  const  tableData = [
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: '普通口罩',
+    product: '107厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: '普通口罩',
+    product: '113厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: 'N95口罩',
+    product: '113厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: 'N95口罩',
+    product: '113厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: 'N95口罩',
+    product: '113厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: 'N95口罩',
+    product: '113厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+  {
+    name: '医用防护口罩',
+    id:"GB 19083-2023",
+    productname: '医用防护口罩',
+    samplename: 'N95口罩',
+    product: '113厂',
+    size: '/',
+    requirement: '输入框',
+    opration: '添加到预置清单',
+  },
+]
 </script>
 
 <template>
-    <div id="top">
+  <div id="top">
     <div id="top1">
         <!-- page header 页头 -->
         <el-page-header @back="goBack">
@@ -50,12 +124,45 @@
       <el-menu-item index="4">样品</el-menu-item>
     </el-menu>
   </div>
+
+  <!-- 菜单下方的内容 -->
+  <div id="scontent1">
+  <p id="test">检测</p>
+  <el-button type="success"  id="detail" size="mini">留言</el-button>
+  <H2 color=" light green"> GB 19083-2003 医用防护口罩</H2>
+  <p>可能需要以下样品</p>
+  </div>
+
+    <el-table :data="tableData" style="width: 100%">
+        <el-table-column prop="name" label="标准名称" width="100" />
+        <el-table-column prop="id" label="标准编号" width="100" />
+        <el-table-column prop="productname" label="产品名称" />
+        <el-table-column prop="samplename" label="样品名称" width="100" />
+        <el-table-column prop="product" label="生产厂家" width="100" />
+        <el-table-column prop="size" label="型号规格" />
+        <el-table-column prop="requirement" label="申请需求" width="100" />
+        <el-table-column prop="opration" label="操作" width="100" />
+    </el-table>
 </template>
 
 <style>
-     #top1{
+    #top1{
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+    #scontent1 h2{
+        color: rgb(30, 193, 30);
+    }
+    #scontent1 p{
+        font-size: small;
+    }
+    #scontent1 #test{
+        margin-top: 1em;
+        font-size: large;
+    }
+    #scontent1 #detail{
+        margin-top: -2.2rem;
+        margin-right: 0rem;
     }
 </style>

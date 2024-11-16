@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import headshot from './headshot.vue'
+
 const router = useRouter()
 // page header 页头
     const goBack = () => {
@@ -59,14 +62,20 @@ const items = ref([
 </script>
 
 <template>
-    <!-- 页头部分 -->
-<div id=" header">
-    <el-page-header @back="goBack">
-        <template #content>
-          <span class="text-large font-600 mr-3">  GB 19083-2003 4.1 医用防护口罩>基本要求</span>
-        </template>
-      </el-page-header>
-</div>
+  <div id="m1top1">
+      <!-- 页头部分 -->
+    <div id=" header">
+        <el-page-header @back="goBack">
+            <template #content>
+              <span class="text-large font-600 mr-3">  GB 19083-2003 4.1 医用防护口罩>基本要求</span>
+            </template>
+          </el-page-header>
+    </div>
+
+    <!-- 头像框 -->
+    <headshot></headshot>
+  </div>
+
 <!-- 菜单部分 -->
 <div id="menu">
     <el-menu
@@ -81,6 +90,7 @@ const items = ref([
     <el-menu-item index="6">样品</el-menu-item>
   </el-menu>
 </div>
+
 <p>若要检测本项目，可能要用到以下产品</p>
 <el-button type="primary" id="message">Primary</el-button>
 <div id="table">
@@ -117,6 +127,11 @@ const items = ref([
 </div>
 </template>
 <style scoped>
+ #m1top1{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+ }
  #message{
     display: flex;
     float: right;

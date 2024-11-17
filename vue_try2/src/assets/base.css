@@ -84,3 +84,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.Login{
+  background-image: url('D:\vue\vue_app\src\assets\bg1.JPG'); /* 设置背景图片 */
+  background-size: cover; /* 背景图片覆盖整个容器 */
+  background-position: center; /* 背景图片居中显示 */
+}

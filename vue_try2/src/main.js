@@ -27,6 +27,8 @@ import testmachine from './components/testmachine.vue' // 机
 import Regulations18 from './components/Regulations18.vue' // 法
 
 // 支持人员页面(从上到下依次是标准查询、人机法料)
+import supportStandardQuery from './components/supportStandardQuery.vue' // 标准查询
+import people28 from './components/people28.vue' // 人
 import machineSelect from './components/machineSelect.vue' // 机
 import testmachinep from './components/testmachine_people.vue' // 这与上一个是同个界面，画重了
 
@@ -66,6 +68,8 @@ const routes = [
     { path: '/PersonnelauthorizationlistP45', component: PersonnelauthorizationlistP45 },
     { path: '/StaffTrainingListP46', component: StaffTrainingListP46 },
     { path: '/EquipmentListP47', component: EquipmentListP47 },
+    { path: '/supportStandardQuery', component: supportStandardQuery },
+    { path: '/supportDetails/:num(.*)', component: people28 },
 ]
 const router = createRouter({
     history: createWebHashHistory(),

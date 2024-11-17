@@ -1,234 +1,463 @@
-<script lang="ts" setup>
-    import { ref } from 'vue'
-    import outWindow from './outWindow.vue';
-    // page header 页头
-    const goBack = () => {
-      console.log('go back')
-    }
-
-    // menu 菜单
-    const activeIndex1 = ref('1')
-    const activeIndex2 = ref('5')
-    const handleSelect1 = (key: string, keyPath: string[]) => {
-        console.log(key, keyPath)
-    }
-//控制显示按钮
-const status1 = ref('已采购');
-const status2 = ref('点击完成');
-//显示表单
-const showModal = ref(false);
-const detailInfo = ref({
-  id: '201123029433',
-  time: '2023.10.12 23:11:23',
-  person: '张三',
-  equipment: '设备,设备2,设备3'
-});
-// 定义一个方法来更新状态
-function updateStatus(newStatus) {
-  if (status1.value === '点击完成') {
-    status1.value = newStatus;
-  }
-  if (status2.value === '点击完成') {
-    status2.value = newStatus;
-  }
-}
-// 定义完成任务的方法
-const formData = ref({
-  name: '',
-  email: ''
-});
-
-// 方法
-const submitForm = () => {
-  console.log('表单数据：', formData.value);
-  // 这里可以添加发送数据到服务器的代码
-};
-</script>
-
 <template>
-  <div id="top">
-    <!-- page header 页头 -->
-    <el-page-header @back="goBack">
-        <template #content>
-          <span class="text-large font-600 mr-3"> 因为不知道起什么所以就先这样 </span>
-        </template>
-      </el-page-header>
-    <el-menu
-      :default-active="activeIndex1"
-      class="el-menu-demo"
-      mode="horizontal"
-      @select="handleSelect1"
-    >
-      <el-menu-item index="1">留言管理</el-menu-item>
-      <el-menu-item index="2">清单管理</el-menu-item>
-    <!-- menu 菜单 --></el-menu>
-    <el-menu
-      :default-active="activeIndex1"
-      class="el-menu-demo"
-      mode="horizontal"
-      @select="handleSelect1"
-    >
-      <el-menu-item index="3">人员</el-menu-item>
-      <el-menu-item index="4">设备</el-menu-item>
-      <el-menu-item index="5">规程</el-menu-item>
-      <el-menu-item index="6">样品</el-menu-item>
-    </el-menu>
-  </div>
+  <div class="purchase-management">
+    <!-- Main Navigation -->
+    <el-tabs v-model="activeMainTab">
+      <el-tab-pane label="人员" name="personnel"></el-tab-pane>
+      <el-tab-pane label="设备" name="equipment"></el-tab-pane>
+      <el-tab-pane label="规程" name="procedure"></el-tab-pane>
+      <el-tab-pane label="样品" name="sample"></el-tab-pane>
+    </el-tabs>
 
-  <el-tag type="success" id="list">导出设备采购清单</el-tag>
-  <!-- //list-->
-  <el-card style="max-width: 100%"  color="light blue">
-  <P>清单编号：201123029433</P>
-   <P>记录时间：2023.10.12 23:11:23</P>
-   <P>计划采购人：张三</P>
-   <P>计划采购设备：设备,设备2,设备3</P>
-   <p id="status1">状态：已采购</p>
-   <el-button v-if="status1 !== '已采购'" type="success" id="download" size="mini" >标为完成</el-button>
-   <el-button type="success" id="delete" size="mini" >删除</el-button>
-   <el-button type="success" @click="showModal = true" id="detail" size="mini">详情</el-button>
+    <!-- Sub Navigation -->
+    <el-tabs v-model="activeSubTab" @tab-click="handleSubTabClick">
+      <el-tab-pane label="清单" name="list"></el-tab-pane>
+      <el-tab-pane label="预置清单" name="preset"></el-tab-pane>
+    </el-tabs>
 
-  </el-card>
-  <!-- //list-->
-  <el-card style="max-width: 100%"  color="light blue">
-  <P>清单编号：201123029433</P>
-   <P>记录时间：2023.10.12 23:11:23</P>
-   <P>计划采购人：张三</P>
-   <P>计划采购设备：设备,设备2,设备3</P>
-   <p id="status2" name="任务1">状态：点击完成</p>
-   <el-button v-if="status2 !== '已采购'" type="success" id="download" size="mini" >标为完成</el-button>
-   <el-button type="success" id="delete" size="mini" >删除</el-button>
-   <el-button type="success" @click="showModal = true" id="detail" size="mini">详情</el-button>
-   <div v-if="showModal" class="modal">
-    <div class="modal-content" style="text-align: center;">
-      <span class="close" @click="showModal = false">&times;</span>
-      <h2>设备详情</h2>
+    <!-- Export Button -->
+    <el-button 
+      v-if="activeSubTab === 'list'"
+      type="success" 
+      class="export-btn"
+    >
+      导出清单
+    </el-button>
+
+    <!-- Preset List View -->
+    <template v-if="activeSubTab === 'preset'">
+      <el-table :data="presetTableData" border style="width: 100%" class="mb-4">
+        <el-table-column prop="standardNo" label="标准编号" min-width="180" />
+        <el-table-column prop="category" label="器械品类" min-width="120" />
+        <el-table-column prop="name" label="设备名称" min-width="150" />
+        <el-table-column prop="manufacturer" label="生产厂家" min-width="150" />
+        <el-table-column label="设备详情" width="100" align="center">
+          <template #default="scope">
+            <el-link type="primary" @click="showDetails(scope.row)">详情</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="quantity" label="购买数量" width="100" align="center" />
+        <el-table-column label="操作" width="200" align="center">
+          <template #default="scope">
+            <el-button
+              type="primary"
+              size="small"
+              @click="modifyQuantity(scope.row)"
+            >
+              修改数量
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              @click="deletePresetItem(scope.$index)"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="bottom-buttons">
+        <el-button type="primary" @click="submitPresetList">提交</el-button>
+        <el-button type="danger" @click="clearPresetList">清空</el-button>
+      </div>
+    </template>
+
+    <!-- List View -->
+    <template v-else>
+      <div class="list-items">
+        <el-card v-for="item in listItems" :key="item.id" class="mb-4">
+          <div class="list-item-content">
+            <div class="item-header">
+              <div>清单编号：{{ item.id }}</div>
+              <div>记录时间：{{ item.timestamp }}</div>
+            </div>
+            <div class="item-details">
+              <div>计划采购设备：</div>
+              <div v-for="(equipment, index) in item.equipments" :key="index" class="ml-4">
+                {{ equipment }}
+              </div>
+              <div class="item-status">
+                状态：<span :class="{ 'status-completed': item.status === '购置完成' }">
+                  {{ item.status }}
+                </span>
+              </div>
+            </div>
+            <div class="item-actions">
+              <el-button type="danger" @click="deleteListItem(item.id)">删除</el-button>
+              <el-button type="primary" @click="showListDetails(item)">详情</el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
+    </template>
+
+    <!-- Details Dialog -->
+    <el-dialog
+      v-model="detailsDialogVisible"
+      :title="'清单详情'"
+      width="80%"
+      :before-close="handleDialogClose"
+    >
+      <div class="list-header mb-4">
+        <div>清单编号：{{ selectedItem?.id }}</div>
+        <div>记录时间：{{ selectedItem?.timestamp }}</div>
+      </div>
+
+      <div class="status-section mb-4">
+        <span>状态：</span>
+        <span class="status">{{ selectedItem?.status || '计划采购' }}</span>
+      </div>
+
+      <el-table :data="detailsTableData" border style="width: 100%">
+        <el-table-column prop="standardNo" label="标准编号及条款号" width="180" />
+        <el-table-column prop="category" label="器械品类" width="120" />
+        <el-table-column prop="name" label="设备名称" width="150" />
+        <el-table-column prop="manufacturer" label="生产厂家" width="150" />
+        <el-table-column label="设备详情" width="100">
+          <template #default="scope">
+            <el-link type="primary" @click="showEquipmentDetails(scope.row)">详情</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="quantity" label="购买数量" width="100" />
+        <el-table-column label="操作" width="200">
+          <template #default="scope">
+            <el-link type="primary" class="mr-4" @click="modifyQuantityInDetails(scope.row)">
+              修改数量
+            </el-link>
+            <el-link type="danger" @click="deleteEquipmentInDetails(scope.$index)">
+              删除
+            </el-link>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="danger" @click="detailsDialogVisible = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- Modify Quantity Dialog -->
+    <el-dialog
+      v-model="quantityDialogVisible"
+      title="修改数量"
+      width="30%"
+    >
       <el-form>
-        <el-form-item label="清单编号">
-          <el-input v-model="detailInfo.id" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="记录时间">
-          <el-input v-model="detailInfo.time" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="计划采购人">
-          <el-input v-model="detailInfo.person" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="计划采购设备">
-          <el-input v-model="detailInfo.equipment" disabled></el-input>
+        <el-form-item label="数量">
+          <el-input-number v-model="newQuantity" :min="1" />
         </el-form-item>
       </el-form>
-    </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="quantityDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmQuantityModification">
+            确定
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
-  </el-card>
 </template>
 
-<style>
-    #menu2{
-        width: 80%;
-        float: left;
-    }
-    #button1{
-        width: 20%;
-        height: auto;
-        margin-left: 80%;
-        display: flex;
-    }
-    #leave{
-        margin-left: 1rem;
-        margin-top: 2rem;
-    }
-    #add{
-        margin-top: 2rem;
-    }
-    #p1{
-        margin-top: 2rem;
-    }
-    #download{
-        margin-top: 15px;
-    }
-    .radius {
-        height: auto;
-        border: 1px solid var(--el-border-color);
-        border-radius: 0;
-        margin-top: 15px;
-        padding: 1rem 0 1rem 0.5rem;
-    }
-    #myvideo{
-        height: 24rem;
-    }
-    .video1{
-        width: auto;
-        height: 10rem;
-    }
-    .line1{
-        display: flex;
-        margin-bottom: 0.5rem;
-    }
-    .line1 button{
-        margin-left: 2rem;
-    }
-    #content3 #testPaper{
-        margin-top: 3rem;
-    }
-    #content3 h2{
-        margin-bottom: 0.5em;
-    }
-    #content3 p{
-        margin-top: 0.5em;
-    }
-    #content3 #testVideo{
-        margin-top: 2em;
-    }
-    #content3 #authorization{
-        margin-top: 2em;
-    }
-    #list{
-        margin-top: 1rem;
-        margin-left: 1rem;
-        font-size: large;
-        color: rgb(5, 79, 5);
-    }
-    #download{
-        margin-top: 0;
-    }
-    #delete{
-        margin-top: 1rem;
-       float: right;
-       margin-left: 1rem;
-    }
-    #detail{
-        margin-top: 1rem;
-        float: right;
-        margin-left: 1rem;
-    }
-    .modal {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-      }
-      
-      .modal-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        width: 50%;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      
-      .close {
-        cursor: pointer;
-        float: right;
-        font-size: 25px;
-        font-weight: bold;
-      }
-</style>
+<script setup>
+import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-function data() {
-  throw new Error('Function not implemented.');
+const activeMainTab = ref('equipment')
+const activeSubTab = ref('list')
+const detailsDialogVisible = ref(false)
+const quantityDialogVisible = ref(false)
+const newQuantity = ref(1)
+const selectedRow = ref(null)
+const selectedItem = ref(null)
+const detailsTableData = ref([])
+
+// Preset list data
+const presetTableData = ref([
+  {
+    standardNo: 'GB 19083-2023 4.1',
+    category: '酸度计',
+    name: 'WDJ型酸度计',
+    manufacturer: 'Xxx公司厂',
+    quantity: 10
+  },
+  {
+    standardNo: 'GB 19083-2023 4.1',
+    category: '酸度计',
+    name: 'WDJ型酸度计',
+    manufacturer: 'Xxx公司厂',
+    quantity: 10
+  }
+])
+
+// List items data
+const listItems = ref([
+  {
+    id: '201123029432',
+    timestamp: '2023.10.12 23:11:23',
+    status: '计划采购',
+    equipments: [
+      'UIO型酸度计 x10',
+      'XCJ型天平 x5'
+    ],
+    details: [
+      {
+        standardNo: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'UIO型酸度计',
+        manufacturer: 'Xxx公司厂',
+        quantity: 10
+      },
+      {
+        standardNo: 'GB 19083-2023 4.2',
+        category: '天平',
+        name: 'XCJ型天平',
+        manufacturer: 'Xxx公司厂',
+        quantity: 5
+      }
+    ]
+  },
+  {
+    id: '206849329432',
+    timestamp: '2023.10.12 23:11:23',
+    status: '购置完成',
+    equipments: [
+      'IFU型酸度计 x10',
+      'XJD型酸度计 x5'
+    ],
+    details: [
+      {
+        standardNo: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'IFU型酸度计',
+        manufacturer: 'Xxx公司厂',
+        quantity: 10
+      },
+      {
+        standardNo: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'XJD型酸度计',
+        manufacturer: 'Xxx公司厂',
+        quantity: 5
+      }
+    ]
+  }
+])
+
+const handleSubTabClick = (tab) => {
+  // Handle tab switch if needed
 }
+
+const showDetails = (row) => {
+  selectedItem.value = { status: '计划采购' }
+  detailsTableData.value = [row]
+  detailsDialogVisible.value = true
+}
+
+const showListDetails = (item) => {
+  selectedItem.value = item
+  detailsTableData.value = item.details
+  detailsDialogVisible.value = true
+}
+
+const handleDialogClose = (done) => {
+  done()
+}
+
+const modifyQuantity = (row) => {
+  selectedRow.value = row
+  newQuantity.value = row.quantity
+  quantityDialogVisible.value = true
+}
+
+const modifyQuantityInDetails = (row) => {
+  selectedRow.value = row
+  newQuantity.value = row.quantity
+  quantityDialogVisible.value = true
+}
+
+const confirmQuantityModification = () => {
+  if (selectedRow.value) {
+    selectedRow.value.quantity = newQuantity.value
+    quantityDialogVisible.value = false
+    ElMessage.success('数量修改成功')
+  }
+}
+
+const deletePresetItem = (index) => {
+  ElMessageBox.confirm(
+    '确认删除该设备？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    presetTableData.value.splice(index, 1)
+    ElMessage.success('删除成功')
+  })
+}
+
+const deleteEquipmentInDetails = (index) => {
+  ElMessageBox.confirm(
+    '确认删除该设备？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    detailsTableData.value.splice(index, 1)
+    // Update the equipments list in the main view if needed
+    if (selectedItem.value) {
+      const item = listItems.value.find(i => i.id === selectedItem.value.id)
+      if (item) {
+        item.details = detailsTableData.value
+        item.equipments = detailsTableData.value.map(
+          d => `${d.name} x${d.quantity}`
+        )
+      }
+    }
+    ElMessage.success('删除成功')
+  })
+}
+
+const deleteListItem = (id) => {
+  ElMessageBox.confirm(
+    '确认删除该清单？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    listItems.value = listItems.value.filter(item => item.id !== id)
+    ElMessage.success('删除成功')
+  })
+}
+
+const showEquipmentDetails = (equipment) => {
+  ElMessage.info('查看设备详情：' + equipment.name)
+}
+
+const submitPresetList = () => {
+  if (presetTableData.value.length === 0) {
+    ElMessage.warning('清单为空，无法提交')
+    return
+  }
+  ElMessageBox.confirm(
+    '确认提交预置清单？',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info',
+    }
+  ).then(() => {
+    ElMessage.success('提交成功')
+  })
+}
+
+const clearPresetList = () => {
+  if (presetTableData.value.length === 0) {
+    ElMessage.warning('清单已经为空')
+    return
+  }
+  ElMessageBox.confirm(
+    '确认清空预置清单？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    presetTableData.value = []
+    ElMessage.success('清单已清空')
+  })
+}
+</script>
+
+<style scoped>
+.purchase-management {
+  padding: 20px;
+}
+
+.export-btn {
+  margin-bottom: 20px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.ml-4 {
+  margin-left: 16px;
+}
+
+.mr-4 {
+  margin-right: 16px;
+}
+
+.list-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item-header {
+  color: #666;
+  font-size: 14px;
+}
+
+.item-details {
+  font-size: 14px;
+}
+
+.item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.status-completed {
+  color: #67C23A;
+}
+
+.bottom-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.list-header {
+  color: #666;
+  font-size: 14px;
+}
+
+.status-section {
+  font-size: 14px;
+}
+
+.status {
+  color: #409EFF;
+}
+
+:deep(.el-table) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-button--small) {
+  margin: 0 5px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

@@ -210,7 +210,7 @@ const handleCommand = (command) => {
     // router.push('/login')
   }
   else if(command === 'jumpToHomepage2'){
-      router.push('/PersonnelReviewP44')
+      router.push('/MessageofPersonP40')
   }
 }
 

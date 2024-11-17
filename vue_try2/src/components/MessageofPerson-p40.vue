@@ -1,11 +1,17 @@
 <template>
     <div class="message-management">
         <Top/>
-        <div class="secondary-nav">
-            <span class="current-page">留言管理</span>
-        <router-link to="/message" class="nav-link">清单管理</router-link>
-
-      </div>
+        <div class="mb-4">
+          <el-menu
+            :default-active="activeIndex1"
+            class="el-menu-demo"
+            mode="horizontal"
+            @select="handleSelect1"
+          >
+            <el-menu-item index="1">留言管理</el-menu-item>
+            <el-menu-item index="2">清单管理</el-menu-item>
+          </el-menu>
+        </div>
       
       <!-- Action Buttons -->
       <div class="action-buttons">
@@ -16,6 +22,7 @@
   
       <!-- Category Tabs -->
       <el-tabs v-model="activeTab" class="message-tabs">
+        <!-- 人模块的留言 -->
         <el-tab-pane label="人员" name="personnel">
           <div class="tab-header">
             <el-button type="primary" @click="markAllResolved">
@@ -55,9 +62,129 @@
             </el-card>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="设备" name="equipment"></el-tab-pane>
-        <el-tab-pane label="规程" name="procedure"></el-tab-pane>
-        <el-tab-pane label="物料" name="material"></el-tab-pane>
+        
+        <!-- 机模块的留言 -->
+        <el-tab-pane label="设备" name="equipment">
+          <div class="tab-header">
+            <el-button type="primary" @click="markAllResolved">
+              全部标记为已解决
+            </el-button>
+          </div>
+  
+          <!-- Message List -->
+          <div class="message-list">
+            <el-card v-for="message in messages" :key="message.id" class="message-item">
+              <div class="message-header">
+                <div class="message-info">
+                  <p>留言编号：{{ message.id }}</p>
+                  <p>留言时间：{{ message.time }}</p>
+                  <p>留言人：{{ message.sender }}</p>
+                </div>
+                <div class="message-source">
+                  <p>来自</p>
+                  <el-link type="primary">{{ message.source }}</el-link>
+                </div>
+              </div>
+              <div class="message-status">
+                状态：{{ message.resolved ? '已解决' : '未解决' }}
+              </div>
+              <div class="message-actions">
+                <el-button type="primary" @click="openMessageDialog(message)">
+                  打开留言框
+                </el-button>
+                <el-button 
+                  type="success" 
+                  @click="markResolved(message)"
+                  v-if="!message.resolved"
+                >
+                  标记为已解决
+                </el-button>
+              </div>
+            </el-card>
+          </div>
+        </el-tab-pane>
+
+        <!-- 法模块的留言 -->
+        <el-tab-pane label="规程" name="procedure">
+          <div class="tab-header">
+            <el-button type="primary" @click="markAllResolved">
+              全部标记为已解决
+            </el-button>
+          </div>
+  
+          <!-- Message List -->
+          <div class="message-list">
+            <el-card v-for="message in messages" :key="message.id" class="message-item">
+              <div class="message-header">
+                <div class="message-info">
+                  <p>留言编号：{{ message.id }}</p>
+                  <p>留言时间：{{ message.time }}</p>
+                  <p>留言人：{{ message.sender }}</p>
+                </div>
+                <div class="message-source">
+                  <p>来自</p>
+                  <el-link type="primary">{{ message.source }}</el-link>
+                </div>
+              </div>
+              <div class="message-status">
+                状态：{{ message.resolved ? '已解决' : '未解决' }}
+              </div>
+              <div class="message-actions">
+                <el-button type="primary" @click="openMessageDialog(message)">
+                  打开留言框
+                </el-button>
+                <el-button 
+                  type="success" 
+                  @click="markResolved(message)"
+                  v-if="!message.resolved"
+                >
+                  标记为已解决
+                </el-button>
+              </div>
+            </el-card>
+          </div>
+        </el-tab-pane>
+
+        <!-- 料模块的留言 -->
+        <el-tab-pane label="物料" name="material">
+          <div class="tab-header">
+            <el-button type="primary" @click="markAllResolved">
+              全部标记为已解决
+            </el-button>
+          </div>
+  
+          <!-- Message List -->
+          <div class="message-list">
+            <el-card v-for="message in messages" :key="message.id" class="message-item">
+              <div class="message-header">
+                <div class="message-info">
+                  <p>留言编号：{{ message.id }}</p>
+                  <p>留言时间：{{ message.time }}</p>
+                  <p>留言人：{{ message.sender }}</p>
+                </div>
+                <div class="message-source">
+                  <p>来自</p>
+                  <el-link type="primary">{{ message.source }}</el-link>
+                </div>
+              </div>
+              <div class="message-status">
+                状态：{{ message.resolved ? '已解决' : '未解决' }}
+              </div>
+              <div class="message-actions">
+                <el-button type="primary" @click="openMessageDialog(message)">
+                  打开留言框
+                </el-button>
+                <el-button 
+                  type="success" 
+                  @click="markResolved(message)"
+                  v-if="!message.resolved"
+                >
+                  标记为已解决
+                </el-button>
+              </div>
+            </el-card>
+          </div>
+        </el-tab-pane>
       </el-tabs>
   
       <!-- Message Dialog -->
@@ -88,9 +215,10 @@
     </div>
   </template>
   
-  <script setup>
+  <script lang="ts" setup>
   import { ref, onMounted } from 'vue'
   import { ElMessage } from 'element-plus'
+  import { useRouter } from 'vue-router'
   import jsPDF from 'jspdf'
   import Top from './Top.vue';
   // State
@@ -168,16 +296,23 @@
     doc.save('留言清单.pdf')
     ElMessage.success('PDF导出成功')
   }
+
+  const router = useRouter()
+
+  const activeIndex1 = ref('1')
+  const handleSelect1 = (key: string, keyPath: string[]) => {
+      if(key.match('2')) router.push('/PersonnelReviewP44')
+      console.log(key, keyPath)
+  }
   </script>
   
   <style scoped>
   .top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: -30px;
-}
-.secondary-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .secondary-nav {
     margin-bottom: 20px;
     font-size: 20px;
   }
@@ -191,9 +326,6 @@
     color: #000;
     margin-right: 20px;
 
-  }
-  .message-management {
-    padding: 20px;
   }
   
   .nav-menu {

@@ -3,27 +3,34 @@
     <Top/>
     <!-- 大的导航栏 -->
     <div class="mb-4">
-      <el-tabs v-model="activeMainTab">
-        <el-tab-pane label="留言管理" name="messages"></el-tab-pane>
-        <el-tab-pane label="清单管理" name="lists"></el-tab-pane>
-      </el-tabs>
+      <el-menu
+        :default-active="activeIndex1"
+        class="el-menu-demo"
+        mode="horizontal"
+        @select="handleSelect1"
+      >
+        <el-menu-item index="1">留言管理</el-menu-item>
+        <el-menu-item index="2">清单管理</el-menu-item>
+      </el-menu>
     </div>
 
     <!-- 小的导航栏 -->
     <div class="mb-4">
-      <el-tabs v-model="activeSecondaryTab">
+      <el-tabs v-model="activeSecondaryTab" class="message-tabs">
+        <!-- 人员 -->
         <el-tab-pane label="人员" name="personnel">
+
           <!-- 更小的导航栏 -->
           <div class="border-b pb-2 mb-4">
             <el-radio-group v-model="activeTertiaryTab" size="small">
-              <el-radio-button label="审核提醒"></el-radio-button>
-              <el-radio-button label="授权清单"></el-radio-button>
-              <el-radio-button label="培训清单"></el-radio-button>
+              <el-radio-button @click="chooseR1" label="审核提醒"></el-radio-button>
+              <el-radio-button @click="chooseR2" label="授权清单"></el-radio-button>
+              <el-radio-button @click="chooseR3" label="培训清单"></el-radio-button>
             </el-radio-group>
           </div>
 
-          <!-- 标准项目 -->
-          <div class="standards-list">
+          <!-- 审核提醒 -->
+          <div v-if="r1" id="personReview1" class="standards-list">
             <div v-for="(standard, index) in standards" :key="index" class="standard-item mb-3 flex justify-between items-center">
               <el-link type="primary" :href="standard.link">
                 {{ standard.title }}
@@ -40,21 +47,157 @@
               </div>
             </div>
           </div>
+
+          <!-- 授权清单 -->
+          <div v-else-if="r2" id="personReview1">
+            <!-- Export Button -->
+            <el-button 
+              type="success" 
+              class="export-btn"
+              @click="exportToPDF"
+            >
+              导出授权人员清单
+            </el-button>
+    
+            <!-- Authorization List Table -->
+            <el-table :data="authList" style="width: 100%;font-size: 16px">
+              <el-table-column 
+                prop="name" 
+                label="被授权人"
+                width="180"
+              />
+              <el-table-column 
+                prop="authItem" 
+                label="授权项目"
+              />
+            </el-table>
+          </div>
+
+          <!-- 培训清单 -->
+          <div v-else-if="r3" id="personReview1">
+            <!-- Export Button -->
+            <el-button 
+              type="success" 
+              class="export-button"
+              @click="exportToPDF"
+            >
+              导出培训清单
+            </el-button>
+        
+            <!-- Training List Table -->
+            <el-table :data="trainingData" style="width: 100%; font-size: 16PX;">
+              <el-table-column 
+                prop="trainee" 
+                label="完成培训人" 
+                width="180"
+              />
+              <el-table-column 
+                prop="course" 
+                label="培训项目"
+              />
+            </el-table>
+          </div>
         </el-tab-pane>
+        <!-- 设备 -->
         <el-tab-pane label="设备" name="equipment"></el-tab-pane>
+
+        <!-- 规程 -->
         <el-tab-pane label="规程" name="procedures"></el-tab-pane>
+
+        <!-- 物料 -->
         <el-tab-pane label="物料" name="materials"></el-tab-pane>
       </el-tabs>
     </div>
   </div>
+  
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue'
-import Top from './Top.vue';
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import jsPDF from 'jspdf'
+
+import Top from './Top.vue'
 const activeMainTab = ref('lists')
 const activeSecondaryTab = ref('personnel')
 const activeTertiaryTab = ref('审核提醒')
+const r1 = ref(true)
+const r2 = ref(false)
+const r3 = ref(false)
+
+function chooseR1(){
+  r1.value = true
+  r2.value = false
+  r3.value = false
+}
+
+function chooseR2(){
+  r1.value = false
+  r2.value = true
+  r3.value = false
+}
+
+function chooseR3(){
+  r1.value = false
+  r2.value = false
+  r3.value = true
+}
+
+// Mock data
+const procurementLists = ref([
+  {
+    id: '201123029432',
+    recordTime: '2023.10.12 23:11:23',
+    purchaser: '甲',
+    status: '计划采购',
+    equipment: [
+      {
+        standardCode: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'UIO型酸度计',
+        manufacturer: 'Xxx公司/厂',
+        quantity: 10
+      },
+      {
+        standardCode: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'XCJ型天平',
+        manufacturer: 'Xxx公司/厂',
+        quantity: 5
+      }
+    ]
+  },
+  {
+    id: '2013245367',
+    recordTime: '2024.10.23 14:23:21',
+    purchaser: '荣成',
+    status: '计划采购',
+    equipment: [
+      {
+        standardCode: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'WDJ型酸度计',
+        manufacturer: 'Xxx公司/厂',
+        quantity: 10
+      },
+      {
+        standardCode: 'GB 19083-2023 4.1',
+        category: '酸度计',
+        name: 'KIU型酸度计',
+        manufacturer: 'Xxx公司/厂',
+        quantity: 20
+      },
+      {
+        standardCode: 'GB 19083-2023 4.2',
+        category: '天平',
+        name: 'LIO型天平',
+        manufacturer: 'Xxx公司/厂',
+        quantity: 30
+      }
+    ]
+  }
+])
 
 const standards = ref([
   {
@@ -98,6 +241,83 @@ const standards = ref([
     pendingVideos: 5
   }
 ])
+
+const router = useRouter()
+
+// 切换至留言页面
+const activeIndex1 = ref('2')
+const handleSelect1 = (key: string, keyPath: string[]) => {
+    if(key.match('1')) router.push('/MessageofPersonP40')
+    console.log(key, keyPath)
+}
+
+// Mock data for the authorization list
+  const authList = ref([
+    {
+      name: '甲',
+      authItem: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
+    },
+    {
+      name: '乙',
+      authItem: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
+    },
+    {
+      name: '丙',
+      authItem: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
+    }
+  ])
+
+  const trainingData = ref([
+    {
+      trainee: '甲',
+      course: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
+    },
+    {
+      trainee: '乙',
+      course: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
+    },
+    {
+      trainee: '丙',
+      course: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
+    }
+  ])
+
+// Function to export PDF
+  const exportToPDF = () => {
+    try {
+      const doc = new jsPDF()
+      
+      // Add title
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(16)
+      doc.text('授权人员清单', 20, 20)
+      
+      // Add content
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(12)
+      
+      let yPosition = 40
+      authList.value.forEach((item, index) => {
+        doc.text(`${index + 1}. 被授权人：${item.name}`, 20, yPosition)
+        doc.text(`   授权项目：${item.authItem}`, 20, yPosition + 7)
+        yPosition += 20
+      })
+      
+      // Save the PDF
+      doc.save('授权人员清单.pdf')
+      
+      ElMessage({
+        message: 'PDF导出成功！',
+        type: 'success'
+      })
+    } catch (error) {
+      ElMessage({
+        message: '导出失败，请重试',
+        type: 'error'
+      })
+      console.error('PDF export error:', error)
+    }
+  }
 </script>
 
 <style scoped>
@@ -108,6 +328,10 @@ const standards = ref([
 
 .standard-item:hover {
   background-color: #f5f7fa;
+}
+
+.message-tabs {
+  margin-top: 20px;
 }
 
 :deep(.el-tabs__item) {

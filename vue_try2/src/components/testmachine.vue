@@ -18,7 +18,7 @@
     const activeIndex2 = ref('1')
     const handleSelect1 = (key: string, keyPath: string[]) => {
         if(key.match('3')) router.push('/people13')
-        if(key.match('5')) router.push('/')
+        if(key.match('5')) router.push('/Regulations18')
         if(key.match('6')) router.push('/')
         console.log(key, keyPath)
     }

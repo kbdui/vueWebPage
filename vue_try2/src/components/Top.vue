@@ -19,6 +19,7 @@
               <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
             </div>
           </el-dropdown-item>
+          <el-dropdown-item divided command="jumpToHomepage1">个人主页</el-dropdown-item>
           <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -48,6 +49,9 @@ const handleCommand = (command) => {
     ElMessage.success('退出登录成功')
     // You would typically clear user session and redirect to login page
     // router.push('/login')
+  }
+  else if(command === 'jumpToHomepage1'){
+      router.push('/people13')
   }
 }
 

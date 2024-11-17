@@ -17,9 +17,9 @@
     const activeIndex1 = ref('4')
     const activeIndex2 = ref('1')
     const handleSelect1 = (key: string, keyPath: string[]) => {
-        if(key.match('3')) router.push('/details/')
-        if(key.match('5')) router.push('/Regulations')
-        if(key.match('6')) router.push('/sample')
+        if(key.match('3')) router.push('/people13')
+        if(key.match('5')) router.push('/')
+        if(key.match('6')) router.push('/')
         console.log(key, keyPath)
     }
     const handleSelect2 = (key: string, keyPath: string[]) => {
@@ -84,7 +84,7 @@ const tableData = [
         <el-page-header @back="goBack">
         <template #content>
             <span class="text-large font-600 mr-3">
-            GB 19083-2003 4.1 医用防护口罩>基本要求
+            个人主页
             </span>
         </template>
         </el-page-header>

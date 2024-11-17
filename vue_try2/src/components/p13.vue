@@ -1,12 +1,30 @@
 <template>
+  <div id="top1">
+      <!-- page header 页头 -->
+      <el-page-header @back="goBack">
+      <template #content>
+          <span class="text-large font-600 mr-3">
+          个人主页
+          </span>
+      </template>
+      </el-page-header>
+
+      <!-- 头像框 -->
+      <headshot></headshot>
+  </div>
     <div class="training-management">
       <!-- Navigation Tabs -->
-      <el-tabs v-model="activeTab" class="nav-tabs">
-        <el-tab-pane label="人员" name="personnel"></el-tab-pane>
-        <el-tab-pane label="设备" name="equipment"></el-tab-pane>
-        <el-tab-pane label="规程" name="procedure"></el-tab-pane>
-        <el-tab-pane label="样品" name="sample"></el-tab-pane>
-      </el-tabs>
+      <el-menu
+        :default-active="activeIndex1"
+        class="el-menu-demo"
+        mode="horizontal"
+        @select="handleSelect1"
+      >
+        <el-menu-item index="1">人员</el-menu-item>
+        <el-menu-item index="2">设备</el-menu-item>
+        <el-menu-item index="3">规程</el-menu-item>
+        <el-menu-item index="4">样品</el-menu-item>
+      </el-menu>
   
       <!-- Action Buttons -->
       <div class="action-buttons">
@@ -52,10 +70,22 @@
     </div>
   </template>
   
-  <script setup>
+  <script lang="ts" setup>
   import { ref } from 'vue'
-  
-  const activeTab = ref('personnel')
+  import { useRouter } from 'vue-router'
+
+  import headshot from './headshot.vue'
+
+  const router = useRouter()
+
+  // menu 菜单
+    const activeIndex1 = ref('1')
+    const handleSelect1 = (key: string, keyPath: string[]) => {
+        if(key.match('2')) router.push('/testmachine')
+        if(key.match('3')) router.push('/')
+        if(key.match('4')) router.push('/')
+        console.log(key, keyPath)
+    }
   
   const projects = ref([
     {
@@ -74,11 +104,22 @@
       authorizationStatus: false
     }
   ])
+
+  // page header 页头
+    const goBack = () => {
+        router.push('/details/1')
+        console.log('go back')
+    }
   </script>
   
   <style scoped>
+  #top1{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
   .training-management {
-    padding: 20px;
+    padding: 0px;
   }
   
   .nav-tabs {
@@ -86,6 +127,7 @@
   }
   
   .action-buttons {
+    margin-top: 20px;
     margin-bottom: 20px;
   }
   

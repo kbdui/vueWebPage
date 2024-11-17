@@ -1,7 +1,28 @@
 <template>
     <div class="standards-container">
-
-    <Top />
+      <div class="top-bar">
+        <router-link to="/" class="home-text">登出</router-link>
+        <el-dropdown trigger="hover" @command="handleCommand">
+        <div class="avatar-wrapper">
+          <el-avatar :size="40" :src="userAvatar" @error="handleAvatarError">
+            {{ userInitials }}
+          </el-avatar>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item disabled>
+              <div class="user-info">
+                <p><strong>姓名：</strong>{{ userInfo.name }}</p>
+                <p><strong>用户名：</strong>{{ userInfo.username }}</p>
+                <p><strong>所属机构：</strong>{{ userInfo.organization }}</p>
+                <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
+              </div>
+            </el-dropdown-item>
+            <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </div>
 
       <h2 class="header">标准查询</h2>
       
@@ -66,6 +87,9 @@
       </template>
     </el-dialog>
 
+
+
+
       </div>
     </div>
   </template>
@@ -74,10 +98,21 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import Top from './Top.vue'
 
 const router = useRouter()
 
+const userInfo = ref({
+  name: '张三',
+  username: 'zhangsan',
+  organization: 'ABC公司',
+  contact: 'zhangsan@example.com'
+})
+
+const userAvatar = ref('https://example.com/avatar.jpg')
+const userInitials = computed(() => {
+  return userInfo.value.name.slice(0, 2)
+})
+  
   const searchQuery = ref('')
   const currentPage = ref(1)
   const itemsPerPage = 10
@@ -159,6 +194,15 @@ const applicationForm = ref({
   standardNumber: '',
   projectName: ''
 })
+const handleCommand = (command) => {
+  if (command === 'logout') {
+    // Implement logout logic here
+    ElMessage.success('退出登录成功')
+    // You would typically clear user session and redirect to login page
+    // router.push('/login')
+  }
+}
+
 const openAddApplicationDialog = () => {
   addApplicationDialogVisible.value = true
 }
@@ -201,10 +245,17 @@ const handlePageChange = (newPage) => {
 const handleRowClick = (row) => {
   router.push(`/standard/${row.id}`);
 };
+import {
+  Check,
+  Delete,
+  Edit,
+  Message,
+  Search,
+  Star,
+} from '@element-plus/icons-vue'
   </script>
   
-<style scoped>
-
+  <style scoped>
 .standards-container {
   max-width: 1200px;
   min-height: 100vh;
@@ -214,11 +265,31 @@ const handleRowClick = (row) => {
   flex-direction: column;
 }
 
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.home-text {
+  color: #409EFF;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.home-text:hover {
+  text-decoration: underline;
+}
+
+.avatar-wrapper {
+  cursor: pointer;
+}
   .header {
     font-size: 24px;
     color: #333;
     margin-bottom: 20px;
   }
+  
   .search-section {
     display: flex;
     gap: 10px;
@@ -280,4 +351,14 @@ const handleRowClick = (row) => {
   background-color: #f5f7fa;
 }
 
+.user-info {
+  padding: 10px;
+  min-width: 200px;
+  /* margin-left: 90%; */
+}
+
+.user-info p {
+  margin: 5px 0;
+
+}
   </style>

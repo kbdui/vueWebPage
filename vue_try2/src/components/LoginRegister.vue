@@ -1,5 +1,6 @@
 <template>
   <div id="Login">
+    <RouterLink to="/standard" replace>跳过登录前往标准查询</RouterLink>
     <div class="login-register-page">
     <div class="form-container">
       <h1 class="title">医疗器械管理系统</h1>
@@ -51,12 +52,15 @@
 
 </template>
 
-<script>
-import { ref, reactive } from 'vue'
+<script setup>
+    import { ref, reactive } from 'vue'
+    import { useRoute, useRouter } from 'vue-router'
+    import { RouterLink } from 'vue-router'
 
-export default {
-  setup() {
     const isLogin = ref(true)
+
+    const router = useRouter()
+    const route = useRoute()
     
     const loginForm = reactive({
       username: '',
@@ -105,15 +109,6 @@ export default {
         alert('发生错误，请稍后再试')
       }
     }
-    
-    return {
-      isLogin,
-      loginForm,
-      registerForm,
-      handleSubmit
-    }
-  }
-}
 </script>
 
 <style scoped>
@@ -123,13 +118,21 @@ export default {
     height: 500px;
 }
 
+#Login{
+  display: block;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  margin-top: 5%;
+  display: grid;
+  padding: 0 2rem;
+}
 
 /* 设置整个登录注册页面的样式 */
 .login-register-page {
   display: block;
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
-  }
+}
 
 /* 设置表单容器的样式 */
 .form-container {

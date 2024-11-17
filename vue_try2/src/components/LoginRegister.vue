@@ -1,6 +1,8 @@
 <template>
   <div id="Login">
-    <RouterLink to="/standard" replace>跳过登录前往标准查询</RouterLink>
+    <RouterLink to="/standard" replace>跳过登录前往检测人员标准查询</RouterLink>
+    <RouterLink to="/standard" replace>跳过登录前往支持人员标准查询</RouterLink>
+    <RouterLink to="/testmachinep" replace>哦这是什么</RouterLink>
     <div class="login-register-page">
     <div class="form-container">
       <h1 class="title">医疗器械管理系统</h1>

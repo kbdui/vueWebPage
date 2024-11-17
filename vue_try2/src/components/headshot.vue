@@ -1,7 +1,6 @@
 <script setup>
     import { ref,computed } from 'vue'
     import { useRouter } from 'vue-router'
-
     
     const router = useRouter()
 
@@ -24,8 +23,8 @@
             // You would typically clear user session and redirect to login page
             // router.push('/login')
         }
-        else if(command === 'jumpToHomepage'){
-            router.push('/testmachine')
+        else if(command === 'jumpToHomepage1'){
+            router.push('/people13')
         }
     }
 
@@ -51,7 +50,7 @@
                 <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
               </div>
             </el-dropdown-item>
-            <el-dropdown-item divided command="jumpToHomepage">个人主页</el-dropdown-item>
+            <el-dropdown-item divided command="jumpToHomepage1">个人主页</el-dropdown-item>
             <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>

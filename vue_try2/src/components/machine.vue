@@ -16,13 +16,57 @@
 
     <!-- Export Button -->
     <el-button 
-      v-if="activeSubTab === 'list'"
-      type="success" 
-      class="export-btn"
-    >
-      导出清单
-    </el-button>
-
+    v-if="activeSubTab === 'list'"
+    type="success" 
+    class="export-btn"
+    @click="exportToPDF"
+    :loading="exporting"
+  >
+    {{ exporting ? '正在导出...' : '导出清单' }}
+  </el-button>
+  <!-- Add PDF Preview Dialog -->
+  <el-dialog
+    v-model="pdfPreviewVisible"
+    title="PDF预览"
+    width="90%"
+    :before-close="handlePdfPreviewClose"
+  >
+    <div class="pdf-preview" ref="pdfPreview">
+      <div v-for="item in listItems" :key="item.id" class="pdf-item">
+        <div class="pdf-header">
+          <h3>采购清单</h3>
+          <div class="pdf-info">
+            <p>清单编号：{{ item.id }}</p>
+            <p>记录时间：{{ item.timestamp }}</p>
+          </div>
+        </div>
+        <div class="pdf-content">
+          <h4>计划采购设备：</h4>
+          <div v-for="(equipment, index) in item.equipments" :key="index" class="pdf-equipment">
+            {{ equipment }}
+          </div>
+          <div class="pdf-status">
+            状态：<span :class="{ 'status-completed': item.status === '购置完成' }">
+              {{ item.status }}
+            </span>
+          </div>
+        </div>
+        <el-table :data="item.details" border style="width: 100%" class="pdf-table">
+          <el-table-column prop="standardNo" label="标准编号及条款号" width="180" />
+          <el-table-column prop="category" label="器械品类" width="120" />
+          <el-table-column prop="name" label="设备名称" width="150" />
+          <el-table-column prop="manufacturer" label="生产厂家" width="150" />
+          <el-table-column prop="quantity" label="购买数量" width="100" />
+        </el-table>
+      </div>
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="pdfPreviewVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmExport">确认导出</el-button>
+      </span>
+    </template>
+  </el-dialog>
     <!-- Preset List View -->
     <template v-if="activeSubTab === 'preset'">
       <el-table :data="presetTableData" border style="width: 100%" class="mb-4">
@@ -164,7 +208,72 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 
+// ... Previous script code remains unchanged ...
+
+const pdfPreviewVisible = ref(false)
+const exporting = ref(false)
+const pdfPreview = ref(null)
+
+const exportToPDF = async () => {
+  if (listItems.value.length === 0) {
+    ElMessage.warning('没有可导出的清单')
+    return
+  }
+  pdfPreviewVisible.value = true
+}
+
+const handlePdfPreviewClose = (done) => {
+  exporting.value = false
+  done()
+}
+
+const confirmExport = async () => {
+  try {
+    exporting.value = true
+    const element = pdfPreview.value
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: false
+    })
+    
+    const imgWidth = 190
+    const pageHeight = 297
+    const imgHeight = canvas.height * imgWidth / canvas.width
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    
+    let heightLeft = imgHeight
+    let position = 0
+    let page = 1
+
+    pdf.addImage(canvas, 'PNG', 10, position, imgWidth, imgHeight)
+    heightLeft -= pageHeight
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight
+      pdf.addPage()
+      pdf.addImage(canvas, 'PNG', 10, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+      page++
+    }
+
+    // Generate filename with current date
+    const date = new Date()
+    const filename = `purchase_list_${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}.pdf`
+    
+    pdf.save(filename)
+    ElMessage.success('PDF导出成功')
+    pdfPreviewVisible.value = false
+  } catch (error) {
+    console.error('PDF导出失败:', error)
+    ElMessage.error('PDF导出失败，请重试')
+  } finally {
+    exporting.value = false
+  }
+}
 const activeMainTab = ref('equipment')
 const activeSubTab = ref('list')
 const detailsDialogVisible = ref(false)
@@ -459,5 +568,62 @@ const clearPresetList = () => {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+.pdf-preview {
+  background: white;
+  padding: 20px;
+}
+
+.pdf-item {
+  margin-bottom: 30px;
+  page-break-inside: avoid;
+}
+
+.pdf-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.pdf-header h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.pdf-info {
+  display: flex;
+  justify-content: space-between;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.pdf-content {
+  margin-bottom: 20px;
+}
+
+.pdf-content h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.pdf-equipment {
+  margin-left: 20px;
+  margin-bottom: 5px;
+}
+
+.pdf-status {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.pdf-table {
+  margin-top: 20px;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 </style>

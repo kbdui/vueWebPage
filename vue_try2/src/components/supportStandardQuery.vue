@@ -18,7 +18,7 @@
                 <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
               </div>
             </el-dropdown-item>
-            <el-dropdown-item divided command="jumpToHomepage1">个人主页</el-dropdown-item>
+            <el-dropdown-item divided command="jumpToHomepage2">个人主页</el-dropdown-item>
             <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -35,7 +35,14 @@
         >
         </el-input>
         <el-button type="primary" @click="handleSearch">搜索</el-button>
-        <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button>
+        <!-- <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button> -->
+      </div>
+      <div id="buttonGroup24">
+        <div id="left24">
+            <el-button type="success">添加</el-button>
+            <el-button type="success">从excel统计表导入</el-button>
+        </div>
+        <el-button type="success">查看增加申请</el-button>
       </div>
   
       <div class="standards-list">
@@ -123,67 +130,67 @@ const userInitials = computed(() => {
     // 数据区
     {
       title: 'GB 19083-2003 4.1 医用防护口罩>基本要求',
-      link: '/details/1',
+      link: '/supportDetails/1',
       note: '点击跳转到详情页面'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },{
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },{
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },{
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },{
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },{
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
     {
       title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/details/2'
+      link: '/supportDetails/2'
     },
   ])
   
@@ -202,8 +209,8 @@ const handleCommand = (command) => {
     // You would typically clear user session and redirect to login page
     // router.push('/login')
   }
-  else if(command === 'jumpToHomepage1'){
-      router.push('/people13')
+  else if(command === 'jumpToHomepage2'){
+      router.push('/PersonnelReviewP44')
   }
 }
 
@@ -297,7 +304,7 @@ import {
   .search-section {
     display: flex;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
   }
   .search-input {
     flex: 1;
@@ -365,4 +372,13 @@ import {
   margin: 5px 0;
 
 }
-  </style>
+#buttonGroup24{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+#left24{
+    display: flex;
+}
+</style>

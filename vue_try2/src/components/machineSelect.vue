@@ -1,24 +1,37 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 py-3">
-        <router-link to="/" class="text-blue-600 hover:text-blue-800">首页</router-link>
+    <!-- 页头 -->
+    <div id="top">
+      <div id="top1">
+          <!-- page header 页头 -->
+          <el-page-header @back="goBack">
+          <template #content>
+              <span class="text-large font-600 mr-3">
+              GB 19083-2003 4.1 医用防护口罩>基本要求
+              </span>
+          </template>
+          </el-page-header>
+
+          <!-- 头像框 -->
+          <headshot></headshot>
       </div>
-    </header>
+
+      <!-- menu 菜单 -->
+      <el-menu
+        :default-active="activeIndex1"
+        class="el-menu-demo"
+        mode="horizontal"
+        @select="handleSelect1"
+      >
+        <el-menu-item index="1">人员</el-menu-item>
+        <el-menu-item index="2">设备</el-menu-item>
+        <el-menu-item index="3">规程</el-menu-item>
+        <el-menu-item index="4">样品</el-menu-item>
+      </el-menu>
+    </div>
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <h1 class="text-2xl font-semibold text-gray-900 mb-2">GB 19083-2003 4.1</h1>
-      <h2 class="text-xl text-gray-700 mb-6">医用防护口罩>基本要求</h2>
-
-      <!-- Tabs -->
-      <el-tabs class="mb-6">
-        <el-tab-pane label="人员"></el-tab-pane>
-        <el-tab-pane label="设备" name="equipment"></el-tab-pane>
-        <el-tab-pane label="规程"></el-tab-pane>
-        <el-tab-pane label="样品"></el-tab-pane>
-      </el-tabs>
 
       <div class="bg-white p-6 rounded-lg shadow">
         <div class="flex justify-between items-center mb-4">
@@ -29,7 +42,7 @@
         </div>
 
         <!-- Table -->
-        <el-table :data="tableData" border style="width: 100%">
+        <el-table :data="tableData" style="width: 100%">
           <el-table-column prop="type" label="器械品类" min-width="70%">
           </el-table-column>
           <el-table-column label="操作" min-width="30%">
@@ -71,8 +84,26 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// page header 页头
+const goBack = () => {
+    router.push('/standard')
+    console.log('go back')
+}
+
+// menu 菜单
+const activeIndex1 = ref('2')
+const handleSelect1 = (key: string, keyPath: string[]) => {
+    if(key.match('1')) router.push('/supportDetails/')
+    if(key.match('3')) router.push('/')
+    if(key.match('4')) router.push('/')
+    console.log(key, keyPath)
+}
 
 const dialogVisible = ref(false)
 const form = ref({
@@ -103,5 +134,8 @@ const handleEdit = (index, row) => {
 <style scoped>
 .el-tabs {
   --el-tabs-header-height: 40px;
+}
+.text-gray-600{
+  margin: 1rem 0 1rem 0;
 }
 </style>

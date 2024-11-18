@@ -33,7 +33,7 @@
       </el-button>
   
       <!-- Training List Table -->
-      <el-table :data="trainingData" border style="width: 100%; font-size: 16PX;">
+      <el-table :data="trainingData" style="width: 100%; font-size: 16PX;">
         <el-table-column 
           prop="trainee" 
           label="完成培训人" 

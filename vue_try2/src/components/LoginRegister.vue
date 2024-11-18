@@ -3,6 +3,7 @@
     <RouterLink to="/standard" replace>跳过登录前往检测人员标准查询</RouterLink>
     <RouterLink to="/supportStandardQuery" replace>跳过登录前往支持人员标准查询</RouterLink>
     <RouterLink to="/testmachinep" replace>哦这是什么</RouterLink>
+    
     <div class="login-register-page">
     <div class="form-container">
       <h1 class="title">医疗器械管理系统</h1>
@@ -127,6 +128,9 @@
   margin-top: 5%;
   display: grid;
   padding: 0 2rem;
+  background-image: url('src\assets\bg1.JPG'); /* 设置背景图片 */
+  background-size: cover; /* 背景图片覆盖整个容器 */
+  background-position: center; /* 背景图片居中显示 */
 }
 
 /* 设置整个登录注册页面的样式 */

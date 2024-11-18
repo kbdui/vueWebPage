@@ -100,7 +100,7 @@
           </div>
         </div>
 
-        <el-table :data="selectedList?.equipment || []" border>
+        <el-table :data="selectedList?.equipment || []">
           <el-table-column 
             prop="standardCode" 
             label="标准编号及条款号" 

@@ -17,8 +17,8 @@
     const activeIndex2 = ref('5')
     const handleSelect1 = (key: string, keyPath: string[]) => {
         if(key.match('2')) router.push('/machineSelect')
-        if(key.match('3')) router.push('/')
-        if(key.match('4')) router.push('/')
+        if(key.match('3')) router.push('/supprotp36')
+        if(key.match('4')) router.push('/p38')
         console.log(key, keyPath)
     }
     const handleSelect2 = (key: string, keyPath: string[]) => {

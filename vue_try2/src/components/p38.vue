@@ -1,17 +1,34 @@
 <template>
     <div class="container">
-    <Top/>
-      <h2 class="title">GB 19083-2003 4.1</h2>
-      <h3 class="subtitle">医用防护口罩>基本要求</h3>
-      <el-divider content-position="left"></el-divider>
-      <!-- Navigation -->
-      <nav class="nav-menu">
-        <router-link to="/personnel" class="nav-link">人员</router-link>
-        <router-link to="/equipment" class="nav-link">设备</router-link>
-        <router-link to="/procedures" class="nav-link">规程</router-link>
-        <span class="nav-link current">样品</span>
-      </nav>
-      <el-divider content-position="left"></el-divider>
+      <div id="top">
+        <div id="top1">
+            <!-- page header 页头 -->
+            <el-page-header @back="goBack">
+            <template #content>
+                <span class="text-large font-600 mr-3">
+                GB 19083-2003 4.1 医用防护口罩>基本要求
+                </span>
+            </template>
+            </el-page-header>
+
+            <!-- 头像框 -->
+            <headshot></headshot>
+        </div>
+
+        <!-- menu 菜单 -->
+        <el-menu
+          :default-active="activeIndex1"
+          class="el-menu-demo"
+          mode="horizontal"
+          @select="handleSelect1"
+        >
+          <el-menu-item index="1">人员</el-menu-item>
+          <el-menu-item index="2">设备</el-menu-item>
+          <el-menu-item index="3">规程</el-menu-item>
+          <el-menu-item index="4">样品</el-menu-item>
+        </el-menu>
+      </div>
+
       <!-- Content Section -->
       <div class="content-section">
         <div class="section-header">
@@ -95,9 +112,28 @@
     </div>
   </template>
   
-  <script setup>
+  <script lang="ts" setup>
   import { ref } from 'vue'
-  import Top from './Top.vue';
+  import Top from './Top.vue'
+  import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// page header 页头
+const goBack = () => {
+    router.push('/standard')
+    console.log('go back')
+}
+
+// menu 菜单
+const activeIndex1 = ref('4')
+const handleSelect1 = (key: string, keyPath: string[]) => {
+    if(key.match('1')) router.push('/supportDetails/')
+    if(key.match('2')) router.push('/machineSelect')
+    if(key.match('3')) router.push('/supprotp36')
+    console.log(key, keyPath)
+}
+
   const dialogVisible = ref(false)
   const isEditing = ref(false)
   const editingIndex = ref(-1)
@@ -208,10 +244,6 @@
   </script>
   
   <style scoped>
-  .container {
-    padding: 20px;
-  }
-  
   .title {
     font-size: 24px;
     margin-bottom: 8px;

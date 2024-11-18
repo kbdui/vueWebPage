@@ -100,8 +100,8 @@ const goBack = () => {
 const activeIndex1 = ref('2')
 const handleSelect1 = (key: string, keyPath: string[]) => {
     if(key.match('1')) router.push('/supportDetails/')
-    if(key.match('3')) router.push('/')
-    if(key.match('4')) router.push('/')
+    if(key.match('3')) router.push('/supprotp36')
+    if(key.match('4')) router.push('/p38')
     console.log(key, keyPath)
 }
 

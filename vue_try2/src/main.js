@@ -39,10 +39,12 @@ import MessageodRegulationP42 from './components/MessageodRegulation-p42.vue' //
 import MessageofMaterialP43 from './components/MessageofMaterial-p43.vue'  // 料
 
 // 支持人员个人主页清单管理(从上到下依次是人机法料)
+// 44-46是人，全合并到44了，45、46是弃用的！
 import PersonnelReviewP44 from './components/PersonnelReview-p44.vue'
 import PersonnelauthorizationlistP45 from './components/Personnelauthorizationlist-p45.vue'
-import StaffTrainingListP46 from './components/StaffTrainingList-p46.vue' // 44-46是人,全合并到44了
-import machine from './components/machine.vue' // 机
+import StaffTrainingListP46 from './components/StaffTrainingList-p46.vue'
+// 以下四个页面全部弃用！四个页面中的内容以子组件形式全合并至44，替代的子组件为son_components/sHomepage...
+import machine from './components/machine.vue' // 机，这个页面没有相应的子组件，因冲突采用了下一个界面
 import EquipmentListP47 from './components/EquipmentList-p47.vue' // 这与上一个是同个界面，画重了
 import RegulationPage2 from './components/RegulationPage2.vue' // 法
 import SampleRequestListP51 from './components/SampleRequestList-p51.vue' // 料

@@ -98,14 +98,15 @@
             </el-table>
           </div>
         </el-tab-pane>
+
         <!-- 设备 -->
-        <el-tab-pane label="设备" name="equipment"></el-tab-pane>
+        <sHomepageMachine></sHomepageMachine>
 
         <!-- 规程 -->
-        <el-tab-pane label="规程" name="procedures"></el-tab-pane>
+        <sHomepageRegulation></sHomepageRegulation>
 
         <!-- 物料 -->
-        <el-tab-pane label="物料" name="materials"></el-tab-pane>
+        <sHomepageSample></sHomepageSample>
       </el-tabs>
     </div>
   </div>
@@ -119,6 +120,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import jsPDF from 'jspdf'
 
 import Top from './Top.vue'
+import sHomepageMachine from './son_components/sHomepageMachine.vue'
+import sHomepageRegulation from './son_components/sHomepageRegulation.vue'
+import sHomepageSample from './son_components/sHomepageSample.vue'
+
 const activeMainTab = ref('lists')
 const activeSecondaryTab = ref('personnel')
 const activeTertiaryTab = ref('审核提醒')

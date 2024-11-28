@@ -2,27 +2,37 @@
   <div class="standard-details">
     <!-- Header Section -->
     <div class="header">
-      <div class="back-section">
-        <el-button link @click="goBack">
-          <el-icon><ArrowLeft /></el-icon>
-          Back
-        </el-button>
-        <h1 class="title">GB 19083-2003 4.1 医用防护口罩>基本要求</h1>
+      <div id="top1">
+          <!-- page header 页头 -->
+          <el-page-header @back="goBack">
+          <template #content>
+              <span class="text-large font-600 mr-3">
+              GB 19083-2003 4.1 医用防护口罩>基本要求
+              </span>
+          </template>
+          </el-page-header>
+
+          <!-- 头像框 -->
+          <headshot></headshot>
       </div>
 
       <!-- Navigation Tabs -->
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="人员" name="personnel" />
-        <el-tab-pane label="设备" name="equipment" />
-        <el-tab-pane label="规程" name="procedure" />
-        <el-tab-pane label="样品" name="sample" />
-      </el-tabs>
+      <el-menu
+        :default-active="activeIndex1"
+        class="el-menu-demo"
+        mode="horizontal"
+        @select="handleSelect1"
+      >
+        <el-menu-item index="1">人员</el-menu-item>
+        <el-menu-item index="2">设备</el-menu-item>
+        <el-menu-item index="3">规程</el-menu-item>
+        <el-menu-item index="4">样品</el-menu-item>
+      </el-menu>
 
       <!-- Primary Notice -->
       <div class="notice-section">
-        <el-button type="primary" class="notice-button">
-          若要检测本项目，可能要用到以下产品
-        </el-button>
+        <p>若要检测本项目，可能要用到以下产品</p>
+        <el-button id="m_leave" type="primary" plain>留言</el-button>
       </div>
 
       <!-- Equipment List Table -->
@@ -96,14 +106,24 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+import headshot from './headshot.vue'
 
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)
 const selectedEquipment = ref(null)
+const router = useRouter()
+
+    const activeIndex1 = ref('2')
+    const handleSelect1 = (key: string, keyPath: string[]) => {
+        if(key.match('1')) router.push('/details/')
+        if(key.match('3')) router.push('/Regulations')
+        if(key.match('4')) router.push('/sample')
+        console.log(key, keyPath)
+    }
 
 const equipmentList = ref([
   { id: 1, name: '天平' },
@@ -144,7 +164,8 @@ const equipmentDetails = ref([
 ])
 
 const goBack = () => {
-  ElMessage.success('返回上一页')
+  router.push('/standard')
+  console.log('go back')
 }
 
 const showDetails = (equipment) => {
@@ -162,10 +183,6 @@ const addToPreset = (item) => {
 </script>
 
 <style scoped>
-.standard-details {
-  padding: 20px;
-}
-
 .header {
   margin-bottom: 20px;
 }
@@ -183,7 +200,18 @@ const addToPreset = (item) => {
 }
 
 .notice-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin: 20px 0;
+}
+
+.notice-section p{
+  margin-left: 1rem;
+}
+
+#m_leave{
+  margin-right: 2rem;
 }
 
 .notice-button {

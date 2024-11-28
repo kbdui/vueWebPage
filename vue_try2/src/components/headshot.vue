@@ -1,14 +1,24 @@
 <script setup>
     import { ref,computed } from 'vue'
+    import { ElMessage } from 'element-plus'
     import { useRouter } from 'vue-router'
     
     const router = useRouter()
 
+    const props = defineProps({
+      _name : String,
+      username : String,
+      contact : String,
+      institution : String,
+      accountType : String
+    })
+
     const userInfo = ref({
-        name: '张三',
-        username: 'zhangsan',
-        organization: 'ABC公司',
-        contact: 'zhangsan@example.com'
+        name: props._name,
+        username: props.username,
+        organization: props.institution,
+        contact: props.contact,
+        accountType: props.accountType
     })
 
     const userAvatar = ref('https://example.com/avatar.jpg')
@@ -17,15 +27,15 @@
     })
 
     const handleCommand = (command) => {
-        if (command === 'logout') {
-            // Implement logout logic here
-            ElMessage.success('退出登录成功')
-            // You would typically clear user session and redirect to login page
-            // router.push('/login')
-        }
-        else if(command === 'jumpToHomepage1'){
-            router.push('/people13')
-        }
+      if (command === 'logout') {
+        ElMessage.success('退出登录成功')
+        // You would typically clear user session and redirect to login page
+        // router.push('/login')
+      }
+      else if(command === 'jumpToHomepage1'){
+        if(props.accountType === "Experimenters") router.push('/people13')
+        else if(props.accountType === "Supportstaff") router.push('/MessageofPersonP40')
+      }
     }
 
     function handleAvatarError(){

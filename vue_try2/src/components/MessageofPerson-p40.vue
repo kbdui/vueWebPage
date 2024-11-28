@@ -1,6 +1,12 @@
 <template>
     <div class="message-management">
-        <Top/>
+        <Top
+        :_name="user_data.name"
+        :username="user_data.username"
+        :institution="user_data.institution"
+        :contact="user_data.contact"
+        :accountType="user_data.accountType"
+        ></Top>
         <div class="mb-4">
           <el-menu
             :default-active="activeIndex1"
@@ -220,7 +226,8 @@
   import { ElMessage } from 'element-plus'
   import { useRouter } from 'vue-router'
   import jsPDF from 'jspdf'
-  import Top from './Top.vue';
+  import Top from './Top.vue'
+  import { user_data } from '@/status'
   // State
   const activeMenu = ref('2')
   const activeTab = ref('personnel')

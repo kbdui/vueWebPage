@@ -1,7 +1,7 @@
 <template>
   <div id="Login">
-    <RouterLink to="/entry" replace>跳过登录前往检测人员标准查询</RouterLink>
-    <RouterLink to="/supportStandardQuery" replace>跳过登录前往支持人员标准查询</RouterLink>
+    <!-- <RouterLink to="/entry" replace>跳过登录前往检测人员标准查询</RouterLink>
+    <RouterLink to="/supportStandardQuery" replace>跳过登录前往支持人员标准查询</RouterLink> -->
     
     <div class="login-register-page">
     <div class="form-container">
@@ -58,6 +58,7 @@
     import { ref, reactive } from 'vue'
     import { useRouter } from 'vue-router'
     import { RouterLink } from 'vue-router'
+    import { user_data } from '../status.js'
     import axios from 'axios'
 
     // Vue.prototype.$axios = axios
@@ -92,7 +93,13 @@
           if(response.data.data.res === 1) {
             alert('登录成功')
             console.log(response)
-            router.push("/details/")
+            user_data.value.name = decodeURIComponent(response.data.data.user.name)
+            user_data.value.username = decodeURIComponent(response.data.data.user.username)
+            user_data.value.contact = decodeURIComponent(response.data.data.user.contact)
+            user_data.value.institution = decodeURIComponent(response.data.data.user.institution)
+            user_data.value.accountType = decodeURIComponent(response.data.data.user.accounttype)
+            console.log(user_data.value.accountType)
+            router.push("/entry")
           }
           else if(response.data.data.res === 2) {
             alert('用户名错误')
@@ -141,7 +148,7 @@
             if(response.data.data.res === 1) {
               alert('登录成功')
               console.log(response)
-              router.push("/details/")
+              router.push("/entry")
             }
             else if(response.data.data.res === 2) {
               alert('用户名错误')

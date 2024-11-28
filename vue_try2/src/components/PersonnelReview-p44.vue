@@ -1,6 +1,12 @@
 <template>
   <div class="container mx-auto p-4">
-    <Top/>
+    <Top
+    :_name="user_data.name"
+    :username="user_data.username"
+    :institution="user_data.institution"
+    :contact="user_data.contact"
+    :accountType="user_data.accountType"
+    ></Top>
     <!-- 大的导航栏 -->
     <div class="mb-4">
       <el-menu
@@ -118,6 +124,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import jsPDF from 'jspdf'
+import { user_data } from '@/status'
 
 import Top from './Top.vue'
 import sHomepageMachine from './son_components/sHomepageMachine.vue'

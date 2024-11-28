@@ -30,12 +30,24 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const props = defineProps({
+  _name : String,
+  username : String,
+  contact : String,
+  institution : String,
+  accountType : String
+})
 
 const userInfo = ref({
-  name: '张三',
-  username: 'zhangsan',
-  organization: 'ABC公司',
-  contact: 'zhangsan@example.com'
+  name: props._name,
+  username: props.username,
+  organization: props.institution,
+  contact: props.contact,
+  accountType: props.accountType
 })
 
 const userAvatar = ref('https://example.com/avatar.jpg')
@@ -51,7 +63,8 @@ const handleCommand = (command) => {
     // router.push('/login')
   }
   else if(command === 'jumpToHomepage1'){
-      router.push('/people13')
+    if(props.accountType === "Experimenters") router.push('/people13')
+    else if(props.accountType === "Supportstaff") router.push('/MessageofPersonP40')
   }
 }
 

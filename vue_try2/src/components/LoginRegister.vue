@@ -11,7 +11,7 @@
         <button @click="isLogin = false" :class="{ active: !isLogin }">注册</button>
       </div>
       
-      <form @submit.prevent="handleSubmit">
+      <form @submit.prevent="handleSubmit2">
         <template v-if="isLogin">
           <div class="form-group">
             <label for="username">用户名</label>
@@ -56,13 +56,15 @@
 
 <script setup>
     import { ref, reactive } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
+    import { useRouter } from 'vue-router'
     import { RouterLink } from 'vue-router'
+    import axios from 'axios'
+
+    // Vue.prototype.$axios = axios
 
     const isLogin = ref(true)
 
     const router = useRouter()
-    const route = useRoute()
     
     const loginForm = reactive({
       username: '',
@@ -76,39 +78,111 @@
       organization: '',
       contact: ''
     })
+
+    function handleSubmit2() {
+      if (isLogin.value) {
+        axios.post('http://localhost:8080/login_msg', {
+          username: loginForm.username,
+          password: loginForm.password
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+          if(response.data.data.res === 1) {
+            alert('登录成功')
+            console.log(response)
+            router.push("/details/")
+          }
+          else if(response.data.data.res === 2) {
+            alert('用户名错误')
+            console.log(response)
+          }
+          else if(response.data.data.res === 3) {
+            alert('密码错误')
+            console.log(response)
+          }
+        }).catch(function (error){
+          if (error.response) {
+            // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+          } else if (error.request) {
+            // 请求已经成功发起，但没有收到响应
+            // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+            // 而在node.js中是 http.ClientRequest 的实例
+            console.log(error.request);
+          } else {
+            // 发送请求时出了点问题
+            console.log('Error', error.message);
+          }
+          console.log(error.config)
+          alert('状态码错误')
+        })
+      }
+    }
     
     const handleSubmit = async () => {
       try {
         if (isLogin.value) {
           // 登录逻辑
-          const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(loginForm)
-          })
-          if (response.ok) {
-            alert('登录成功')
-            // 处理登录成功后的逻辑，如跳转到主页
-          } else {
-            alert('登录失败，请检查用户名和密码')
-          }
-        } else {
-          // 注册逻辑
-          const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(registerForm)
-          })
-          if (response.ok) {
-            alert('注册成功，请登录')
-            isLogin.value = true // 切换到登录表单
-          } else {
-            alert('注册失败，请稍后再试')
-          }
-        }
+          const response = await axios.post("http://localhost:8080/login_msg",{
+              username : loginForm.username,
+              password : loginForm.password
+            },{
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            })
+
+            console.log(response.data.data.res)
+            
+            if(response.data.data.res === 1) {
+              alert('登录成功')
+              console.log(response)
+              router.push("/details/")
+            }
+            else if(response.data.data.res === 2) {
+              alert('用户名错误')
+              console.log(response)
+            }
+            else if(response.data.data.res === 3) {
+              alert('密码错误')
+              console.log(response)
+            }
+        } 
+        // else {
+        //   // 注册逻辑
+        //   const response = await fetch('/api/register', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(registerForm)
+        //   })
+        //   if (response.ok) {
+        //     alert('注册成功，请登录')
+        //     isLogin.value = true // 切换到登录表单
+        //   } else {
+        //     alert('注册失败，请稍后再试')
+        //   }
+        // }
       } catch (error) {
-        console.error('Error:', error)
-        alert('发生错误，请稍后再试')
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        alert('状态码错误')
       }
     }
 </script>

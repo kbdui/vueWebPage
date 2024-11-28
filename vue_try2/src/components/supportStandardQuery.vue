@@ -35,18 +35,40 @@
         >
         </el-input>
         <el-button type="primary" @click="handleSearch">搜索</el-button>
-        <!-- <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button> -->
       </div>
       <div id="buttonGroup24">
         <div id="left24">
-            <el-button type="success">添加</el-button>
-            <el-button type="success">从excel统计表导入</el-button>
+          <el-button type="primary" @click="openAddApplicationDialog">添加</el-button>
+            <!-- <el-button type="success">从excel统计表导入</el-button> -->
+            <el-button type="success" @click="importFromExcel">从excel统计表导入</el-button>
+  <input type="file" ref="excelFileInput" style="display: none" accept=".xlsx, .xls" @change="handleExcelUpload" />
+  <div v-if="importedData.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>大类</th>
+          <th>类别</th>
+          <th>标准名称</th>
+          <th>标准编号</th>
+          <th>项目名称</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in importedData" :key="index">
+          <td>{{ item['大类'] }}</td>
+          <td>{{ item['类别'] }}</td>
+          <td>{{ item['标准名称'] }}</td>
+          <td>{{ item['标准编号'] }}</td>
+          <td>{{ item['项目名称'] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
         </div>
         <el-button type="success">查看增加申请</el-button>
       </div>
-  
       <div class="standards-list">
-        <div v-for="(standard, index) in standards" :key="index" class="standard-item">
+        <div v-for="(standard, index) in filteredStandards" :key="index" class="standard-item">
           <router-link :to="standard.link" class="standard-link">
             {{ standard.title }}
             <span v-if="standard.note" class="note">({{ standard.note }})</span>
@@ -107,8 +129,37 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
+// 导入excel表用
+import * as XLSX from 'xlsx'
 const router = useRouter()
+// 用于存储导入的数据
+const importedData = ref([])
+// 处理文件上传和解析Excel文件的方法
+const handleExcelUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) {
+    ElMessage.error('请选择一个Excel文件')
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const data = e.target.result
+    const workbook = XLSX.read(data, { type: 'array' })
+    const sheetName = workbook.SheetNames[0]
+    const sheet = workbook.Sheets[sheetName]
+    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 })
+    importedData.value = json
+  }
+  reader.readAsArrayBuffer(file)
+}
 
+// 用于触发文件选择的ref
+const excelFileInput = ref(null)
+
+// 调用文件输入的方法
+const importFromExcel = () => {
+  excelFileInput.value.click()
+}
 const userInfo = ref({
   name: '张三',
   username: 'zhangsan',
@@ -129,71 +180,74 @@ const userInitials = computed(() => {
   const allStandards = ref([
     // 数据区
     {
+      title:'这里都是演示用的数据',
+      link:'/details/0',
+      note:'点击跳转详情页面'},
+    {
       title: 'GB 19083-2003 4.1 医用防护口罩>基本要求',
-      link: '/supportDetails/1',
+      link: '/details/1',
       note: '点击跳转到详情页面'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>扣找',
+      link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护工具>酒精',
+      link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护工具>双氧水',
+      link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>颠覆',
+      link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>剪刀',
+      link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>镊子',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>筷子',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>勺子',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>锤子',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>1',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>2',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>3',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>5',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>7',
+      link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-      link: '/supportDetails/2'
+      title: 'GB 19083-2003 4.2 医用防护口罩>8',
+      link: '/details/2'
     },
   ])
-  
   const addApplicationDialogVisible = ref(false)
 const applicationForm = ref({
   category: '',
@@ -231,16 +285,26 @@ const handleCloseDialog = () => {
 }
 
 const handleAddApplication = () => {
-  // Here you would typically send the form data to your backend
+
   console.log('Application data:', applicationForm.value)
-  // For demonstration, we'll just show a success message
+
   ElMessage.success('申请已添加')
   handleCloseDialog()
 }
-  const standards = computed(() => {
+
+const standards = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return allStandards.value.slice(start, end);
+});
+const filteredStandards = computed(() => {
+  if (!searchQuery.value) {
+    return standards.value;
+  }
+  const lowerSearchQuery = searchQuery.value.toLowerCase();
+  return allStandards.value.filter(standard => {
+    return standard.title.toLowerCase().includes(lowerSearchQuery);
+  });
 });
 
 const handleSearch = () => {
@@ -250,20 +314,13 @@ const handleSearch = () => {
 
 const handlePageChange = (newPage) => {
   currentPage.value = newPage;
-  // 可以在这里添加逻辑，比如重新获取数据或者更新视图
+
 };
 
 const handleRowClick = (row) => {
   router.push(`/standard/${row.id}`);
 };
-import {
-  Check,
-  Delete,
-  Edit,
-  Message,
-  Search,
-  Star,
-} from '@element-plus/icons-vue'
+
   </script>
   
   <style scoped>

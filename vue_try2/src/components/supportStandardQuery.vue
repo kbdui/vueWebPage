@@ -121,15 +121,10 @@
   <script setup>
 import { ref, computed,reactive } from 'vue'
 import { useRouter } from 'vue-router'
-<<<<<<< Updated upstream
 import { ElMessage,ElDialog } from 'element-plus'
-import * as XLSX from 'xlsx'
-
-=======
-import { ElMessage } from 'element-plus'
+// import * as XLSX from 'xlsx'
 import Top from './Top.vue'
 import { user_data } from '@/status'
->>>>>>> Stashed changes
 
 const router = useRouter()
 const userInfo = ref({

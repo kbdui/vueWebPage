@@ -1,29 +1,12 @@
 <template>
     <div class="standards-container">
-      <div class="top-bar">
-        <router-link to="/" class="home-text">登出</router-link>
-        <el-dropdown trigger="hover" @command="handleCommand">
-        <div class="avatar-wrapper">
-          <el-avatar :size="40" :src="userAvatar" @error="handleAvatarError">
-            {{ userInitials }}
-          </el-avatar>
-        </div>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item disabled>
-              <div class="user-info">
-                <p><strong>姓名：</strong>{{ userInfo.name }}</p>
-                <p><strong>用户名：</strong>{{ userInfo.username }}</p>
-                <p><strong>所属机构：</strong>{{ userInfo.organization }}</p>
-                <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item divided command="jumpToHomepage2">个人主页</el-dropdown-item>
-            <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </div>
+      <Top
+      :_name="user_data.name"
+      :username="user_data.username"
+      :institution="user_data.institution"
+      :contact="user_data.contact"
+      :accountType="user_data.accountType"
+      ></Top>
 
       <h2 class="header">标准查询</h2>
       
@@ -138,9 +121,15 @@
   <script setup>
 import { ref, computed,reactive } from 'vue'
 import { useRouter } from 'vue-router'
+<<<<<<< Updated upstream
 import { ElMessage,ElDialog } from 'element-plus'
 import * as XLSX from 'xlsx'
 
+=======
+import { ElMessage } from 'element-plus'
+import Top from './Top.vue'
+import { user_data } from '@/status'
+>>>>>>> Stashed changes
 
 const router = useRouter()
 const userInfo = ref({

@@ -38,11 +38,20 @@
         <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button>
       </div>
   
-      <div class="standards-list">
+      <!-- <div class="standards-list">
         <div v-for="(standard, index) in standards" :key="index" class="standard-item">
           <router-link :to="standard.link" class="standard-link">
             {{ standard.title }}
             <span v-if="standard.note" class="note">({{ standard.note }})</span>
+          </router-link>
+        </div>
+      </div> -->
+
+      <div class="standards-list">
+        <div v-for="(standard, index) in filteredStandards" :key="index" class="standard-item">
+          <router-link :to="standard.link" class="standard-link">
+            {{ standard.title }}
+          <span v-if="standard.note" class="note">({{ standard.note }})</span>
           </router-link>
         </div>
       </div>
@@ -95,7 +104,7 @@
     </div>
   </template>
   
-  <script setup>
+<script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -127,62 +136,62 @@ const userInitials = computed(() => {
       note: '点击跳转到详情页面'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>扣找',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护工具>酒精',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护工具>双氧水',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>颠覆',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>剪刀',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>镊子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>筷子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>勺子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>锤子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>1',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>2',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>3',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>5',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>7',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>8',
       link: '/details/2'
     },
   ])
@@ -230,15 +239,25 @@ const handleAddApplication = () => {
   ElMessage.success('申请已添加')
   handleCloseDialog()
 }
-  const standards = computed(() => {
+  
+
+const standards = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return allStandards.value.slice(start, end);
 });
-
+const filteredStandards = computed(() => {
+  if (!searchQuery.value) {
+    return standards.value;
+  }
+  const lowerSearchQuery = searchQuery.value.toLowerCase();
+  return allStandards.value.filter(standard => {
+    return standard.title.toLowerCase().includes(lowerSearchQuery);
+  });
+});
 const handleSearch = () => {
   // Implement search logic here
-  console.log('Searching for:', searchQuery.value);
+  // console.log('Searching for:', searchQuery.value);
 };
 
 const handlePageChange = (newPage) => {

@@ -2,7 +2,9 @@
     import { ref } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
-
+    import { ElMessage } from 'element-plus'
+    import html2canvas from 'html2canvas'
+    import jsPDF from 'jspdf'
     const router = useRouter()
 
     // page header 页头
@@ -75,9 +77,38 @@ const tableData = [
     购买数量:10,
   },
 ]
+const generatePresetList = () => {
+  console.log('Generating preset list')
+  ElMessage.success('预置清单已生成')
+}
+const exportToPDF = async () => {
+  ElMessage.info('正在生成PDF，请稍候...')
+  
+  const element = document.getElementById('content-to-export')
+  if (!element) {
+    ElMessage.error('无法找到要导出的内容')
+    return
+  }
+
+  try {
+    const canvas = await html2canvas(element)
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const imgProps = pdf.getImageProperties(imgData)
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+    pdf.save('equipment_management.pdf')
+    ElMessage.success('PDF已成功导出')
+  } catch (error) {
+    console.error('PDF导出失败:', error)
+    ElMessage.error('PDF导出失败，请重试')
+  }
+}
 </script>
 
 <template>
+  <div id="content-to-export">
   <div id="top">
     <div id="top1">
         <!-- page header 页头 -->
@@ -219,6 +250,11 @@ const tableData = [
               </el-table-column>
     </el-table>
     </div>
+    <div class="action-buttons">
+      <el-button type="primary" @click="exportToPDF">生成清单</el-button>
+    </div>
+  </div>
+
 </template>
 
 <style>
@@ -341,6 +377,13 @@ const tableData = [
         float: right;
         font-size: 25px;
         font-weight: bold;
+      }
+      .action-buttons {
+        margin-top: 20px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
       }
 </style>
 

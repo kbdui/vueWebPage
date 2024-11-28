@@ -16,6 +16,7 @@ import LoginRegister from './components/LoginRegister.vue'
 
 // 检测人员页面(从上到下依次是标准查询、人机法料)
 import StandardQuery from './components/StandardQuery.vue' // 标准查询
+import entry from './components/entry.vue' // 标准查询2
 import people from './components/people.vue' // 人
 import Machinefirst from './components/machinefirst.vue' // 机
 import Regulations from './components/Regulations.vue' // 法
@@ -88,6 +89,7 @@ const routes = [
     { path: '/p38', component: p38 },
     { path: '/searchp24', component: searchp24 },
     { path: '/samplep19', component: samplep19 },
+    { path: '/entry', component: entry },
 ]
 const router = createRouter({
     history: createWebHashHistory(),

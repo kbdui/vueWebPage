@@ -1,6 +1,6 @@
 <template>
   <div id="Login">
-    <RouterLink to="/standard" replace>跳过登录前往检测人员标准查询</RouterLink>
+    <RouterLink to="/entry" replace>跳过登录前往检测人员标准查询</RouterLink>
     <RouterLink to="/supportStandardQuery" replace>跳过登录前往支持人员标准查询</RouterLink>
     
     <div class="login-register-page">

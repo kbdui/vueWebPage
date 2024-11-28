@@ -1,4 +1,5 @@
 <template>
+  <Top></Top>
     <div class="standards-search">
       <h2 class="page-title">标准查询</h2>
   
@@ -71,10 +72,14 @@
   <script setup>
   import { ref, computed } from 'vue'
   import { ElMessage } from 'element-plus'
+  import { useRouter } from 'vue-router'
+
+  import Top from './Top.vue'
   
   const searchQuery = ref('')
   const currentPage = ref(1)
   const totalStandards = ref(100)
+  const router = useRouter()
   
   const standards = ref([
     {
@@ -155,6 +160,9 @@
   }
   
   const navigateToStandard = (standard) => {
+    if(standard.id === 1) {
+      router.push('./standard')
+    }
     ElMessage.success(`导航到标准详情页: ${standard.number}`)
   }
   

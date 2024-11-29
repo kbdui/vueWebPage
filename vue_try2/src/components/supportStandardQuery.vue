@@ -30,7 +30,9 @@
     <div class="standards-list">
       <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
         <div v-if="projects.length === 0">没有项目数据</div>
-         <a><p><strong>项目名称：</strong> {{ project.projectname }}</p></a>
+        <router-link to="/supportDetails/" class="action-button">
+          <strong>项目名称：</strong> {{ project.projectname }}
+        </router-link>
           <p><strong>项目ID：</strong>{{ project.projectid }}</p>
           <p><strong>类别：</strong>{{ project.categories }}</p>
           <p><strong>项目时间：</strong>{{ project.projecttime }}</p>

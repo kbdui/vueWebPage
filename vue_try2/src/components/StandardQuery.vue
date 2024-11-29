@@ -23,7 +23,9 @@
       <div class="standards-list">
         <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
           <div v-if="projects.length === 0">没有项目数据</div>
-           <a><p><strong>项目名称：</strong> {{ project.projectname }}</p></a>
+            <router-link to="/details/" class="action-button">
+              <strong>项目名称：</strong> {{ project.projectname }}
+            </router-link>
             <p><strong>项目ID：</strong>{{ project.projectid }}</p>
             <p><strong>类别：</strong>{{ project.categories }}</p>
             <p><strong>项目时间：</strong>{{ project.projecttime }}</p>
@@ -261,10 +263,7 @@ const applicationForm = ref({
 })
 const handleCommand = (command) => {
   if (command === 'logout') {
-    // Implement logout logic here
     ElMessage.success('退出登录成功')
-    // You would typically clear user session and redirect to login page
-    // router.push('/login')
   }
   else if(command === 'jumpToHomepage2'){
       router.push('/MessageofPersonP40')
@@ -274,7 +273,6 @@ const handleCommand = (command) => {
 }
 
 const handleAddApplication = () => {
-  // Here you would typically send the form data to your backend
   console.log('Application data:', applicationForm.value)
   // For demonstration, we'll just show a success message
   ElMessage.success('申请已添加')
@@ -306,8 +304,6 @@ const handlePageChange = (newPage) => {
   currentPage.value = newPage;
   // 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
-
-// const handleRowClick = (row) => {
  onMounted(() => {
   search()
  

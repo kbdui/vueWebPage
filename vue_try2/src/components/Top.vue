@@ -43,7 +43,7 @@ const props = defineProps({
   accountType : String
 })
 
-const back = props.accountType === "Experimenters" ? ref('/entry') : ref('/supportStandardQuery')
+const back = props.accountType === "Experimenters" ? ref('/entry') : ref('/supportentry')
 
 const userInfo = ref({
   name: props._name,

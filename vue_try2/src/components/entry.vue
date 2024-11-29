@@ -29,11 +29,7 @@
       <div class="standards-list">
         <div v-if="paginatedProjects.length === 0">没有项目数据</div>
         <div v-for="category in uniqueCategories" :key="category">
-          <a>
-            <p>
-              <strong>类别：</strong>{{ category }}
-            </p>
-          </a>
+          <RouterLink to="/StandardQuery"></RouterLink>
         </div>
       </div>
     </div>
@@ -53,7 +49,7 @@
   <script setup>
   import { ref, computed, onMounted ,reactive} from 'vue'
   import { ElMessage } from 'element-plus'
-  import { useRouter } from 'vue-router'
+  import { RouterLink, useRouter } from 'vue-router'
   import { useRoute } from 'vue-router'
   import { user_data } from '../status.js'
  import axios from 'axios'

@@ -29,7 +29,8 @@ import Regulations18 from './components/Regulations18.vue' // 法
 import samplep19 from './components/samplep19.vue' // 料
 
 // 支持人员页面(从上到下依次是标准查询、人机法料)
-import supportStandardQuery from './components/supportStandardQuery.vue' // 标准查询
+import supportentry from './components/supportentry.vue' // 标准查询
+import supportStandardQuery from './components/supportStandardQuery.vue' // 标准查询2
 import searchp24 from './components/searchp24.vue' // 这与上一个页面重了，暂时采用上一个
 import people28 from './components/people28.vue' // 人
 import machineSelect from './components/machineSelect.vue' // 机
@@ -90,6 +91,7 @@ const routes = [
     { path: '/searchp24', component: searchp24 },
     { path: '/samplep19', component: samplep19 },
     { path: '/entry', component: entry },
+    { path: '/supportentry', component: supportentry },
 ]
 const router = createRouter({
     history: createWebHashHistory(),

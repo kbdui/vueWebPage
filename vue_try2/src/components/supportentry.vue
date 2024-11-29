@@ -30,11 +30,7 @@
         <div class="standards-list">
           <div v-if="paginatedProjects.length === 0">没有项目数据</div>
           <div v-for="category in uniqueCategories" :key="category">
-            <a>
-              <p>
-                <strong>类别：</strong>{{ category }}
-              </p>
-            </a>
+            <RouterLink to="/supportStandardQuery"></RouterLink>
           </div>
         </div>
       </div>

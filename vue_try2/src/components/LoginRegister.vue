@@ -44,6 +44,12 @@
             <label for="contact">联系方式</label>
             <input id="contact" v-model="registerForm.contact" type="text" required>
           </div>
+          <div class="mb-2 ml-4">
+            <el-radio-group v-model="registerForm.account_type">
+              <el-radio value="Experimenters" size="large">检测人员</el-radio>
+              <el-radio value="Supportstaff" size="large">支持人员</el-radio>
+            </el-radio-group>
+          </div>
         </template>
         
         <button type="submit" class="submit-btn">{{ isLogin ? '登录' : '注册' }}</button>
@@ -77,7 +83,8 @@
       password: '',
       realName: '',
       organization: '',
-      contact: ''
+      contact: '',
+      account_type: '1'
     })
 
     function handleSubmit2() {
@@ -107,6 +114,47 @@
           }
           else if(response.data.data.res === 3) {
             alert('密码错误')
+            console.log(response)
+          }
+        }).catch(function (error){
+          if (error.response) {
+            // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+          } else if (error.request) {
+            // 请求已经成功发起，但没有收到响应
+            // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+            // 而在node.js中是 http.ClientRequest 的实例
+            console.log(error.request);
+          } else {
+            // 发送请求时出了点问题
+            console.log('Error', error.message);
+          }
+          console.log(error.config)
+          alert('状态码错误')
+        })
+      } else {
+        if(registerForm.account_type === '1') registerForm.account_type = "Experimenters"
+        else registerForm.account_type = "Supportstaff"
+        axios.post('http://localhost:8080/sign_msg', {
+          username: registerForm.username,
+          password: registerForm.password,
+          name : registerForm.realName,
+          contact : registerForm.contact,
+          institution : registerForm.organization,
+          account_type : registerForm.account_type
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+          if(response.data.data.res === 1) {
+            alert('注册成功')
+            console.log(response)
+          }
+          else if(response.data.data.res === 2) {
+            alert('已有同名用户')
             console.log(response)
           }
         }).catch(function (error){
@@ -195,7 +243,6 @@
 </script>
 
 <style scoped>
-
 #background{
     width: max-width;
     height: 500px;
@@ -227,7 +274,7 @@
   border-radius: 10px; /* 边框圆角为10px */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
   width: 30vw; /* 宽度为视口宽度的30% */
-  max-height: 90vh; /* 最大高度为视口高度的90% */
+  max-height: auto; /* 最大高度为视口高度的90% */
   overflow-y: auto; /* 如果内容超出高度，则显示滚动条 */
   display: flex; /* 使用flex布局 */
   flex-direction: column; /* 子元素垂直排列 */

@@ -40,6 +40,7 @@ import p38 from './components/p38.vue' // 料
 
 // 支持人员个人主页留言管理(从上到下依次是人机法料)
 import MessageofPersonP40 from './components/MessageofPerson-p40.vue' // 人
+// 以下三个页面全部弃用！合并至P40
 import MessageofEquipmentP41 from './components/MessageofEquipment-p41.vue' // 机
 import MessageodRegulationP42 from './components/MessageodRegulation-p42.vue' // 法
 import MessageofMaterialP43 from './components/MessageofMaterial-p43.vue'  // 料

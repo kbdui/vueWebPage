@@ -149,29 +149,7 @@
     }
   }
   
-  const exportToPDF = () => {
-    const doc = new jsPDF()
-    let yPos = 20
   
-    doc.setFont('helvetica', 'bold')
-    doc.text('增加内容提醒清单', 20, yPos)
-    
-    messages.value.forEach((message, index) => {
-      yPos += 20
-      doc.setFont('helvetica', 'normal')
-      doc.text(`${index + 1}. 留言编号: ${message.id}`, 20, yPos)
-      yPos += 10
-      doc.text(`   时间: ${message.time}`, 20, yPos)
-      yPos += 10
-      doc.text(`   状态: ${message.resolved ? '已解决' : '未解决'}`, 20, yPos)
-      yPos += 10
-      doc.text(`   内容: ${message.content}`, 20, yPos)
-      yPos += 10
-    })
-  
-    doc.save('留言清单.pdf')
-    ElMessage.success('PDF导出成功')
-  }
   </script>
   
   <style scoped>

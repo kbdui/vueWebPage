@@ -91,36 +91,63 @@
     </div>
   </template>
   
-  <script setup>
-  import { ref, onMounted } from 'vue'
-  import { ElMessage } from 'element-plus'
-  import jsPDF from 'jspdf'
-  import Top from './Top.vue'
-  import { user_data } from '@/status'
-  // State
-  const activeMenu = ref('2')
-  const activeTab = ref('regulation')
-  const dialogVisible = ref(false)
-  const selectedMessage = ref(null)
-  const messages = ref([
-    {
-      id: '1932403245',
-      time: '2024.11.07 23:23:21',
-      sender: '甲',
-      source: 'GB 19083-2003 4.3 医用防护口罩 > 呼吸阻力(点击自动跳转到对应项目界面)',
-      content: '需要审核确认',
-      resolved: false
-    },
-    {
-      id: '1932403246',
-      time: '2024.11.07 12:23:21',
-      sender: '乙',
-      source: 'GB 19083-2003 4.3 医用防护口罩 > 呼吸阻力(点击自动跳转到对应项目界面)',
-      content: '已完成检查',
-      resolved: true
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
+import Top from './Top.vue';
+import { user_data } from '@/status';
+import axios from 'axios';
+
+// 定义留言的数据结构
+function MessageList(messageid, projectid, accountid, messagetype, state, messagetime, message) {
+  this.messageid = messageid;
+  this.projectid = projectid;
+  this.accountid = accountid;
+  this.messagetype = messagetype;
+  this.state = state;
+  this.messagetime = messagetime;
+  this.message = message;
+}
+
+// 用于存储留言数据的响应式变量
+const messages = ref([]);
+const dialogVisible = ref(false);
+const selectedMessage = ref(null);
+const activeTab = ref('Offiers');
+
+function fetchMessages(messageType) {
+  axios.post('http://localhost:8080/get_message', {
+    message_type: messageType
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
     }
-  ])
-  
+  })
+  .then(response => {
+    if (response.data.code === 1) {
+      messages.value = response.data.data.map(item => new MessageList(item.messageid, item.projectid, item.accountid, item.messagetype, item.state, item.messagetime, item.message));
+      console.log("规程规程规程")
+    } else {
+      ElMessage.error('获取留言失败: ' + response.data.message);
+    }
+  })
+  .catch(error => {
+    console.error('请求错误:', error);
+    ElMessage.error('请求错误: ' + error.message);
+  });
+}
+
+// 在组件挂载时获取留言
+onMounted(() => {
+  fetchMessages(activeTab.value); // 根据当前激活的标签页获取对应模块的留言
+  console.log("组件挂载时："+activeTab.value);
+});
+
+// 监听标签页变化，获取对应模块的留言
+watch(activeTab, (newVal) => {
+  fetchMessages(newVal);
+});
   // Methods
   const markAllResolved = () => {
     messages.value = messages.value.map(message => ({
@@ -149,29 +176,7 @@
     }
   }
   
-  const exportToPDF = () => {
-    const doc = new jsPDF()
-    let yPos = 20
   
-    doc.setFont('helvetica', 'bold')
-    doc.text('增加内容提醒清单', 20, yPos)
-    
-    messages.value.forEach((message, index) => {
-      yPos += 20
-      doc.setFont('helvetica', 'normal')
-      doc.text(`${index + 1}. 留言编号: ${message.id}`, 20, yPos)
-      yPos += 10
-      doc.text(`   时间: ${message.time}`, 20, yPos)
-      yPos += 10
-      doc.text(`   状态: ${message.resolved ? '已解决' : '未解决'}`, 20, yPos)
-      yPos += 10
-      doc.text(`   内容: ${message.content}`, 20, yPos)
-      yPos += 10
-    })
-  
-    doc.save('留言清单.pdf')
-    ElMessage.success('PDF导出成功')
-  }
   </script>
   
   <style scoped>

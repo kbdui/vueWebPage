@@ -106,7 +106,8 @@
             user_data.value.institution = decodeURIComponent(response.data.data.user.institution)
             user_data.value.accountType = decodeURIComponent(response.data.data.user.accounttype)
             console.log(user_data.value.accountType)
-            router.push("/entry")
+            if(user_data.value.accountType === "Experimenters") router.push("/entry")
+            else router.push("/supportStandardQuery")
           }
           else if(response.data.data.res === 2) {
             alert('用户名错误')

@@ -9,7 +9,7 @@
 
     // page header 页头
     const goBack = () => {
-        router.push('/standard')
+        router.push('/supportStandardQuery')
         console.log('go back')
     }
 

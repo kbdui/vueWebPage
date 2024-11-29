@@ -35,6 +35,7 @@
           <p><strong>类别：</strong>{{ project.categories }}</p>
           <p><strong>项目时间：</strong>{{ project.projecttime }}</p>
           <p><strong>项目类型：</strong>{{ project.projecttype }}</p> 
+
       </div>
     </div>
   </div>
@@ -294,6 +295,7 @@ addApplicationDialogVisible.value = true
 
 const handleCloseDialog = () => {
 addApplicationDialogVisible.value = false
+}
 // Reset form data
 applicationForm.value = {
   category: '',
@@ -301,7 +303,6 @@ applicationForm.value = {
   standardName: '',
   standardNumber: '',
   projectName: ''
-}
 }
 
 const handleSearch = () => {
@@ -348,4 +349,5 @@ display: flex;
 justify-content: center;
 margin-top: 20px;
 }
+
 </style>

@@ -113,7 +113,7 @@
 
   // page header 页头
     const goBack = () => {
-        router.push('/details/1')
+        router.push('/entry')
         console.log('go back')
     }
   </script>

@@ -28,7 +28,7 @@
 
       <div class="standards-list">
       <div v-for="(standard, index) in filteredStandards" :key="index" class="standard-item">
-        <router-link :to="`/details/${standard.id}`" class="standard-link">
+        <router-link to="/supportDetails/" class="standard-link">
           {{ standard.title }}
           <span v-if="standard.note" class="note">({{ standard.note }})</span>
         </router-link>
@@ -300,14 +300,6 @@ const applicationForm = ref({
   standardNumber: '',
   projectName: ''
 })
-
-const handleCommand = (command) => {
-  if (command === 'logout') {
-    ElMessage.success('退出登录成功')
-  } else if (command === 'jumpToHomepage2') {
-    router.push('/MessageofPersonP40')
-  }
-}
 
 const openAddApplicationDialog = () => {
   addApplicationDialogVisible.value = true

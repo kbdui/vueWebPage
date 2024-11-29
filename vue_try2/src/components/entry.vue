@@ -6,6 +6,7 @@
     :contact="user_data.contact"
     :accountType="user_data.accountType"
   ></Top>
+
     <div class="standards-search">
       <h2 class="page-title">标准查询</h2>
 
@@ -24,37 +25,18 @@
         </el-input>
       </div>
   
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <el-button 
-          type="success" 
-          class="action-button"
-          @click="handleAdd"
-        >
-          添加
-        </el-button>
-        <el-button 
-          type="success" 
-          class="action-button"
-          @click="handleImportExcel"
-        >
-          从excel统计表导入
-        </el-button>
-        <el-button 
-          type="success" 
-          class="view-applications-button"
-          @click="handleViewApplications"
-        >
-          查看增加申请
-        </el-button>
-      </div>
-  
       <!-- Standards List -->
       <div class="standards-list">
-           <a><p ><strong>类别：</strong>{{ projectData[0].categories }}</p></a>
-           
+        <div v-if="paginatedProjects.length === 0">没有项目数据</div>
+        <div v-for="category in uniqueCategories" :key="category">
+          <a>
+            <p>
+              <strong>类别：</strong>{{ category }}
+            </p>
+          </a>
         </div>
       </div>
+    </div>
       <!-- Pagination -->
       <div class="pagination">
         <el-pagination
@@ -69,7 +51,7 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted ,reactive} from 'vue'
   import { ElMessage } from 'element-plus'
   import { useRouter } from 'vue-router'
   import { useRoute } from 'vue-router'
@@ -83,7 +65,9 @@
   const router = useRouter()
   const pageSize = ref(5)
   const projects = ref([])
-const projectData = ref([])
+  const projectData = ref([])
+  const displayedCategories = reactive(new Set());
+
 function search() {
 axios.get('http://localhost:8080/all_project')
 .then(function (response) {
@@ -109,6 +93,14 @@ axios.get('http://localhost:8080/all_project')
   console.error('Error:', error);
 });
 }
+// 计算属性，检查类别是否唯一
+const uniqueCategories = computed(() => {
+  const categoriesSet = new Set();
+  paginatedProjects.value.forEach(project => {
+    categoriesSet.add(project.categories);
+  });
+  return Array.from(categoriesSet);
+});
 const paginatedProjects = computed(() => {
 // 首先，如果存在搜索查询，则过滤项目
 let filteredProjects = searchQuery.value

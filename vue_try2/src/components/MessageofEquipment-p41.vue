@@ -104,29 +104,9 @@
   import Top from './Top.vue'
   import { user_data } from '@/status'
   // State
-  const activeMenu = ref('2')
   const activeTab = ref('equipment')
   const dialogVisible = ref(false)
   const selectedMessage = ref(null)
-  const messages = ref([
-    {
-      id: '1932403245',
-      time: '2024.11.07 23:23:21',
-      sender: '甲',
-      source: 'GB 19083-2003 4.3 医用防护口罩 > 呼吸阻力(点击自动跳转到对应项目界面)',
-      content: '需要审核确认',
-      resolved: false
-    },
-    {
-      id: '1932403246',
-      time: '2024.11.07 12:23:21',
-      sender: '乙',
-      source: 'GB 19083-2003 4.3 医用防护口罩 > 呼吸阻力(点击自动跳转到对应项目界面)',
-      content: '已完成检查',
-      resolved: true
-    }
-  ])
-  
   // Methods
   const markAllResolved = () => {
     messages.value = messages.value.map(message => ({
@@ -154,30 +134,7 @@
       dialogVisible.value = false
     }
   }
-  
-  const exportToPDF = () => {
-    const doc = new jsPDF()
-    let yPos = 20
-  
-    doc.setFont('helvetica', 'bold')
-    doc.text('增加内容提醒清单', 20, yPos)
-    
-    messages.value.forEach((message, index) => {
-      yPos += 20
-      doc.setFont('helvetica', 'normal')
-      doc.text(`${index + 1}. 留言编号: ${message.id}`, 20, yPos)
-      yPos += 10
-      doc.text(`   时间: ${message.time}`, 20, yPos)
-      yPos += 10
-      doc.text(`   状态: ${message.resolved ? '已解决' : '未解决'}`, 20, yPos)
-      yPos += 10
-      doc.text(`   内容: ${message.content}`, 20, yPos)
-      yPos += 10
-    })
-  
-    doc.save('留言清单.pdf')
-    ElMessage.success('PDF导出成功')
-  }
+ 
   </script>
   
   <style scoped>

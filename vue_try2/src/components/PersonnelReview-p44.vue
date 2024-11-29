@@ -119,7 +119,7 @@
   
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -258,7 +258,7 @@ const router = useRouter()
 
 // 切换至留言页面
 const activeIndex1 = ref('2')
-const handleSelect1 = (key: string, keyPath: string[]) => {
+const handleSelect1 = (key, keyPath) => {
     if(key.match('1')) router.push('/MessageofPersonP40')
     console.log(key, keyPath)
 }

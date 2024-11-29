@@ -2,6 +2,7 @@
     import { ref,computed } from 'vue'
     import { ElMessage } from 'element-plus'
     import { useRouter } from 'vue-router'
+    import { user_data } from '@/status'
     
     const router = useRouter()
 
@@ -29,8 +30,12 @@
     const handleCommand = (command) => {
       if (command === 'logout') {
         ElMessage.success('退出登录成功')
-        // You would typically clear user session and redirect to login page
-        // router.push('/login')
+        user_data.value.name = ''
+        user_data.value.username = ''
+        user_data.value.contact = ''
+        user_data.value.institution = ''
+        user_data.value.accountType = ''
+        router.push('/')
       }
       else if(command === 'jumpToHomepage1'){
         if(props.accountType === "Experimenters") router.push('/people13')

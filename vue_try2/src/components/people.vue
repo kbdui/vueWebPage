@@ -5,6 +5,9 @@
     import { useRouter } from 'vue-router'
     import { RouterLink } from 'vue-router'
 import axios from 'axios'
+    import { user_data } from '@/status'
+    const router = useRouter()
+
     // page header 页头
     const goBack = () => {
         router.push('/standard')
@@ -65,9 +68,6 @@ import axios from 'axios'
   return now.toLocaleString();
 }
     const  isentry= ref(true)
-
-    const router = useRouter()
-
     const  train= reactive({
         projectid: ''
     })
@@ -147,7 +147,13 @@ import axios from 'axios'
         </el-page-header>
 
         <!-- 头像框 -->
-        <headshot></headshot>
+        <headshot
+            :_name="user_data.name"
+            :username="user_data.username"
+            :institution="user_data.institution"
+            :contact="user_data.contact"
+            :accountType="user_data.accountType"
+        ></headshot>
     </div>
 
     <!-- menu 菜单 -->

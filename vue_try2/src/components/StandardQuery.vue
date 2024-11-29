@@ -1,29 +1,12 @@
 <template>
     <div class="standards-container">
-      <div class="top-bar">
-        <router-link to="/" class="home-text">登出</router-link>
-        <el-dropdown trigger="hover" @command="handleCommand">
-        <div class="avatar-wrapper">
-          <el-avatar :size="40" :src="userAvatar" @error="handleAvatarError">
-            {{ userInitials }}
-          </el-avatar>
-        </div>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item disabled>
-              <div class="user-info">
-                <p><strong>姓名：</strong>{{ userInfo.name }}</p>
-                <p><strong>用户名：</strong>{{ userInfo.username }}</p>
-                <p><strong>所属机构：</strong>{{ userInfo.organization }}</p>
-                <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item divided command="jumpToHomepage1">个人主页</el-dropdown-item>
-            <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </div>
+      <Top
+        :_name="user_data.name"
+        :username="user_data.username"
+        :institution="user_data.institution"
+        :contact="user_data.contact"
+        :accountType="user_data.accountType"
+      ></Top>
 
       <h2 class="header">标准查询</h2>
       
@@ -38,11 +21,20 @@
         <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button>
       </div>
   
-      <div class="standards-list">
+      <!-- <div class="standards-list">
         <div v-for="(standard, index) in standards" :key="index" class="standard-item">
           <router-link :to="standard.link" class="standard-link">
             {{ standard.title }}
             <span v-if="standard.note" class="note">({{ standard.note }})</span>
+          </router-link>
+        </div>
+      </div> -->
+
+      <div class="standards-list">
+        <div v-for="(standard, index) in filteredStandards" :key="index" class="standard-item">
+          <router-link :to="standard.link" class="standard-link">
+            {{ standard.title }}
+          <span v-if="standard.note" class="note">({{ standard.note }})</span>
           </router-link>
         </div>
       </div>
@@ -95,19 +87,29 @@
     </div>
   </template>
   
-  <script setup>
+<script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+import { user_data } from '../status'
 
 const router = useRouter()
+const route = useRoute()
 
-const userInfo = ref({
-  name: '张三',
-  username: 'zhangsan',
-  organization: 'ABC公司',
-  contact: 'zhangsan@example.com'
-})
+// user_data.value.name = decodeURIComponent(route.params.name)
+// user_data.value.username = decodeURIComponent(route.params.username)
+// user_data.value.contact = decodeURIComponent(route.params.contact)
+// user_data.institution = decodeURIComponent(route.params.institution)
+// user_data.value.accountType = decodeURIComponent(route.params.accountType)
+
+// const user_data = ref({
+//   name : decodeURIComponent(route.params.name),
+//   username : decodeURIComponent(route.params.username),
+//   contact : decodeURIComponent(route.params.contact),
+//   institution : decodeURIComponent(route.params.institution),
+//   accountType : decodeURIComponent(route.params.accountType)
+// })
 
 const userAvatar = ref('https://example.com/avatar.jpg')
 const userInitials = computed(() => {
@@ -127,62 +129,62 @@ const userInitials = computed(() => {
       note: '点击跳转到详情页面'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>扣找',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护工具>酒精',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护工具>双氧水',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>颠覆',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>剪刀',
       link: '/details/2'
     },{
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>镊子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>筷子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>勺子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>锤子',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>1',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>2',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>3',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>5',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>7',
       link: '/details/2'
     },
     {
-      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      title: 'GB 19083-2003 4.2 医用防护口罩>8',
       link: '/details/2'
     },
   ])
@@ -230,15 +232,25 @@ const handleAddApplication = () => {
   ElMessage.success('申请已添加')
   handleCloseDialog()
 }
-  const standards = computed(() => {
+  
+
+const standards = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return allStandards.value.slice(start, end);
 });
-
+const filteredStandards = computed(() => {
+  if (!searchQuery.value) {
+    return standards.value;
+  }
+  const lowerSearchQuery = searchQuery.value.toLowerCase();
+  return allStandards.value.filter(standard => {
+    return standard.title.toLowerCase().includes(lowerSearchQuery);
+  });
+});
 const handleSearch = () => {
   // Implement search logic here
-  console.log('Searching for:', searchQuery.value);
+  // console.log('Searching for:', searchQuery.value);
 };
 
 const handlePageChange = (newPage) => {

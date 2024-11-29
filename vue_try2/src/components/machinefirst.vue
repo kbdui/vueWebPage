@@ -13,7 +13,13 @@
           </el-page-header>
 
           <!-- 头像框 -->
-          <headshot></headshot>
+          <headshot
+            :_name="user_data.name"
+            :username="user_data.username"
+            :institution="user_data.institution"
+            :contact="user_data.contact"
+            :accountType="user_data.accountType"
+          ></headshot>
       </div>
 
       <!-- Navigation Tabs -->
@@ -111,6 +117,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import headshot from './headshot.vue'
+import { user_data } from '@/status'
 
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)

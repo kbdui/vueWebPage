@@ -10,7 +10,13 @@
       </el-page-header>
 
       <!-- 头像框 -->
-      <headshot></headshot>
+      <headshot
+      :_name="user_data.name"
+      :username="user_data.username"
+      :institution="user_data.institution"
+      :contact="user_data.contact"
+      :accountType="user_data.accountType"
+      ></headshot>
   </div>
     <div class="training-management">
       <!-- Navigation Tabs -->
@@ -73,7 +79,7 @@
   <script lang="ts" setup>
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
-
+  import { user_data } from '@/status'
   import headshot from './headshot.vue'
 
   const router = useRouter()

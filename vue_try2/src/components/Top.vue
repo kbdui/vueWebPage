@@ -2,7 +2,7 @@
 
 <template>
   <div class="top-bar">
-    <router-link to="/" class="home-text">首页</router-link>
+    <router-link :to=back class="home-text">首页</router-link>
     <el-dropdown trigger="hover" @command="handleCommand">
       <div class="avatar-wrapper">
         <el-avatar :size="40" :src="userAvatar" @error="handleAvatarError">
@@ -30,12 +30,27 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { user_data } from '@/status'
+
+const router = useRouter()
+
+const props = defineProps({
+  _name : String,
+  username : String,
+  contact : String,
+  institution : String,
+  accountType : String
+})
+
+const back = props.accountType === "Experimenters" ? ref('/entry') : ref('/supportStandardQuery')
 
 const userInfo = ref({
-  name: '张三',
-  username: 'zhangsan',
-  organization: 'ABC公司',
-  contact: 'zhangsan@example.com'
+  name: props._name,
+  username: props.username,
+  organization: props.institution,
+  contact: props.contact,
+  accountType: props.accountType
 })
 
 const userAvatar = ref('https://example.com/avatar.jpg')
@@ -47,11 +62,16 @@ const userInitials = computed(() => {
 const handleCommand = (command) => {
   if (command === 'logout') {
     ElMessage.success('退出登录成功')
-    // You would typically clear user session and redirect to login page
-    // router.push('/login')
+    user_data.value.name = ''
+    user_data.value.username = ''
+    user_data.value.contact = ''
+    user_data.value.institution = ''
+    user_data.value.accountType = ''
+    router.push('/')
   }
   else if(command === 'jumpToHomepage1'){
-      router.push('/people13')
+    if(props.accountType === "Experimenters") router.push('/people13')
+    else if(props.accountType === "Supportstaff") router.push('/MessageofPersonP40')
   }
 }
 

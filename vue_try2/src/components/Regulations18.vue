@@ -11,7 +11,13 @@
             </el-page-header>
 
             <!-- 头像框 -->
-            <headshot></headshot>
+            <headshot
+            :_name="user_data.name"
+            :username="user_data.username"
+            :institution="user_data.institution"
+            :contact="user_data.contact"
+            :accountType="user_data.accountType"
+            ></headshot>
         </div>
 
         <!-- menu 菜单 -->
@@ -59,6 +65,7 @@
     import { ref } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
+    import { user_data } from '@/status'
 
     const router = useRouter()
 

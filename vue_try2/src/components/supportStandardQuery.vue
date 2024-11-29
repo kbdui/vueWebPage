@@ -46,13 +46,11 @@
       </div>
   
       <div class="standards-list">
-        <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
-          <div v-if="projects.length === 0">没有项目数据</div>
-           <a><p><strong>项目名称：</strong> {{ project.projectname }}</p></a>
-            <p><strong>项目ID：</strong>{{ project.projectid }}</p>
-            <p><strong>类别：</strong>{{ project.categories }}</p>
-            <p><strong>项目时间：</strong>{{ project.projecttime }}</p>
-            <p><strong>项目类型：</strong>{{ project.projecttype }}</p> 
+        <div v-for="(standard, index) in standards" :key="index" class="standard-item">
+          <router-link :to="standard.link" class="standard-link">
+            {{ standard.title }}
+            <span v-if="standard.note" class="note">({{ standard.note }})</span>
+          </router-link>
         </div>
       </div>
   
@@ -60,7 +58,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           :page-size="10"
-          :total="110"
+          :total="100"
           :pager-count="11"
            layout="prev, pager, next"
           @current-change="handlePageChange"
@@ -108,8 +106,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { onMounted } from 'vue';
-import axios from 'axios'
+
 const router = useRouter()
 
 const userInfo = ref({
@@ -126,47 +123,77 @@ const userInitials = computed(() => {
   
   const searchQuery = ref('')
   const currentPage = ref(1)
-  const pageSize = ref(5)
-  const projects = ref([])
-  const projectData = ref([])
+  const itemsPerPage = 10
   
-  function search() {
-  axios.get('http://localhost:8080/all_project')
-  .then(function (response) {
-    // 确保响应数据是一个对象
-    if (typeof response.data === 'object' && response.data !== null) {
-      // 提取对象的所有值到数组中
-      projects.value = Object.values(response.data);
-      console.log('projects data:', projects.value);
-      // 检查数组中是否有至少两个元素
-      if (projects.value.length > 1) {
-        // 获取第二个元素，即 projects[1]
-       projectData.value = projects.value[1];
-        console.log('projects[1] data:', projectData);
-        // 在这里处理 projects[1] 的数据
-      } else {
-        console.error('Expected at least two elements in the array, but got:', projects.value);
-      }
-    } else {
-      console.error('Expected an object, but got:', response.data);
-    }
-  })
-  .catch(function (error) {
-    console.error('Error:', error);
-  });
-}
-const paginatedProjects = computed(() => {
-  // 首先，如果存在搜索查询，则过滤项目
-  let filteredProjects = searchQuery.value
-    ? projectData.value.filter(project => project.projectname.toLowerCase().includes(searchQuery.value.toLowerCase()))
-    : projectData.value;
-
-  // 然后，进行分页
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredProjects.slice(start, end);
-});
-const totalProjects = computed(() => projectData.value.length)
+  // 假设我们有一个包含所有标准的大数组
+  const allStandards = ref([
+    // 数据区
+    {
+      title: 'GB 19083-2003 4.1 医用防护口罩>基本要求',
+      link: '/supportDetails/1',
+      note: '点击跳转到详情页面'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },{
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },{
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },{
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },{
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },{
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+    {
+      title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
+      link: '/supportDetails/2'
+    },
+  ])
+  
   const addApplicationDialogVisible = ref(false)
 const applicationForm = ref({
   category: '',
@@ -237,9 +264,6 @@ import {
   Search,
   Star,
 } from '@element-plus/icons-vue'
-onMounted(() => {
-  search()
-})
   </script>
   
   <style scoped>

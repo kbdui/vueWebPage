@@ -1,7 +1,14 @@
 <template>
+  <Top
+    :_name="user_data.name"
+    :username="user_data.username"
+    :institution="user_data.institution"
+    :contact="user_data.contact"
+    :accountType="user_data.accountType"
+  ></Top>
     <div class="standards-search">
       <h2 class="page-title">标准查询</h2>
-  
+
       <!-- Search Section -->
       <div class="search-section">
         <el-input
@@ -71,10 +78,17 @@
   <script setup>
   import { ref, computed } from 'vue'
   import { ElMessage } from 'element-plus'
+  import { useRouter } from 'vue-router'
+  import { useRoute } from 'vue-router'
+  import { user_data } from '../status.js'
+
+  import Top from './Top.vue'
   
   const searchQuery = ref('')
   const currentPage = ref(1)
   const totalStandards = ref(100)
+  const router = useRouter()
+  const route = useRoute()
   
   const standards = ref([
     {
@@ -153,8 +167,19 @@
   const handleViewApplications = () => {
     ElMessage.success('查看增加申请')
   }
+
+  // const user_data = ref({
+  //   name : decodeURIComponent(route.params.name),
+  //   username : decodeURIComponent(route.params.username),
+  //   contact : decodeURIComponent(route.params.contact),
+  //   institution : decodeURIComponent(route.params.institution),
+  //   accountType : decodeURIComponent(route.params.accountType)
+  // })
   
   const navigateToStandard = (standard) => {
+    if(standard.id === 1) {
+      router.push("/standard")
+    }
     ElMessage.success(`导航到标准详情页: ${standard.number}`)
   }
   

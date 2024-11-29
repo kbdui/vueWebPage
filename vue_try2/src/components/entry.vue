@@ -51,107 +51,75 @@
   
       <!-- Standards List -->
       <div class="standards-list">
-        <div v-for="standard in filteredStandards" :key="standard.id" class="standard-item">
-          <el-link 
-            type="primary" 
-            :underline="false"
-            @click="navigateToStandard(standard)"
-          >
-            {{ standard.number }} {{ standard.title }}
-          </el-link>
+           <a><p ><strong>类别：</strong>{{ projectData[0].categories }}</p></a>
+           
         </div>
       </div>
-  
       <!-- Pagination -->
-      <div class="pagination-container">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="currentPage"
           :page-size="10"
-          :total="totalStandards"
-          layout="prev, pager, next"
+          :page-count="11"
+          :total="totalProjects"
+          layout="prev, pager, next, jumper"
           @current-change="handlePageChange"
         />
       </div>
-    </div>
   </template>
   
   <script setup>
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { ElMessage } from 'element-plus'
   import { useRouter } from 'vue-router'
   import { useRoute } from 'vue-router'
   import { user_data } from '../status.js'
-
+ import axios from 'axios'
   import Top from './Top.vue'
   
   const searchQuery = ref('')
   const currentPage = ref(1)
   const totalStandards = ref(100)
   const router = useRouter()
-  const route = useRoute()
-  
-  const standards = ref([
-    {
-      id: 1,
-      number: 'GB 19083-2023',
-      title: '医用防护口罩'
-    },
-    {
-      id: 2,
-      number: 'GB/T 32610-2016',
-      title: '日常防护型口罩技术规范'
-    },
-    {
-      id: 3,
-      number: 'GB 2626-2019',
-      title: '呼吸防护用品-自吸过滤式防颗粒物呼吸器'
-    },
-    {
-      id: 4,
-      number: ' YY/T 0969-2013',
-      title: '一次性使用医用口罩'
-    },
-    {
-      id: 5,
-      number: ' GB/T 42061-2022',
-      title: '医疗器械 质量管理体系 用于法规的要求'
-    },
-    {
-      id: 6,
-      number: 'GB/T 42062-2022',
-      title: ' 医疗器械 风险管理对医疗器械的应用'
-    },
-    {
-      id: 7,
-      number: 'GB/Z 42217-2022',
-      title: ' 医疗器械 用于医疗器械质量体系软件的确认'
-    },
-    {
-      id: 8,
-      number: ' YY/T 0316-2016',
-      title: '医疗器械 风险管理对医疗器械的应用'
-    },
-    {
-      id: 9,
-      number: 'YY/T 0664-2020',
-      title: ' 医疗器械软件 软件生存周期过程'
-    },
-    {
-      id: 10,
-      number: 'YY/T 0595-2020',
-      title: '医疗器械 质量管理体系YY/T 0287-2017 应用指南'
+  const pageSize = ref(5)
+  const projects = ref([])
+const projectData = ref([])
+function search() {
+axios.get('http://localhost:8080/all_project')
+.then(function (response) {
+  // 确保响应数据是一个对象
+  if (typeof response.data === 'object' && response.data !== null) {
+    // 提取对象的所有值到数组中
+    projects.value = Object.values(response.data);
+    console.log('projects data:', projects.value);
+    // 检查数组中是否有至少两个元素
+    if (projects.value.length > 1) {
+      // 获取第二个元素，即 projects[1]
+     projectData.value = projects.value[1];
+      console.log('projects[1] data:', projectData);
+      // 在这里处理 projects[1] 的数据
+    } else {
+      console.error('Expected at least two elements in the array, but got:', projects.value);
     }
-  ])
-  
-  const filteredStandards = computed(() => {
-    if (!searchQuery.value) return standards.value
-    const query = searchQuery.value.toLowerCase()
-    return standards.value.filter(standard => 
-      standard.number.toLowerCase().includes(query) ||
-      standard.title.toLowerCase().includes(query)
-    )
-  })
-  
+  } else {
+    console.error('Expected an object, but got:', response.data);
+  }
+})
+.catch(function (error) {
+  console.error('Error:', error);
+});
+}
+const paginatedProjects = computed(() => {
+// 首先，如果存在搜索查询，则过滤项目
+let filteredProjects = searchQuery.value
+  ? projectData.value.filter(project => project.projectname.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  : projectData.value;
+
+// 然后，进行分页
+const start = (currentPage.value - 1) * pageSize.value;
+const end = start + pageSize.value;
+return filteredProjects.slice(start, end);
+});
   const handleSearch = () => {
     ElMessage.success('执行搜索: ' + searchQuery.value)
   }
@@ -187,6 +155,9 @@
     currentPage.value = page
     ElMessage.success('切换到页码: ' + page)
   }
+   onMounted(() => {
+    search()
+    })
   </script>
   
   <style scoped>

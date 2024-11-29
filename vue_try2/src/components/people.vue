@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-    import { ref } from 'vue'
-    import outWindow from './outWindow.vue'
-    import { useRouter } from 'vue-router'
+    import { onMounted, ref } from 'vue'
     import headshot from './headshot.vue'
-
-    const router = useRouter()
-
+    import { reactive } from 'vue'
+    import { useRouter } from 'vue-router'
+    import { RouterLink } from 'vue-router'
+import axios from 'axios'
     // page header 页头
     const goBack = () => {
         router.push('/standard')
@@ -61,6 +60,78 @@
     const styleProps2 = ref({
         height: '35rem'
     });
+    function getCurrentTime() {
+  const now = new Date();
+  return now.toLocaleString();
+}
+    const  isentry= ref(true)
+
+    const router = useRouter()
+
+    const  train= reactive({
+        projectid: ''
+    })
+    const back= ref({
+      res:'',
+      isok:'',
+      oktime:''
+    })
+    function handletrain()
+    {
+     if(isentry.value)
+     {
+        axios.post('http://localhost:8080/people_msg',
+        {
+            projectid:train.projectid
+        },{
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+          })
+          .then(function (response) {
+            if(response.data.data.res===1)
+          {
+            alert('开始学习')
+            console.log(response)
+        //    router.push("/details/")
+          }
+          else if(response.data.data.res===2)
+          {
+            alert("学习项目为空")
+            console.log(response)
+
+           // router.push("/details/")
+          }
+          if(response.data.data.isok===1)
+          {
+            alert("该人员已学习完毕")
+            response.data.oktime=getCurrentTime()
+            console.log(response)
+          //  router.push("/details/")
+          }
+          else if(response.data.data.isok===2)
+          {
+            alert("该人员未学习完毕")
+            console.log(response)
+          //  router.push("/details/")
+          }
+          })
+          .catch(function (error) {
+    console.error('Error:', error);
+});
+        }
+
+    // 返回响应式数据和函数，以便在模板中使用
+    return {
+      isentry,
+      train,
+      handletrain,
+      back
+    };
+    }
+    onMounted(() => {
+      handletrain(); // 页面初始化时调用handletrain函数
+    });
 </script>
 
 <template>
@@ -111,14 +182,14 @@
         <!-- 按钮 -->
         <div id="p_button1">
             <el-button id="p_leave" @click="openModal(2)" type="primary" plain>留言</el-button>
-            <el-button id="add" type="success" plain>加入记录</el-button>
+            <el-button id="add" type="success" plain > 加入记录</el-button>
         </div>
     </div>
 
     <!-- 具体内容 -->
     <div v-if="video" id="content2">
-        <p id="p1">培训情况：</p>
-        <p>培训完成时间：</p>
+        <p id="p1">培训情况:{{  }}</p>
+        <p>培训完成时间：{{}}</p>
         <el-button id="download" type="success">下载培训证书</el-button>
         <div id="myvideo">
             <div
@@ -194,7 +265,7 @@
             }"
         >
             <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template class="header" #header>
+                <template  #header>
                 <div class="card-header">
                     <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
                 </div>
@@ -202,7 +273,7 @@
                 <p class="text item">请添加考核试卷!</p>
             </el-card>
             <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template class="header" #header>
+                <template  #header>
                 <div class="card-header">
                     <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
                 </div>
@@ -210,7 +281,7 @@
                 <p class="text item">请添加考核试卷!</p>
             </el-card>
             <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template class="header" #header>
+                <template  #header>
                 <div class="card-header">
                     <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
                 </div>

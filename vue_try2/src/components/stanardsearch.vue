@@ -22,7 +22,7 @@
           <div class="flex-grow">
             <h3>
               <span class="text-gray-600">GB</span>
-              <span class="text-danger mx-1">{{ result.number }}</span>
+              <span class="text-danger mx-1">{{data.number}}</span>
               <span class="text-primary">{{ result.title }}</span>
             </h3>
             <el-divider></el-divider>
@@ -61,45 +61,70 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
 
 const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(5)
 
 // Sample data - replace with actual API call results
-const searchResults = ref([
-  {
-    number: '19083-2023 4.1',
-    title: '医用防护口罩>基本要求',
-    description: '.........................'
-  },
-  {
-    number: '19083-2023 4.2',
-    title: '医用防护口罩>口罩带连接强度',
-    description: '.........................'
-  },
-  {
-    number: '19083-2023 4.3',
-    title: '医用防护口罩>过滤效率',
-    description: '.........................'
-  },
-  {
-    number: '19083-2023 4.4',
-    title: '医用防护口罩>呼吸阻力',
-    description: '.........................'
-  },
-  {
-    number: '19083-2023 4.5',
-    title: '医用防护口罩>死腔',
-    description: '.........................'
-  },
+const searchResults = ref({
+  data:''
+})
+const searchstate = ref(true)
+function search() {
+  if (searchstate.value) {
+    // 如果后端接口支持GET请求带参数，使用params传递
+    axios.get('http://localhost:8080/all_project', {
+      params: searchResults.data
+    })
+    .then(function (response) {
+      // 更新响应式变量
+      searchResults.data = response.data;
+      console.log(response.data); // 打印所有项目信息
+    })
+    .catch(function (error) {
+      // 处理请求错误
+      console.error('Error:', error);
+    });
+  }
+}
+ onMounted(() => {
+  search(); // 组件挂载后发送请求
+});
+// const searchResults = ref([
+//   {
+//     number: '19083-2023 4.1',
+//     title: '医用防护口罩>基本要求',
+//     description: '.........................'
+//   },
+//   {
+//     number: '19083-2023 4.2',
+//     title: '医用防护口罩>口罩带连接强度',
+//     description: '.........................'
+//   },
+//   {
+//     number: '19083-2023 4.3',
+//     title: '医用防护口罩>过滤效率',
+//     description: '.........................'
+//   },
+//   {
+//     number: '19083-2023 4.4',
+//     title: '医用防护口罩>呼吸阻力',
+//     description: '.........................'
+//   },
+//   {
+//     number: '19083-2023 4.5',
+//     title: '医用防护口罩>死腔',
+//     description: '.........................'
+//   },
   // 添加更多示例数据以测试分页
-  ...Array.from({ length: 20 }, (_, i) => ({
-    number: `19083-2023 ${i + 5}.${i + 1}`,
-    title: `医用防护口罩>示例标题 ${i + 6}`,
-    description: '.........................'
-  }))
-])
+//   ...Array.from({ length: 20 }, (_, i) => ({
+//     number: `19083-2023 ${i + 5}.${i + 1}`,
+//     title: `医用防护口罩>示例标题 ${i + 6}`,
+//     description: '.........................'
+//   }))
+// ])
 
 const displayedResults = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value

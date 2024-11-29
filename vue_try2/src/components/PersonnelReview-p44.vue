@@ -1,12 +1,6 @@
 <template>
   <div class="container mx-auto p-4">
-    <Top
-    :_name="user_data.name"
-    :username="user_data.username"
-    :institution="user_data.institution"
-    :contact="user_data.contact"
-    :accountType="user_data.accountType"
-    ></Top>
+    <Top></Top>
     <!-- 大的导航栏 -->
     <div class="mb-4">
       <el-menu

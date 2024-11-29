@@ -13,10 +13,10 @@
         <el-dropdown-menu>
           <el-dropdown-item disabled>
             <div class="user-info">
-              <p><strong>姓名：</strong>{{ userInfo.name }}</p>
-              <p><strong>用户名：</strong>{{ userInfo.username }}</p>
-              <p><strong>所属机构：</strong>{{ userInfo.organization }}</p>
-              <p><strong>联系方式：</strong>{{ userInfo.contact }}</p>
+              <p><strong>姓名：</strong>{{ user_data.name }}</p>
+              <p><strong>用户名：</strong>{{ user_data.username }}</p>
+              <p><strong>所属机构：</strong>{{ user_data.institution }}</p>
+              <p><strong>联系方式：</strong>{{ user_data.contact }}</p>
             </div>
           </el-dropdown-item>
           <el-dropdown-item divided command="jumpToHomepage1">个人主页</el-dropdown-item>
@@ -28,30 +28,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed,onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { user_data } from '@/status'
 
 const router = useRouter()
 
-const props = defineProps({
-  _name : String,
-  username : String,
-  contact : String,
-  institution : String,
-  accountType : String
-})
+// 一个用于从localStorage加载user_data的函数
+function loadUserData() {
+    const savedData = localStorage.getItem('user_data');
+    if (savedData) {
+        user_data.value = JSON.parse(savedData);
+    }
+}
 
-const back = props.accountType === "Experimenters" ? ref('/entry') : ref('/supportentry')
+onMounted(loadUserData)
 
-const userInfo = ref({
-  name: props._name,
-  username: props.username,
-  organization: props.institution,
-  contact: props.contact,
-  accountType: props.accountType
-})
+const back = user_data.value.accountType === "Experimenters" ? ref('/entry') : ref('/supportentry')
 
 const userAvatar = ref('https://example.com/avatar.jpg')
 
@@ -67,11 +61,12 @@ const handleCommand = (command) => {
     user_data.value.contact = ''
     user_data.value.institution = ''
     user_data.value.accountType = ''
+    localStorage.setItem('user_data', JSON.stringify(user_data.value))
     router.push('/')
   }
   else if(command === 'jumpToHomepage1'){
-    if(props.accountType === "Experimenters") router.push('/people13')
-    else if(props.accountType === "Supportstaff") router.push('/MessageofPersonP40')
+    if(user_data.value.accountType === "Experimenters") router.push('/people13')
+    else if(user_data.value.accountType === "Supportstaff") router.push('/MessageofPersonP40')
   }
 }
 

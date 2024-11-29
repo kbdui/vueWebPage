@@ -122,13 +122,7 @@ const exportToPDF = async () => {
         </el-page-header>
 
         <!-- 头像框 -->
-        <headshot
-        :_name="user_data.name"
-        :username="user_data.username"
-        :institution="user_data.institution"
-        :contact="user_data.contact"
-        :accountType="user_data.accountType"
-        ></headshot>
+        <headshot></headshot>
     </div>
 
     <el-menu

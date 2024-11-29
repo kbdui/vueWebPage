@@ -1,12 +1,6 @@
 
 <template>
-    <Top
-      :_name="user_data.name"
-      :username="user_data.username"
-      :institution="user_data.institution"
-      :contact="user_data.contact"
-      :accountType="user_data.accountType"
-    ></Top>
+    <Top></Top>
   
       <div class="standards-search">
         <h2 class="page-title">标准查询</h2>

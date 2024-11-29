@@ -1,11 +1,5 @@
 <template>
-  <Top
-    :_name="user_data.name"
-    :username="user_data.username"
-    :institution="user_data.institution"
-    :contact="user_data.contact"
-    :accountType="user_data.accountType"
-  ></Top>
+  <Top></Top>
 
     <div class="standards-search">
       <h2 class="page-title">标准查询</h2>
@@ -47,12 +41,12 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted ,reactive} from 'vue'
+  import { ref, computed, onMounted, reactive } from 'vue'
   import { ElMessage } from 'element-plus'
   import { RouterLink, useRouter } from 'vue-router'
   import { useRoute } from 'vue-router'
   import { user_data } from '../status.js'
- import axios from 'axios'
+  import axios from 'axios'
   import Top from './Top.vue'
   
   const searchQuery = ref('')
@@ -62,7 +56,15 @@
   const pageSize = ref(5)
   const projects = ref([])
   const projectData = ref([])
-  const displayedCategories = reactive(new Set());
+  const displayedCategories = reactive(new Set())
+
+// // 一个用于从localStorage加载user_data的函数
+// function loadUserData() {
+//     const savedData = localStorage.getItem('user_data');
+//     if (savedData) {
+//         user_data.value = JSON.parse(savedData);
+//     }
+// }
 
 function search() {
 axios.get('http://localhost:8080/all_project')
@@ -145,6 +147,7 @@ return filteredProjects.slice(start, end);
   }
    onMounted(() => {
     search()
+    // loadUserData()
     })
   </script>
   

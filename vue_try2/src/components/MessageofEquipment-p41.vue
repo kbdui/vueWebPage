@@ -1,12 +1,6 @@
 <template>
     <div class="message-management">
-        <Top
-        :_name="user_data.name"
-        :username="user_data.username"
-        :institution="user_data.institution"
-        :contact="user_data.contact"
-        :accountType="user_data.accountType"
-        ></Top>
+        <Top></Top>
         <div class="secondary-nav">
             <span class="current-page">留言管理</span>
         <router-link to="/message" class="nav-link">清单管理</router-link>

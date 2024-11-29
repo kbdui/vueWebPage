@@ -87,6 +87,10 @@
       account_type: '1'
     })
 
+    function saveUserData() {
+        localStorage.setItem('user_data', JSON.stringify(user_data.value));
+    }
+
     function handleSubmit2() {
       if (isLogin.value) {
         axios.post('http://localhost:8080/login_msg', {
@@ -105,6 +109,7 @@
             user_data.value.contact = decodeURIComponent(response.data.data.user.contact)
             user_data.value.institution = decodeURIComponent(response.data.data.user.institution)
             user_data.value.accountType = decodeURIComponent(response.data.data.user.accounttype)
+            saveUserData()
             console.log(user_data.value.accountType)
             if(user_data.value.accountType === "Experimenters") router.push("/entry")
             else router.push("/supportentry")

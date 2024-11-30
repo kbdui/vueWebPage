@@ -42,22 +42,24 @@
         </div>
 
         <!-- Table -->
-        <el-table :data="tableData" style="width: 100%">
-          <el-table-column prop="type" label="器械品类" min-width="70%">
-          </el-table-column>
-          <el-table-column label="操作" min-width="30%">
-            <template #default="scope">
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleEdit(scope.$index, scope.row)"
-              >
-                编辑
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-
+        <div class="equipment-table">
+          <el-table :data="equipmentList" style="width: 100%">
+            <el-table-column prop="equipmentid" label="ID" />
+            <el-table-column prop="equipmentname" label="Name" />
+            <el-table-column label="操作" width="120" align="right">
+              <template #default="scope">
+                <el-button 
+                  type="primary" 
+                  size="mini"
+                  @click="handleEdit(scope.$index, scope.row)"
+                >
+                  点击详情
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      
         <!-- Add Dialog -->
         <el-dialog
           v-model="dialogVisible"
@@ -87,8 +89,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { user_data } from '@/status'
-
+import { project_id } from '@/status'
+import axios from 'axios'
+import { onMounted } from 'vue'
 const router = useRouter()
 
 // page header 页头
@@ -105,7 +108,35 @@ const handleSelect1 = (key: string, keyPath: string[]) => {
     if(key.match('4')) router.push('/p38')
     console.log(key, keyPath)
 }
-
+const projectid=project_id
+ const data=ref({
+     equipmengid:'',
+     projectid:'',
+     equipmentname:''
+ })
+ const equipmentList = ref([]);
+ function getallmachine()
+ {
+    axios.post('http://localhost:8080/equipments_by_project',{
+      project_id : project_id.value
+            },
+            {
+              headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+            }).then(function(response){
+             equipmentList.value=response.data.data
+            }).catch(function(error){
+                console.log(error)
+            })
+ }
+ function loadprojectid() {
+    const savedData = localStorage.getItem('project_id');
+    if (savedData) {
+        project_id.value = JSON.parse(savedData);
+        console.log(project_id.value)
+    }
+}
 const dialogVisible = ref(false)
 const form = ref({
   type: ''
@@ -125,13 +156,15 @@ const handleAdd = () => {
     dialogVisible.value = false
   }
 }
-
+onMounted(() => {
+    loadprojectid()
+    getallmachine()
+      })
 const handleEdit = (index, row) => {
   form.value.type = row.type
   dialogVisible.value = true
 }
 </script>
-
 <style scoped>
 .el-tabs {
   --el-tabs-header-height: 40px;

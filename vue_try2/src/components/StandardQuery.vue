@@ -17,7 +17,7 @@
       <div class="standards-list">
         <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
           <div v-if="projects.length === 0">没有项目数据</div>
-            <router-link to="/details/" class="action-button">
+            <router-link to="/details/" class="action-button" @click="handleClick(project.projectid)">
               <strong>项目名称：</strong> {{ project.projectname }}
             </router-link>
             <p><strong>项目ID：</strong>{{ project.projectid }}</p>
@@ -115,7 +115,7 @@ import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
 // import * as XLSX from 'xlsx'
 import Top from './Top.vue'
-import { user_data } from '@/status'
+import { user_data,project_id } from '@/status'
 const router = useRouter()
 
 const userInfo = ref({
@@ -130,7 +130,18 @@ const userInitials = computed(() => {
   return userInfo.value.name.slice(0, 2)
 })
   
-
+function handleClick(projectId) {
+      // 更新 project_id 引用
+      project_id.value = projectId
+      saveprojectid()
+      console.log("project_id:",project_id.value)
+      // 阻止默认的路由跳转行为
+      // 使用编程式导航
+      // router.push('/supportDetails/');
+    }
+    function saveprojectid() {
+        localStorage.setItem('project_id', JSON.stringify(project_id.value));
+    }
 const handleExcelUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -172,6 +183,7 @@ const importFromExcel = () => {
   const pageSize = ref(5)
   const projects = ref([])
   const projectData = ref([])
+  
   function search() {
   axios.get('http://localhost:8080/all_project')
   .then(function (response) {

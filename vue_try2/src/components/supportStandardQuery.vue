@@ -24,7 +24,8 @@
     <div class="standards-list">
       <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
         <div v-if="projects.length === 0">没有项目数据</div>
-        <router-link to="/supportDetails/" class="action-button">
+    
+        <router-link to="/supportDetails/" class="action-button" @click="handleClick(project.projectid)" >
           <strong>项目名称：</strong> {{ project.projectname }}
         </router-link>
           <p><strong>项目ID：</strong>{{ project.projectid }}</p>
@@ -121,6 +122,7 @@ import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
 import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
+import { project_id } from '@/status';
 // import * as XLSX from 'xlsx'
 import Top from './Top.vue'
 import { user_data } from '@/status'
@@ -137,8 +139,15 @@ const userAvatar = ref('https://example.com/avatar.jpg')
 const userInitials = computed(() => {
 return userInfo.value.name.slice(0, 2)
 })
-
-
+function handleClick(projectId) {
+      // 更新 project_id 引用
+      project_id.value = projectId;
+      saveprojectid()
+      console.log("project_id:",project_id.value);
+      // 阻止默认的路由跳转行为
+      // 使用编程式导航
+      // router.push('/supportDetails/');
+    }
 const handleExcelUpload = (event) => {
 const file = event.target.files[0];
 if (file) {
@@ -186,13 +195,13 @@ axios.get('http://localhost:8080/all_project')
   // 确保响应数据是一个对象
   if (typeof response.data === 'object' && response.data !== null) {
     // 提取对象的所有值到数组中
-    projects.value = Object.values(response.data);
-    console.log('projects data:', projects.value);
+    projects.value = Object.values(response.data)
+    console.log('projects data:', projects.value)
     // 检查数组中是否有至少两个元素
     if (projects.value.length > 1) {
       // 获取第二个元素，即 projects[1]
      projectData.value = projects.value[1];
-      console.log('projects[1] data:', projectData);
+      console.log('projects[1] data:', projectData)
       // 在这里处理 projects[1] 的数据
     } else {
       console.error('Expected at least two elements in the array, but got:', projects.value);
@@ -243,7 +252,6 @@ ElMessage.success('申请已同意')
 // 将申请信息添加到标准列表中
 // ...
 }
-
 // 处理不同意申请的方法
 const handleRejectApplication = (application) => {
 application.status = '已拒绝'
@@ -310,11 +318,14 @@ const handlePageChange = (newPage) => {
 currentPage.value = newPage;
 // 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
+function saveprojectid() {
+        localStorage.setItem('project_id', JSON.stringify(project_id.value));
+    }
 
 // const handleRowClick = (row) => {
 onMounted(() => {
 search()
-
+handleClick()
 })
 </script>
 <style scoped>

@@ -38,7 +38,8 @@
       <!-- Equipment List Table -->
       <div class="equipment-table">
         <el-table :data="equipmentList" style="width: 100%">
-          <el-table-column prop="name" label="Name" />
+          <el-table-column prop="equipmentid" label="ID" />
+          <el-table-column prop="equipmentname" label="Name" />
           <el-table-column label="操作" width="120" align="right">
             <template #default="scope">
               <el-button 
@@ -107,12 +108,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import headshot from './headshot.vue'
-import { user_data } from '@/status'
-
+import { project_id } from '@/status'
+import axios from 'axios'
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)
 const selectedEquipment = ref(null)
@@ -125,17 +126,45 @@ const router = useRouter()
         if(key.match('4')) router.push('/sample')
         console.log(key, keyPath)
     }
-
-const equipmentList = ref([
-  { id: 1, name: '天平' },
-  { id: 2, name: '酸度计' },
-  { id: 3, name: '...' },
-  { id: 4, name: '...' },
-  { id: 5, name: '...' },
-  { id: 6, name: '...' },
-  { id: 7, name: '...' },
-  { id: 8, name: '...' }
-])
+ const projectid=project_id
+ const data=ref({
+     equipmengid:'',
+     projectid:'',
+     equipmentname:''
+ })
+ const equipmentList = ref([]);
+ function getallmachine()
+ {
+    axios.post('http://localhost:8080/equipments_by_project',{
+      project_id : project_id.value
+            },
+            {
+              headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+            }).then(function(response){
+             equipmentList.value=response.data.data
+            }).catch(function(error){
+                console.log(error)
+            })
+ }
+ function loadprojectid() {
+    const savedData = localStorage.getItem('project_id');
+    if (savedData) {
+        project_id.value = JSON.parse(savedData);
+        console.log(project_id.value)
+    }
+}
+// const equipmentList = ref([
+//   { id: 1, name: '天平' },
+//   { id: 2, name: '酸度计' },
+//   { id: 3, name: '...' },
+//   { id: 4, name: '...' },
+//   { id: 5, name: '...' },
+//   { id: 6, name: '...' },
+//   { id: 7, name: '...' },
+//   { id: 8, name: '...' }
+// ])
 
 const equipmentDetails = ref([
   {
@@ -181,6 +210,10 @@ const viewPdf = (item) => {
 const addToPreset = (item) => {
   ElMessage.success(`已将${item.name}添加到预置清单，数量：${item.quantity}`)
 }
+ onMounted(() => {
+    loadprojectid()
+    getallmachine()
+      })
 </script>
 
 <style scoped>

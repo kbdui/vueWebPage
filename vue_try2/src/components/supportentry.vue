@@ -24,7 +24,7 @@
         <div class="standards-list">
           <div v-if="paginatedProjects.length === 0">没有项目数据</div>
           <div v-for="category in uniqueCategories" :key="category">
-            <router-link to="/supportStandardQuery" class="action-button">跳转到标准列表</router-link>
+            <router-link to="/supportStandardQuery" class="action-button"><p>{{ category }}</p></router-link>
           </div>
         </div>
       </div>

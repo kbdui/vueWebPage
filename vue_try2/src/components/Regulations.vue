@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-    import { ref } from 'vue'
+    import { ref,onMounted } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
     import outWindow from './outWindow.vue'
-    import { user_data } from '@/status'
+    import { project_id } from '@/status'
+    import axios from 'axios'
 
     const router = useRouter()
 
@@ -39,10 +40,61 @@
     // 留言-文本框设置
     const textarea = ref('')
 
-    //调整窗口的CSS
+    // 调整窗口的CSS
     const styleProps2 = ref({
         height: '35rem'
     });
+
+    // 加载project_id
+    function loadprojectid() {
+        const savedData = localStorage.getItem('project_id');
+        if (savedData) {
+            project_id.value = JSON.parse(savedData);
+            console.log(project_id.value)
+        }
+    }
+
+    // 获取所有的操作规程
+    const operationList = ref([])
+    function getAllOperations(){
+        axios.post('http://localhost:8080/download_operation_procedure',{
+            project_id : project_id.value
+        },{
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        }).then(function(response){
+            operationList.value=response.data.data
+            for(var i=0;i<operationList.value.length;i++){
+                operationList.value[i] = (String)(operationList.value[i]).split('/').pop()
+            }
+        }).catch(function(error){
+            console.log(error)
+        })
+    }
+
+    const compareList = ref()
+    function getAllcompare(){
+        axios.post('http://localhost:8080/download_compare_plan',{
+            project_id : project_id.value
+        },{
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        }).then(function(response){
+            compareList.value=response.data.data
+            compareList.value = (String)(compareList.value).split('/').pop()
+        }).catch(function(error){
+            console.log(error)
+        })
+    }
+
+    // 组件挂载时执行的事件
+    onMounted(() => {
+        loadprojectid()
+        getAllOperations()
+        getAllcompare()
+    })
 </script>
 
 <template>
@@ -80,19 +132,9 @@
   <!-- 操作规程 -->
    <div id="r_content1">
         <h2>操作规程</h2>
-        <div class="content_pdf">
-            <p>规程1.pdf</p>
-            <el-button type="primary" plain>查看</el-button>
-            <el-button type="success" plain>下载</el-button>
-        </div>
-        <div class="content_pdf">
-            <p>规程1.pdf</p>
-            <el-button type="primary" plain>查看</el-button>
-            <el-button type="success" plain>下载</el-button>
-        </div>
-        <div class="content_pdf">
-            <p>规程1.pdf</p>
-            <el-button type="primary" plain>查看</el-button>
+        <div v-for="operation in operationList" class="content_pdf">
+            <p>{{ operation }}</p>
+            <!-- <el-button type="primary" plain>查看</el-button> -->
             <el-button type="success" plain>下载</el-button>
         </div>
    </div>
@@ -100,13 +142,13 @@
    <!-- 对比实验 -->
     <div id="r_content2">
         <h2>对比实验</h2>
-        <div class="content_compare">
-            <p>医用防护口罩基本要求对比方案</p>
-            <el-button type="primary" plain>查看</el-button>
+        <div v-if="compareList != 'null'" class="content_compare">
+            <p>{{ compareList }}</p>
+            <!-- <el-button type="primary" plain>查看</el-button> -->
             <el-button type="success" plain>下载</el-button>
         </div>
-        <div class="content_status">
-            <p>申请状态</p>
+        <div v-if="compareList != 'null'" class="content_status">
+            <!-- <p>申请状态</p> -->
             <el-button type="primary" plain>申请对比实验</el-button>
         </div>
     </div>

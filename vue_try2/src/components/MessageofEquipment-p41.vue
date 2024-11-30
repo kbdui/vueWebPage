@@ -92,43 +92,14 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
-  import { ElMessage } from 'element-plus'
-  import jsPDF from 'jspdf'
+  import { ref } from 'vue'
   import Top from './Top.vue'
   import { user_data } from '@/status'
   // State
   const activeTab = ref('equipment')
   const dialogVisible = ref(false)
   const selectedMessage = ref(null)
-  // Methods
-  const markAllResolved = () => {
-    messages.value = messages.value.map(message => ({
-      ...message,
-      resolved: true
-    }))
-    ElMessage.success('所有留言已标记为已解决')
-  }
-  
-  const markResolved = (message) => {
-    message.resolved = true
-    ElMessage.success('留言已标记为已解决')
-  }
-  
-  const openMessageDialog = (message) => {
-    selectedMessage.value = { ...message }
-    dialogVisible.value = true
-  }
-  
-  const saveMessage = () => {
-    const index = messages.value.findIndex(m => m.id === selectedMessage.value.id)
-    if (index !== -1) {
-      messages.value[index] = { ...selectedMessage.value }
-      ElMessage.success('留言已保存')
-      dialogVisible.value = false
-    }
-  }
- 
+
   </script>
   
   <style scoped>

@@ -98,64 +98,12 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
-  import { ElMessage } from 'element-plus'
-  import jsPDF from 'jspdf'
+  import { ref } from 'vue'
   import Top from './Top.vue'
   import { user_data } from '@/status'
   // State
-  const activeMenu = ref('2')
-  const activeTab = ref('material')
   const dialogVisible = ref(false)
   const selectedMessage = ref(null)
-  const messages = ref([
-    {
-      id: '1932403245',
-      time: '2024.11.07 23:23:21',
-      sender: '甲',
-      source: 'GB 19083-2003 4.3 医用防护口罩 > 呼吸阻力(点击自动跳转到对应项目界面)',
-      content: '需要审核确认',
-      resolved: false
-    },
-    {
-      id: '1932403246',
-      time: '2024.11.07 12:23:21',
-      sender: '乙',
-      source: 'GB 19083-2003 4.3 医用防护口罩 > 呼吸阻力(点击自动跳转到对应项目界面)',
-      content: '已完成检查',
-      resolved: true
-    }
-  ])
-  
-  // Methods
-  const markAllResolved = () => {
-    messages.value = messages.value.map(message => ({
-      ...message,
-      resolved: true
-    }))
-    ElMessage.success('所有留言已标记为已解决')
-  }
-  
-  const markResolved = (message) => {
-    message.resolved = true
-    ElMessage.success('留言已标记为已解决')
-  }
-  
-  const openMessageDialog = (message) => {
-    selectedMessage.value = { ...message }
-    dialogVisible.value = true
-  }
-  
-  const saveMessage = () => {
-    const index = messages.value.findIndex(m => m.id === selectedMessage.value.id)
-    if (index !== -1) {
-      messages.value[index] = { ...selectedMessage.value }
-      ElMessage.success('留言已保存')
-      dialogVisible.value = false
-    }
-  }
-  
-  
   </script>
   
   <style scoped>

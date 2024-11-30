@@ -24,12 +24,6 @@
     <el-tabs v-model="activeTab" class="message-tabs">
       <!-- 人模块的留言 -->
       <el-tab-pane label="人员" name="Offiers">
-        <div class="tab-header">
-          <el-button type="primary" @click="markAllResolved">
-            全部标记为已解决
-          </el-button>
-        </div>
-
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -53,12 +47,12 @@
             </div>
             <div class="message-actions">
               <el-button type="primary" @click="openMessageDialog(message)">
-                打开留言框
+                查看留言
               </el-button>
               <el-button
                 type="success"
-                @click="markResolved(message)"
-                v-if="message.state !== 'Finish'"
+                @click="markResolved(message.messageid)"
+                v-if="message.isResolvedButtonVisible && message.state !== 'Finish'"
               >
                 标记为已解决
               </el-button>
@@ -69,12 +63,6 @@
 
       <!-- 机模块的留言 -->
       <el-tab-pane label="设备" name="equipment">
-        <div class="tab-header">
-          <el-button type="primary" @click="markAllResolved">
-            全部标记为已解决
-          </el-button>
-        </div>
-
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -98,12 +86,12 @@
             </div>
             <div class="message-actions">
               <el-button type="primary" @click="openMessageDialog(message)">
-                打开留言框
+                查看留言
               </el-button>
               <el-button
                 type="success"
-                @click="markResolved(message)"
-                v-if="message.state !== 'Finish'"
+                @click="markResolved(message.messageid)"
+               v-if="message.isResolvedButtonVisible && message.state !== 'Finish'"
               >
                 标记为已解决
               </el-button>
@@ -114,12 +102,6 @@
 
       <!-- 法模块的留言 -->
       <el-tab-pane label="规程" name="Stander">
-        <div class="tab-header">
-          <el-button type="primary" @click="markAllResolved">
-            全部标记为已解决
-          </el-button>
-        </div>
-
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -143,12 +125,12 @@
             </div>
             <div class="message-actions">
               <el-button type="primary" @click="openMessageDialog(message)">
-                打开留言框
+                查看留言
               </el-button>
               <el-button
                 type="success"
-                @click="markResolved(message)"
-                v-if="message.state !== 'Finish'"
+                @click="markResolved(message.messageid)"
+               v-if="message.isResolvedButtonVisible && message.state !== 'Finish'"
               >
                 标记为已解决
               </el-button>
@@ -159,12 +141,6 @@
 
       <!-- 料模块的留言 -->
       <el-tab-pane label="物料" name="Sample">
-        <div class="tab-header">
-          <el-button type="primary" @click="markAllResolved">
-            全部标记为已解决
-          </el-button>
-        </div>
-
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -188,12 +164,12 @@
             </div>
             <div class="message-actions">
               <el-button type="primary" @click="openMessageDialog(message)">
-                打开留言框
+                查看留言
               </el-button>
               <el-button
                 type="success"
-                @click="markResolved(message)"
-                v-if="message.state !== 'Finish'"
+                @click="markResolved(message.messageid)"
+                v-if="message.isResolvedButtonVisible && message.state !== 'Finish'"
               >
                 标记为已解决
               </el-button>
@@ -215,20 +191,7 @@
         <p>留言人：{{ selectedMessage.accountid }}</p>
         <p>留言项目：{{ selectedMessage.projectid }}</p>
         <p>留言内容：{{ selectedMessage.message }}</p>
-        <!-- <el-input
-          v-model="selectedMessage.message"
-          type="textarea"
-          rows="4"
-          placeholder="留言内容"
-        /> -->
       </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <!-- <el-button>退出</el-button> -->
-          <!-- <el-button @click="dialogVisible = false">取消</el-button> -->
-          <!-- <el-button type="primary" @click="saveMessage">保存</el-button> -->
-        </span>
-      </template>
     </el-dialog>
   </div>
 </template>
@@ -250,6 +213,7 @@ interface MessageList {
   state: string;
   messagetime: string;
   message: string;
+  isResolvedButtonVisible: boolean; // 用来判断留言状态是否确认成功,确认的同时进行get操作
 }
 
 // 用于存储留言数据的响应式变量
@@ -269,7 +233,11 @@ function fetchMessages(messageType: string) {
   })
   .then(response => {
     if (response.data.code === 1) {
-      messages.value = response.data.data;
+      const data = response.data.data.map(msg => ({
+        ...msg,
+        isResolvedButtonVisible: msg.state !== 'Finish' // 根据留言状态初始化按钮的可见性
+      }));
+      messages.value = data;
     } else {
       ElMessage.error('获取留言失败: ' + response.data.message);
     }
@@ -279,7 +247,6 @@ function fetchMessages(messageType: string) {
     ElMessage.error('请求错误: ' + error.message);
   });
 }
-
 // 在组件挂载时获取留言
 onMounted(() => {
 fetchMessages(activeTab.value); // 根据当前激活的标签页获取对应模块的留言
@@ -290,74 +257,90 @@ watch(activeTab, (newVal) => {
 fetchMessages(newVal);
 });
 
-// 其他方法...
-const markAllResolved = () => {
-messages.value = messages.value.map((message) => ({
-...message,
-state: 'Finish',
-}));
-ElMessage.success('所有留言已标记为已解决');
+// 确认留言的方法
+const markResolved = (messageId) => {
+  axios.post('http://localhost:8080/finish_message', {
+    message_id: messageId
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
+  .then(function(response) {
+    // 检查后端响应，如果成功则处理结果
+    if (response.status === 200) {
+      ElMessage.success('留言状态已更新为已解决');
+      // 查找对应的留言对象并更新其属性
+      const message = messages.value.find(m => m.messageid === messageId);
+      if (message) {
+        message.state = 'Finish'; // 更新留言状态
+        message.isResolvedButtonVisible = false; // 隐藏按钮
+      }
+    } else {
+      // 如果后端返回错误，显示错误信息
+      ElMessage.error('更新留言状态失败');
+    }
+  })
+  .catch(function(error) {
+    // 网络或其他请求错误处理
+    console.error('请求错误:', error);
+    ElMessage.error('请求错误: ' + error.message);
+  });
 };
-
-const markResolved = (message) => {
-message.state = 'Finish';
-ElMessage.success('留言已标记为已解决');
-};
-
+// 打开留言框详情
 const openMessageDialog = (message) => {
-selectedMessage.value = { ...message };
-dialogVisible.value = true;
-};
-
-const saveMessage = () => {
-const index = messages.value.findIndex(
-(m) => m.messageid === selectedMessage.value.messageid
-);
-if (index !== -1) {
-messages.value[index] = { ...selectedMessage.value };
-ElMessage.success('留言已保存');
-dialogVisible.value = false;
-}
+  selectedMessage.value = { ...message };
+  dialogVisible.value = true;
 };
 
 const handleSelect1 = (key) => {
-if (key === '2') {
-useRouter().push('/PersonnelReviewP44');
-}
-console.log(key);
+  if (key === '2') {
+    useRouter().push('/PersonnelReviewP44');
+  }
+  console.log("handleSelect1方法打印的key:"+key);
 };
 
+// pdf导出代码(乱码)
 const exportToPDF = () => {
   try {
-    const doc = new jsPDF()
-    // Add title
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text('留言提醒清单', 20, 20);
+    const doc = new jsPDF();
 
-    // Add content
-    doc.setFont("helvetica", "normal");
+    const fontName = "宋体";
+
+    doc.setFont(fontName, 'bold');
+    doc.setFontSize(16);
+    doc.text('对比测试清单', 20, 20);
+    doc.setFont(fontName, 'normal');
     doc.setFontSize(12);
 
-    let yPosition = 40;
-    
+    let yPosition = 25; // 从25开始，为标题留出空间
     messages.value.forEach((message, index) => {
-      doc.text(`${index + 1}. 留言编号：${message.messageid}`, 20, yPosition);
-      doc.text(`   留言时间：${message.messagetime}`, 20, yPosition + 10);
-      doc.text(`   留言人：${message.accountid}`, 20, yPosition + 20);
-      doc.text(`   项目ID：${message.projectid}`, 20, yPosition + 30);
-      doc.text(`   状态：${message.state}`, 20, yPosition + 40);
-      yPosition += 50;
+      doc.text(`留言编号：${message.messageid}`, 20, yPosition);
+      yPosition += 10; // 移动到下一行
+
+      doc.text(`留言时间：${message.messagetime}`, 20, yPosition);
+      yPosition += 10; // 移动到下一行
+
+      doc.text(`留言人：${message.accountid}`, 20, yPosition);
+      yPosition += 10; // 移动到下一行
+
+      doc.text(`留言项目：${message.projectid}`, 20, yPosition);
+      yPosition += 10; // 移动到下一行
+
+      doc.text(`留言内容：${message.message}`, 20, yPosition);
+      yPosition += 10; // 移动到下一行，为下一条留言留出空间
     });
 
-    // Save the PDF
-    doc.save('留言清单提醒.pdf');
+    // 保存 PDF
+    doc.save('对比测试清单.pdf');
 
+    // 显示成功消息
     ElMessage({
       message: 'PDF导出成功！',
       type: 'success'
     });
   } catch (error) {
+    // 显示错误消息
     ElMessage({
       message: '导出失败，请重试',
       type: 'error'
@@ -387,60 +370,60 @@ const exportToPDF = () => {
   color: #000;
   margin-right: 20px;
 
-}
+  }
+  
+  .nav-menu {
+    margin-bottom: 20px;
+  }
+  
 
-.nav-menu {
-  margin-bottom: 20px;
-}
+  .action-buttons {
+    font-size: 18px;
+    margin-bottom: 15px;
 
-
-.action-buttons {
-  font-size: 18px;
-  margin-bottom: 15px;
-
-}
-
-.message-tabs {
-  margin-top: 20px;
-}
-
-.tab-header {
-  margin-bottom: 20px;
-}
-
-.message-item {
-  margin-bottom: 20px;
-}
-
-.message-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-}
-
-.message-info p {
-  margin: 5px 0;
-}
-
-.message-source {
-  text-align: right;
-}
-
-.message-status {
-  margin: 10px 0;
-}
-
-.message-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.message-dialog-content {
-  padding: 20px;
-}
-
-.message-dialog-content p {
-  margin-bottom: 10px;
-}
-</style>
+  }
+  
+  .message-tabs {
+    margin-top: 20px;
+  }
+  
+  .tab-header {
+    margin-bottom: 20px;
+  }
+  
+  .message-item {
+    margin-bottom: 20px;
+  }
+  
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  
+  .message-info p {
+    margin: 5px 0;
+  }
+  
+  .message-source {
+    text-align: right;
+  }
+  
+  .message-status {
+    margin: 10px 0;
+  }
+  
+  .message-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .message-dialog-content {
+    padding: 20px;
+  }
+  
+  .message-dialog-content p {
+    margin-bottom: 10px;
+  }
+  </style>

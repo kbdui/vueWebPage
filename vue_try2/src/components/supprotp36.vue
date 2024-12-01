@@ -32,7 +32,7 @@
       <!-- 规程操作 -->
       <div class="section">
         <div class="section-header">
-          <h3></h3>
+          <h2>规程操作</h2>
 
           <el-upload
     class="upload-demo"
@@ -51,28 +51,20 @@
           <div v-for="(procedure, index) in procedures" :key="index" class="procedure-item">
             <span class="filename">{{ procedure.filename }}</span>
           <div class="actions">
-        <!-- 绑定点击事件到downloadPdf函数 -->
+
         <el-button 
           type="primary" 
           size="small"
-          @click="downloadPdf(procedure.filename)"
+          @click="downloadPdf(index)"
         >
           下载
         </el-button>
-        
-        <!-- 其他操作按钮 -->
-        <el-upload
-          class="upload-demo"
-          action="/api/upload"
-          :on-success="(res) => (res, index)"
-          :on-error="handleUploadError"
-          :show-file-list="false"
-        >
-        </el-upload>
+
+        <!-- 删除按钮 -->
         <el-button 
           type="danger" 
           size="small"
-          @click="deletePdf(procedure)"
+          @click="deletePdf(procedure.filename)"
         >
           删除
         </el-button>
@@ -81,12 +73,12 @@
         </div>
       </div>
   
-      对比实验部分
+      <!-- 对比实验部分 -->
       <div class="section">
         <div class="section-header">
-          <h3>对比实验</h3>
+          <h2>对比实验</h2>
 
-          <!-- <el-upload
+          <el-upload
             class="upload-demo"
             action="/api/upload"
             :on-success="handleComparisonUpload"
@@ -94,11 +86,11 @@
             :show-file-list="false"
           >
             <el-button type="success" size="small">导入</el-button>
-          </el-upload> -->
+          </el-upload>
         </div>
   
         <div class="comparison-list">
-          <!-- <div v-if="comparisonFile" class="comparison-item">
+          <div v-if="comparisonFile" class="comparison-item">
             <span class="filename">{{ comparisonFile.filename }}</span>
             <div class="actions">
               <el-button 
@@ -127,14 +119,6 @@
               </el-button>
             </div>
           </div>
-   -->
-          <!-- <el-button 
-            type="warning" 
-            class="comparison-manage-btn"
-            @click="manageComparison"
-          >
-            对比实验管理
-          </el-button> -->
         </div>
       </div>
     </div>
@@ -144,10 +128,12 @@ import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { user_data } from '@/status';
 import { project_id } from '@/status';
 
 const procedures = ref([]);
+const tmp = ref([]);
+//pdf文件应该都放在相对应的projectid文件夹下的子文件夹才能正确访问到，并且projectid文件夹下应该包含两个文件夹，
+// 分别存放操作规程和对比实验文件
 
 // 加载项目ID
 function loadProjectId() {
@@ -169,6 +155,8 @@ async function fetchProcedures() {
     });
 
     if (response.data && response.data.data) {
+      tmp.value = response.data.data;
+      console.log(tmp.value);
       procedures.value = response.data.data.map(file => {
         const filename = file.split('#').pop(); // 提取文件名
         return {
@@ -185,12 +173,31 @@ async function fetchProcedures() {
     ElMessage.error('获取操作规程失败，请重试');
   }
 }
-// 下载PDF文件
-async function downloadPdf(filename) {
-  console.log("项目ID为：" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+// 假设 procedures.value 已经通过 fetchProcedures 函数赋值
+async function displayFiles() {
+  if (procedures.value) {
+    // 遍历 procedures.value 数组
+    procedures.value.forEach(file => {
+      console.log("文件名:", file.filename);
+      console.log("文件地址:", file.url);
+    });
+  } else {
+    console.log("文件列表尚未加载");
+  }
+}
 
+// 调用 displayFiles 函数以显示文件列表
+displayFiles();
+// 下载PDF文件
+async function downloadPdf(index) {
+  const filename = tmp.value[index];
+  console.log("项目ID为：" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+  const strtmp="D:/files/";
+  const Path=filename.replace(strtmp, "");
   try {
-    const fullFileName = project_id.value + "/" + decodeURIComponent(filename);
+    const fullFileName =  decodeURIComponent(Path);
+
+    console.log("用来下载的文件地址为fullFileName：" + fullFileName);
     const response = await axios({
       url: `http://localhost:8080/download`,
       method: 'POST',
@@ -216,20 +223,8 @@ async function downloadPdf(filename) {
     ElMessage.error('下载PDF文件失败，请重试');
   }
 }
-
-onMounted(() => {
-  loadProjectId();
-  fetchProcedures();
-});
-
-// 对比实验相关函数
-const viewComparison = () => {
-  
-};
-
-// 上传
- // 自定义上传方法
- function customRequest(options) {
+// 自定义上传方法
+function customRequest(options) {
       const { file, onProgress, onSuccess, onError } = options;
 
       const formData = new FormData();
@@ -258,10 +253,75 @@ const viewComparison = () => {
       });
     }
 
-    // 文件选择变化时的处理
-    function handleChange(file, fileList) {
-      // 如果需要，可以在这里处理文件选择的变化
+
+function handleChange(file, fileList) {
+}
+
+//删除PDF文件的函数
+function deletePdf(filename) {
+  // 确认是否要删除文件
+  const fileToDelete = procedures.value.find(file => file.filename === filename);
+  if (!fileToDelete) {
+    console.log("未找到文件");
+    return;
+  }
+
+  // 从 URL 中提取文件路径并删除url前缀
+  const filepath_ = decodeURIComponent(fileToDelete.url);
+  const tmp = "http://localhost:8080/files/";
+  const filepathWithoutPrefix = filepath_.replace(tmp, "");
+
+  // 在文件名前加上 # 号，形成 /#文件名 的格式
+  const filepathWithHash = "/" + "#" + filepathWithoutPrefix;
+  // 使用绝对地址才能删除
+  const Path="D:/files/" +project_id.value + filepathWithHash;
+  console.log("删除的文件路径为：" + Path);
+
+  new Promise((resolve, reject) => {
+    const confirmed = confirm('此操作将永久删除该文件, 是否继续?');
+    if (confirmed) {
+      resolve(confirmed);
+    } else {
+      reject();
     }
+  })
+  .then(() => {
+    // 发送删除请求
+    axios({
+      method: 'POST',
+      url: 'http://localhost:8080/delete_operation_procedure_and_compare_plan',
+      data: `file_address=${encodeURIComponent(Path)}`,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .then(response => {
+      if (response.data.code === 1 && response.data.data) {
+        ElMessage.success('文件删除成功!');
+        fetchProcedures();
+      } else {
+        ElMessage.error('删除文件失败: ' + response.data.description);
+      }
+    })
+    .catch(error => {
+      console.error('删除文件失败:', error);
+      ElMessage.error('删除文件失败');
+    });
+  })
+  .catch(() => {
+    // 用户取消删除操作
+    console.log('已取消删除');
+  });
+}
+onMounted(() => {
+  loadProjectId();
+  fetchProcedures();
+});
+
+// 对比实验相关函数
+const viewComparison = () => {
+  
+};
 const router = useRouter();
 
 // menu 菜单
@@ -272,14 +332,11 @@ const handleSelect1 = (key, keyPath) => {
   if (key.match('4')) router.push('/p38');
   console.log(key, keyPath);
 };
-
 // page header 页头
 const goBack = () => {
   router.push('/supportStandardQuery');
   console.log('go back');
 };
-
-// 在组件加载时获取PDF文件列表
 
 </script>  
 

@@ -61,15 +61,19 @@
       width="80%"
       destroy-on-close
     >
+    
       <div class="equipment-details">
-        <div class="equipment-grid">
+        <!-- 如果有数据，则显示数据列表 -->
+        <div class="equipment-grid" v-if="equipmentDetails.length > 0">
           <div v-for="item in equipmentDetails" :key="item.id" class="equipment-card">
             <div class="equipment-image">
-              设备照片
+              <img :src="item.picture_url" alt="设备照片">
             </div>
             <div class="equipment-info">
-              <div class="equipment-name">设备名称: {{ item.name }}</div>
-              <div class="manufacturer">生产厂家: {{ item.manufacturer }}</div>
+              <div class="equipment-name">设备名称: {{ item.scheme_name }}</div>
+              <div class="manufacturer">生产厂家: {{ item.source }}</div>
+              <div class="number">生产编号: {{ item.scheme_number }}</div>
+              <div class="ID">设备ID: {{ item.scheme_id }}</div>
               <el-link 
                 type="primary" 
                 class="pdf-link"
@@ -93,15 +97,12 @@
               </el-button>
             </div>
           </div>
-        </div>
-        <div class="dialog-footer">
-          <el-button 
-            type="danger" 
-            @click="detailsVisible = false"
-          >
-            关闭
-          </el-button>
-        </div>
+        </div>    
+        <!-- 如果没有数据，则显示提醒信息 -->
+        <el-empty
+        v-else
+        description="暂无设备信息"
+      />
       </div>
     </el-dialog>
   </div>
@@ -122,9 +123,10 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import headshot from './headshot.vue'
-import { project_id } from '@/status'
+import { project_id,equipment_id } from '@/status'
 import outWindow from './outWindow.vue'
 import axios from 'axios'
+
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)
 const selectedEquipment = ref(null)
@@ -139,11 +141,13 @@ const router = useRouter()
     }
  const projectid=project_id
  const data=ref({
-     equipmengid:'',
+     equipmentid:'',
      projectid:'',
      equipmentname:''
  })
  const equipmentList = ref([]);
+ const equipmentid=ref([])
+ const equipmentDetails = ref([]);
  function getallmachine()
  {
     axios.post('http://localhost:8080/equipments_by_project',{
@@ -159,13 +163,33 @@ const router = useRouter()
                 console.log(error)
             })
  }
+ function getallequipments()
+ {
+    axios.post('http://localhost:8080/schemes_by_equipment',{
+      equipment_id : equipment_id.value
+ },
+ {
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  }
+ }).then(function(response){
+   console.log(response.data.data)
+  equipmentDetails.value=response.data.data
+ }).catch(function(error){
+  console.log(error)
+ })
+}
  function loadprojectid() {
     const savedData = localStorage.getItem('project_id');
     if (savedData) {
         project_id.value = JSON.parse(savedData);
         console.log(project_id.value)
     }
+  
 }
+function saveequipmentid() {
+        localStorage.setItem('equipment_id', JSON.stringify(equipment_id.value));
+    }
 // const equipmentList = ref([
 //   { id: 1, name: '天平' },
 //   { id: 2, name: '酸度计' },
@@ -177,45 +201,49 @@ const router = useRouter()
 //   { id: 8, name: '...' }
 // ])
 
-const equipmentDetails = ref([
-  {
-    id: 1,
-    name: 'UID型天平',
-    manufacturer: '107厂',
-    quantity: 1
-  },
-  {
-    id: 2,
-    name: 'WDQ型天平',
-    manufacturer: '107厂',
-    quantity: 1
-  },
-  {
-    id: 3,
-    name: 'CKD型天平',
-    manufacturer: '107厂',
-    quantity: 1
-  },
-  {
-    id: 4,
-    name: 'XJK型天平',
-    manufacturer: '107厂',
-    quantity: 1
-  }
-])
+// const equipmentDetails = ref([
+//   {
+//     id: 1,
+//     name: 'UID型天平',
+//     manufacturer: '107厂',
+//     quantity: 1
+//   },
+//   {
+//     id: 2,
+//     name: 'WDQ型天平',
+//     manufacturer: '107厂',
+//     quantity: 1
+//   },
+//   {
+//     id: 3,
+//     name: 'CKD型天平',
+//     manufacturer: '107厂',
+//     quantity: 1
+//   },
+//   {
+//     id: 4,
+//     name: 'XJK型天平',
+//     manufacturer: '107厂',
+//     quantity: 1
+//   }
+// ])
 
 const goBack = () => {
   router.push('/standard')
   console.log('go back')
 }
 
-const showDetails = (equipment) => {
-  selectedEquipment.value = equipment
+const showDetails = (row) => {
+  selectedEquipment.value = row 
+   equipment_id.value=row.equipmentid
+   saveequipmentid() 
+   console.log("equipment_id是",equipment_id.value)
   detailsVisible.value = true
+  getallequipments()
 }
 
 const viewPdf = (item) => {
-  ElMessage.success(`查看${item.name}的PDF详情`)
+  ElMessage.success(`查看${item.scheme_detail}的PDF详情`)
 }
 
 const addToPreset = (item) => {

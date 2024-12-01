@@ -33,27 +33,29 @@
       <div class="section">
         <div class="section-header">
           <h3></h3>
+
           <el-upload
-            class="upload-demo"
-            action="/api/upload"
-            :on-success="handleUploadSuccess"
-            :on-error="handleUploadError"
-            :show-file-list="false"
-          >
-            <el-button type="success" size="small">导入</el-button>
-          </el-upload>
+    class="upload-demo"
+    action="/api/upload"
+    :on-change="handleChange"
+    :show-file-list="false"
+    :http-request="customRequest"
+  >
+    <el-button type="success" size="small">导入</el-button>
+  </el-upload>
+          
         </div>
   
         <div class="procedures-list">
 
           <div v-for="(procedure, index) in procedures" :key="index" class="procedure-item">
-      <span class="filename">{{ procedure.filename }}</span>
-      <div class="actions">
+            <span class="filename">{{ procedure.filename }}</span>
+          <div class="actions">
         <!-- 绑定点击事件到downloadPdf函数 -->
         <el-button 
           type="primary" 
           size="small"
-          @click="downloadPdf(procedure)"
+          @click="downloadPdf(procedure.filename)"
         >
           下载
         </el-button>
@@ -62,7 +64,7 @@
         <el-upload
           class="upload-demo"
           action="/api/upload"
-          :on-success="(res) => handleReImport(res, index)"
+          :on-success="(res) => (res, index)"
           :on-error="handleUploadError"
           :show-file-list="false"
         >
@@ -79,11 +81,12 @@
         </div>
       </div>
   
-      <!-- 对比实验部分 -->
+      对比实验部分
       <div class="section">
         <div class="section-header">
           <h3>对比实验</h3>
-          <el-upload
+
+          <!-- <el-upload
             class="upload-demo"
             action="/api/upload"
             :on-success="handleComparisonUpload"
@@ -91,11 +94,11 @@
             :show-file-list="false"
           >
             <el-button type="success" size="small">导入</el-button>
-          </el-upload>
+          </el-upload> -->
         </div>
   
         <div class="comparison-list">
-          <div v-if="comparisonFile" class="comparison-item">
+          <!-- <div v-if="comparisonFile" class="comparison-item">
             <span class="filename">{{ comparisonFile.filename }}</span>
             <div class="actions">
               <el-button 
@@ -124,14 +127,14 @@
               </el-button>
             </div>
           </div>
-  
-          <el-button 
+   -->
+          <!-- <el-button 
             type="warning" 
             class="comparison-manage-btn"
             @click="manageComparison"
           >
             对比实验管理
-          </el-button>
+          </el-button> -->
         </div>
       </div>
     </div>
@@ -139,13 +142,12 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import axios from 'axios'; 
+import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { user_data } from '@/status';
 import { project_id } from '@/status';
 
 const procedures = ref([]);
-const comparisonFile = ref();
 
 // 加载项目ID
 function loadProjectId() {
@@ -155,7 +157,7 @@ function loadProjectId() {
       console.log(project_id.value);
   }
 }
-// 获取PDF文件列表
+//获取后端文件
 async function fetchProcedures() {
   try {
     const response = await axios.post('http://localhost:8080/download_operation_procedure', {
@@ -165,105 +167,101 @@ async function fetchProcedures() {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
-    procedures.value = response.data.data.map(file => {
-      // 提取文件名
-      const filename = file.split('\\').pop(); // Windows系统路径分隔符
-      return {
-        filename: filename,
-        url: `http://localhost:8080/files/${filename}` // 构造URL时只使用文件名
-      };
-    });
+
+    if (response.data && response.data.data) {
+      procedures.value = response.data.data.map(file => {
+        const filename = file.split('#').pop(); // 提取文件名
+        return {
+          filename: filename,
+          url: `http://localhost:8080/files/${encodeURIComponent(filename)}` // 构造URL时只使用文件名，并进行编码
+        };
+      });
+    } else {
+      console.error('数据结构不符合预期:', response.data);
+      ElMessage.error('数据结构不符合预期，请检查后端返回的数据');
+    }
   } catch (error) {
-    console.error('Error fetching procedures:', error);
+    console.error('获取操作规程失败：', error);
     ElMessage.error('获取操作规程失败，请重试');
   }
 }
-
 // 下载PDF文件
-// 下载PDF文件
-function downloadPdf(procedure) {
-  // 假设 procedure.url 是后端返回的完整URL，例如 "http://localhost:8080/files/somefile.pdf"
-  let baseUrl = "http://localhost:8080/files/";
-  
-  let relativeUrl = procedure.url.replace(baseUrl, ''); // 移除 baseUrl 部分，只保留文件名
+async function downloadPdf(filename) {
+  console.log("项目ID为：" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
 
-  axios({
-    url: relativeUrl, // 使用相对路径，后端需要能够解析这个相对路径
-    method: 'GET',
-    responseType: 'blob', // 重要：设置响应类型为blob
-  })
-  .then(response => {
-    // 创建一个可下载的URL
-    const url = relativeUrl;
-    console.log("下载URL为：" + url); // 这里的URL是用于下载的Blob URL，不是文件的直接URL
-    // 创建一个临时的<a>标签用于下载
+  try {
+    const fullFileName = project_id.value + "/" + decodeURIComponent(filename);
+    const response = await axios({
+      url: `http://localhost:8080/download`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      data: `fileName=${fullFileName}`, // 传递完整的文件名
+      responseType: 'blob' // 指定响应类型为blob
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    console.log("下载地址为：" + url);
+
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', procedure.filename);
-    // 确保链接被添加到文档中
+    link.setAttribute('download', fullFileName); // 设置下载的文件名
     document.body.appendChild(link);
-    // 触发点击事件
-    link.click();
-    // 从文档中移除链接
+    link.click(); // 触发下载
     document.body.removeChild(link);
-    // 释放URL对象
-    window.URL.revokeObjectURL(url);
-    // 下载成功后的提示
-    ElMessage.success('下载成功');
-  })
-  .catch(error => {
-    console.error('Download error:', error);
-    console.log("下载失败的URL: " + relativeUrl);
-    // 下载失败后的提示
-    ElMessage.error('下载失败，请重试');
-  });
+    window.URL.revokeObjectURL(url); // 释放URL对象
+  } catch (error) {
+    console.error('下载PDF文件失败：', error);
+    ElMessage.error('下载PDF文件失败，请重试');
+  }
 }
 
-
-// 删除PDF文件
-const deletePdf = (procedure) => {
-  ElMessageBox.confirm(
-    '确定要删除这个文件吗？',
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(() => {
-    const index = procedures.value.indexOf(procedure);
-    procedures.value.splice(index, 1);
-    ElMessage.success('删除成功');
-  }).catch(() => {
-    ElMessage.info('已取消删除');
-  });
-};
+onMounted(() => {
+  loadProjectId();
+  fetchProcedures();
+});
 
 // 对比实验相关函数
 const viewComparison = () => {
-  if (comparisonFile.value) {
-    const viewerUrl = `/pdf-viewer?file=${encodeURIComponent(comparisonFile.value.url)}&name=${encodeURIComponent(comparisonFile.value.filename)}`;
-    window.open(viewerUrl, '_blank');
-  }
+  
 };
 
-// 上传相关
-const handleUploadSuccess = (response, file) => {
-  // 处理上传成功的逻辑
-};
+// 上传
+ // 自定义上传方法
+ function customRequest(options) {
+      const { file, onProgress, onSuccess, onError } = options;
 
-const handleReImport = (response, index) => {
-  // 处理重新导入的逻辑
-};
+      const formData = new FormData();
+      formData.append('project_id', project_id.value);
+      formData.append('file', file);
 
-const handleComparisonUpload = (response, file) => {
-  // 处理对比实验上传的逻辑
-};
+      axios({
+        method: 'post',
+        url: 'http://localhost:8080/upload_operation_procedure',
+         // 后端接口URL
+        data: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        onUploadProgress: progressEvent => {
+          onProgress(progressEvent);
+        }
+      })
+      .then(response => {
+        onSuccess(response);
+        ElMessage.success('文件上传成功');
+      })
+      .catch(error => {
+        onError(error);
+        ElMessage.error('文件上传失败，请重试');
+      });
+    }
 
-const handleUploadError = () => {
-  // 处理上传错误的逻辑
-};
-
+    // 文件选择变化时的处理
+    function handleChange(file, fileList) {
+      // 如果需要，可以在这里处理文件选择的变化
+    }
 const router = useRouter();
 
 // menu 菜单
@@ -282,10 +280,7 @@ const goBack = () => {
 };
 
 // 在组件加载时获取PDF文件列表
-onMounted(() => {
-  loadProjectId();
-  fetchProcedures();
-});
+
 </script>  
 
   <style scoped>

@@ -65,6 +65,7 @@
     import { useRouter } from 'vue-router'
     import { RouterLink } from 'vue-router'
     import { user_data } from '../status.js'
+    import { ElMessage } from 'element-plus'
     import axios from 'axios'
 
     // Vue.prototype.$axios = axios
@@ -102,7 +103,7 @@
           }
         }).then(function (response){
           if(response.data.data.res === 1) {
-            alert('登录成功')
+            ElMessage.success('登录成功')
             console.log(response)
             user_data.value.name = decodeURIComponent(response.data.data.user.name)
             user_data.value.username = decodeURIComponent(response.data.data.user.username)

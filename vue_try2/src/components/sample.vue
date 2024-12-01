@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-    import { ref } from 'vue'
+    import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
-    import { user_data } from '@/status'
+    import { project_id } from '@/status'
+    import axios from 'axios'
 
     const router = useRouter()
 
@@ -108,6 +109,50 @@
     opration: '添加到预置清单',
   },
 ]
+
+// 通过标准号获取样品列表
+const sampleList = ref([])
+function getSampleList() {
+  axios.post('http://localhost:8080/get_sample_by_number', {
+    number: project_id.value
+  },{
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  }).then(function (response){
+    sampleList.value = response.data.data
+  }).catch(function (error){
+    if (error.response) {
+      // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+      console.log(error.response.data);
+      console.log(error.response.status);
+      console.log(error.response.headers);
+    } else if (error.request) {
+      // 请求已经成功发起，但没有收到响应
+      // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+      // 而在node.js中是 http.ClientRequest 的实例
+      console.log(error.request);
+    } else {
+      // 发送请求时出了点问题
+      console.log('Error', error.message);
+    }
+    console.log(error.config)
+    alert('状态码错误')
+  })
+} 
+
+// 加载project_id和sampleNumber
+function loadData() {
+    const projectId = localStorage.getItem('project_id')
+    if (projectId) project_id.value = JSON.parse(projectId)
+}
+
+// 挂载组件时执行的方法
+onMounted(() => {
+    loadData()
+    getSampleList()
+})
+
 </script>
 
 <template>
@@ -146,16 +191,16 @@
     <el-button id="s_leave" @click="openModal(2)" type="primary" plain>留言</el-button>
   </div>
 
-    <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="name" label="标准名称" width="100" />
-        <el-table-column prop="id" label="标准编号" width="100" />
-        <el-table-column prop="productname" label="产品名称" />
+    <el-table :data="sampleList" style="width: 100%">
+        <el-table-column prop="sampleid" label="样品ID" width="100" />
+        <el-table-column prop="projectid" label="项目ID" width="100" />
+        <el-table-column prop="source" label="源" />
+        <el-table-column prop="samplenumber" label="样品编号" width="100" />
         <el-table-column prop="samplename" label="样品名称" width="100" />
-        <el-table-column prop="product" label="生产厂家" width="100" />
-        <el-table-column prop="size" label="型号规格" />
-        <el-table-column prop="requirement" label="申请需求" width="100" />
-        <el-table-column prop="opration" label="操作" width="100" />
+        <el-table-column prop="model" label="型号规格" />
+        <el-table-column prop="typename" label="类型" width="100" />
     </el-table>
+
     <!-- 留言窗口 -->
     <outWindow 
       :isVisible = "showModal2"

@@ -8,3 +8,4 @@ export const user_data = ref({
     accountType: String
 })
 export const project_id = ref()
+export const title = ref()

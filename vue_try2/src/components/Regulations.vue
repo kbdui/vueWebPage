@@ -103,7 +103,7 @@
         <!-- page header 页头 -->
         <el-page-header @back="goBack">
         <template #content>
-            <span class="text-large font-600 mr-3">
+            <span style="color: rgb(30, 193, 30);" class="text-large font-600 mr-3">
             GB 19083-2003 4.1 医用防护口罩>基本要求
             </span>
         </template>
@@ -157,52 +157,10 @@
     <outWindow 
     :isVisible = "showModal2"
     :styleProps = "styleProps2"
+    :messageType = "'Stander'"
+    :outWindowType = true
     @closeModal = "closeModal()"
    >
-        <div
-            id="message_block"
-            h="30"
-            w="30"
-            m="2"
-            :style="{
-            boxShadow: `var(${getCssVarName('light')})`,
-            }"
-        >
-            <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template class="header" #header>
-                <div class="card-header">
-                    <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
-                </div>
-                </template>
-                <p class="text item">请添加---!</p>
-            </el-card>
-            <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template class="header" #header>
-                <div class="card-header">
-                    <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
-                </div>
-                </template>
-                <p class="text item">请添加---!</p>
-            </el-card>
-            <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template class="header" #header>
-                <div class="card-header">
-                    <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
-                </div>
-                </template>
-                <p class="text item">请添加---!</p>
-            </el-card>
-        </div>
-
-        <el-input
-            id="text_input"
-            v-model="textarea"
-            style="width: 240px"
-            :rows="2"
-            type="textarea"
-            placeholder="请输入留言内容"
-        />
-        <el-button id="send_text" type="success">发送</el-button>
    </outWindow>
 </template>
 

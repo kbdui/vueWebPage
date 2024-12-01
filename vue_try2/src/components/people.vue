@@ -6,6 +6,7 @@
     import { RouterLink } from 'vue-router'
 import axios from 'axios'
     import { user_data } from '@/status'
+import OutWindow from './outWindow.vue'
     const router = useRouter()
 
     // page header 页头
@@ -130,7 +131,7 @@ import axios from 'axios'
     };
     }
     onMounted(() => {
-      handletrain(); // 页面初始化时调用handletrain函数
+    //   handletrain(); // 页面初始化时调用handletrain函数
     });
 </script>
 
@@ -140,7 +141,7 @@ import axios from 'axios'
         <!-- page header 页头 -->
         <el-page-header @back="goBack">
         <template #content>
-            <span class="text-large font-600 mr-3">
+            <span style="color: rgb(30, 193, 30);" class="text-large font-600 mr-3">
             GB 19083-2003 4.1 医用防护口罩>基本要求
             </span>
         </template>
@@ -182,7 +183,7 @@ import axios from 'axios'
         <!-- 按钮 -->
         <div id="p_button1">
             <el-button id="p_leave" @click="openModal(2)" type="primary" plain>留言</el-button>
-            <el-button id="add" type="success" plain > 加入记录</el-button>
+            <!-- <el-button id="add" type="success" plain > 加入记录</el-button> -->
         </div>
     </div>
 
@@ -242,6 +243,8 @@ import axios from 'axios'
   <!-- 视频播放窗口 -->
    <outWindow 
     :isVisible = "showModal"
+    :messageType = "'Offiers'"
+    :outWindowType = false
     @closeModal = "closeModal(1)"
    >
         <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
@@ -253,52 +256,10 @@ import axios from 'axios'
     <outWindow 
     :isVisible = "showModal2"
     :styleProps = "styleProps2"
+    :messageType = "'Offiers'"
+    :outWindowType = true
     @closeModal = "closeModal(2)"
    >
-        <div
-            id="message_block"
-            h="30"
-            w="30"
-            m="2"
-            :style="{
-            boxShadow: `var(${getCssVarName('light')})`,
-            }"
-        >
-            <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template  #header>
-                <div class="card-header">
-                    <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
-                </div>
-                </template>
-                <p class="text item">请添加考核试卷!</p>
-            </el-card>
-            <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template  #header>
-                <div class="card-header">
-                    <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
-                </div>
-                </template>
-                <p class="text item">请添加考核试卷!</p>
-            </el-card>
-            <el-card class="message" style="max-width: 480px" shadow="hover">
-                <template  #header>
-                <div class="card-header">
-                    <span>检测人员:甲 留言于2024.11.07 23:23:21</span>
-                </div>
-                </template>
-                <p class="text item">请添加考核试卷!</p>
-            </el-card>
-        </div>
-
-        <el-input
-            id="text_input"
-            v-model="textarea"
-            style="width: 240px"
-            :rows="2"
-            type="textarea"
-            placeholder="请输入留言内容"
-        />
-        <el-button id="send_text" type="success">发送</el-button>
    </outWindow>
 </template>
 
@@ -315,7 +276,7 @@ import axios from 'axios'
     #p_button1{
         width: 20%;
         height: auto;
-        margin-left: 80%;
+        margin-left: 85%;
         display: flex;
     }
     #p_leave{
@@ -371,27 +332,5 @@ import axios from 'axios'
     }
     #content3 #authorization{
         margin-top: 2em;
-    }
-    #message_block{
-        width: 30rem;
-        height: 60%;
-        overflow-y: scroll;
-        overflow-x: hidden;
-    }
-    .message{
-        margin-top: 0.5rem;
-        margin-left: 0.4rem;
-        width: 28rem;
-        height: 8rem;
-    }
-    #text_input{
-        margin-top: 1rem;
-        width: 30rem;
-        height: 10rem;
-    }
-    #send_text{
-        position: absolute;
-        margin-top: 11.5rem;
-        margin-left: 12rem;
     }
 </style>

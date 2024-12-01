@@ -6,7 +6,7 @@
           <!-- page header 页头 -->
           <el-page-header @back="goBack">
           <template #content>
-              <span class="text-large font-600 mr-3">
+              <span style="color: rgb(30, 193, 30);" class="text-large font-600 mr-3">
               GB 19083-2003 4.1 医用防护口罩>基本要求
               </span>
           </template>
@@ -32,7 +32,7 @@
       <!-- Primary Notice -->
       <div class="notice-section">
         <p>若要检测本项目，可能要用到以下产品</p>
-        <el-button id="m_leave" type="primary" plain>留言</el-button>
+        <el-button id="m_leave" type="primary" @click="openModal(2)" plain>留言</el-button>
       </div>
 
       <!-- Equipment List Table -->
@@ -105,6 +105,16 @@
       </div>
     </el-dialog>
   </div>
+
+  <!-- 留言窗口 -->
+    <outWindow 
+    :isVisible = "showModal2"
+    :styleProps = "styleProps2"
+    :messageType = "'Equipment'"
+    :outWindowType = true
+    @closeModal = "closeModal(2)"
+   >
+   </outWindow>
 </template>
 
 <script lang="ts" setup>
@@ -113,6 +123,7 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import headshot from './headshot.vue'
 import { project_id } from '@/status'
+import outWindow from './outWindow.vue'
 import axios from 'axios'
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)
@@ -210,6 +221,20 @@ const viewPdf = (item) => {
 const addToPreset = (item) => {
   ElMessage.success(`已将${item.name}添加到预置清单，数量：${item.quantity}`)
 }
+
+// 打开/关闭小窗口
+const showModal2 = ref(false)
+function openModal(i: number){
+    showModal2.value = true
+}
+function closeModal(i: number) {
+    showModal2.value = false
+}
+//调整窗口的CSS
+const styleProps2 = ref({
+    height: '35rem'
+});
+
  onMounted(() => {
     loadprojectid()
     getallmachine()

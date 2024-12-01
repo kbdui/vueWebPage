@@ -21,7 +21,21 @@
         console.log(key, keyPath)
     }
 
-    //表格内容}
+    // 打开/关闭小窗口
+    const showModal2 = ref(false)
+    function openModal(i: number){
+        showModal2.value = true
+    }
+    function closeModal(i: number) {
+        showModal2.value = false
+    }
+
+    //调整窗口的CSS
+    const styleProps2 = ref({
+        height: '35rem'
+    });
+
+    //表格内容
   const  tableData = [
   {
     name: '医用防护口罩',
@@ -102,7 +116,7 @@
         <!-- page header 页头 -->
         <el-page-header @back="goBack">
         <template #content>
-            <span class="text-large font-600 mr-3">
+            <span style="color: rgb(30, 193, 30);" class="text-large font-600 mr-3">
             GB 19083-2003 4.1 医用防护口罩>基本要求
             </span>
         </template>
@@ -128,10 +142,8 @@
 
   <!-- 菜单下方的内容 -->
   <div id="scontent1">
-  <p id="test">检测</p>
-  <el-button type="success"  id="detail" size="mini">留言</el-button>
-  <H2 color=" light green"> GB 19083-2003 医用防护口罩</H2>
-  <p>可能需要以下样品</p>
+    <!-- <H2 color=" light green"> GB 19083-2003 医用防护口罩</H2> -->
+    <el-button id="s_leave" @click="openModal(2)" type="primary" plain>留言</el-button>
   </div>
 
     <el-table :data="tableData" style="width: 100%">
@@ -144,6 +156,15 @@
         <el-table-column prop="requirement" label="申请需求" width="100" />
         <el-table-column prop="opration" label="操作" width="100" />
     </el-table>
+    <!-- 留言窗口 -->
+    <outWindow 
+      :isVisible = "showModal2"
+      :styleProps = "styleProps2"
+      :messageType = "'Sample'"
+      :outWindowType = true
+      @closeModal = "closeModal(2)"
+    >
+    </outWindow>
 </template>
 
 <style>
@@ -152,9 +173,18 @@
         justify-content: space-between;
         align-items: center;
     }
-    #scontent1 h2{
-        color: rgb(30, 193, 30);
+    #scontent1{
+        display: flex;
+        margin-bottom: 1rem;
     }
+    #scontent1 #s_leave{
+      margin-left: 90%;
+      margin-top: 1em;
+    }
+    /* #scontent1 h2{
+      width: 10rem;
+      color: rgb(30, 193, 30);
+    } */
     #scontent1 p{
         font-size: small;
     }

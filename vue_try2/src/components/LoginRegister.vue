@@ -110,6 +110,7 @@
             user_data.value.contact = decodeURIComponent(response.data.data.user.contact)
             user_data.value.institution = decodeURIComponent(response.data.data.user.institution)
             user_data.value.accountType = decodeURIComponent(response.data.data.user.accounttype)
+            user_data.value.accountid = decodeURIComponent(response.data.data.user.accountid)
             saveUserData()
             console.log(user_data.value.accountType)
             if(user_data.value.accountType === "Experimenters") router.push("/entry")

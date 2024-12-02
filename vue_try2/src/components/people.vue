@@ -4,9 +4,9 @@
     import { reactive } from 'vue'
     import { useRouter } from 'vue-router'
     import { RouterLink } from 'vue-router'
-import axios from 'axios'
-    import { user_data } from '@/status'
-import OutWindow from './outWindow.vue'
+    import axios from 'axios'
+    import { project_id, user_data } from '@/status'
+    import OutWindow from './outWindow.vue'
     const router = useRouter()
 
     // page header 页头
@@ -77,61 +77,105 @@ import OutWindow from './outWindow.vue'
       isok:'',
       oktime:''
     })
-    function handletrain()
-    {
-     if(isentry.value)
-     {
-        axios.post('http://localhost:8080/people_msg',
-        {
-            projectid:train.projectid
-        },{
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-          })
-          .then(function (response) {
-            if(response.data.data.res===1)
-          {
-            alert('开始学习')
-            console.log(response)
-        //    router.push("/details/")
-          }
-          else if(response.data.data.res===2)
-          {
-            alert("学习项目为空")
-            console.log(response)
+//     function handletrain(){
+//      if(isentry.value)
+//      {
+//         axios.post('http://localhost:8080/people_msg',
+//         {
+//             projectid:train.projectid
+//         },{
+//             headers: {
+//             'Content-Type': 'application/x-www-form-urlencoded'
+//         }
+//           })
+//           .then(function (response) {
+//             if(response.data.data.res===1)
+//           {
+//             alert('开始学习')
+//             console.log(response)
+//         //    router.push("/details/")
+//           }
+//           else if(response.data.data.res===2)
+//           {
+//             alert("学习项目为空")
+//             console.log(response)
 
-           // router.push("/details/")
-          }
-          if(response.data.data.isok===1)
-          {
-            alert("该人员已学习完毕")
-            response.data.oktime=getCurrentTime()
-            console.log(response)
-          //  router.push("/details/")
-          }
-          else if(response.data.data.isok===2)
-          {
-            alert("该人员未学习完毕")
-            console.log(response)
-          //  router.push("/details/")
-          }
-          })
-          .catch(function (error) {
-    console.error('Error:', error);
-});
-        }
+//            // router.push("/details/")
+//           }
+//           if(response.data.data.isok===1)
+//           {
+//             alert("该人员已学习完毕")
+//             response.data.oktime=getCurrentTime()
+//             console.log(response)
+//           //  router.push("/details/")
+//           }
+//           else if(response.data.data.isok===2)
+//           {
+//             alert("该人员未学习完毕")
+//             console.log(response)
+//           //  router.push("/details/")
+//           }
+//           })
+//           .catch(function (error) {
+//     console.error('Error:', error);
+// });
+//         }
 
-    // 返回响应式数据和函数，以便在模板中使用
-    return {
-      isentry,
-      train,
-      handletrain,
-      back
-    };
-    }
+//     // 返回响应式数据和函数，以便在模板中使用
+//     return {
+//       isentry,
+//       train,
+//       handletrain,
+//       back
+//     };
+//     }
+
+// 获取学习状态
+const isok = ref()
+const isover = ref()
+const overtime = ref()
+function getTrainStatus() {
+    axios.post('http://localhost:8080/people_msg', {
+        project_id: project_id.value,
+        user_id: user_data.value.accountid
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+        isok.value = response.data.data.is_ok
+        if(isok.value === 1) {
+            isover.value = '已完成'
+            overtime.value = response.data.data.oktime
+        }
+        else {
+            isover.value = '未完成'
+            overtime.value = '未完成'
+        }
+    }).catch(function (error){
+        if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+        } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+        }
+        console.log(error.config)
+        alert('状态码错误')
+    })
+}
+  
+
     onMounted(() => {
-    //   handletrain(); // 页面初始化时调用handletrain函数
+    //   handletrain();
+    getTrainStatus()
     });
 </script>
 
@@ -189,8 +233,8 @@ import OutWindow from './outWindow.vue'
 
     <!-- 具体内容 -->
     <div v-if="video" id="content2">
-        <p id="p1">培训情况:{{  }}</p>
-        <p>培训完成时间：{{}}</p>
+        <p id="p1">培训情况: {{ isover }}</p>
+        <p>培训完成时间：{{ overtime }}</p>
         <el-button id="download" type="success">下载培训证书</el-button>
         <div id="myvideo">
             <div
@@ -224,7 +268,7 @@ import OutWindow from './outWindow.vue'
         <div id="testPaper">
             <h2>考核试卷</h2>
             <el-button type="primary" plain>下载试卷</el-button>
-            <el-button type="success" plain>上传试卷</el-button>
+            <el-button type="success" plain>上传作答</el-button>
             <p>评分情况：</p>
         </div>
         <div id="testVideo">

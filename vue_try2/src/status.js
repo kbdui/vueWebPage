@@ -5,7 +5,8 @@ export const user_data = ref({
     username: String,
     contact: String,
     institution: String,
-    accountType: String
+    accountType: String,
+    accountid: String
 })
 export const project_id = ref()
 export const equipment_id = ref()

@@ -7,6 +7,7 @@
     import axios from 'axios'
     import { project_id, user_data } from '@/status'
     import OutWindow from './outWindow.vue'
+    import { ElMessage } from 'element-plus'
     const router = useRouter()
 
     // page header 页头
@@ -64,19 +65,65 @@
     const styleProps2 = ref({
         height: '35rem'
     });
-    function getCurrentTime() {
-  const now = new Date();
-  return now.toLocaleString();
-}
-    const  isentry= ref(true)
-    const  train= reactive({
-        projectid: ''
-    })
-    const back= ref({
-      res:'',
-      isok:'',
-      oktime:''
-    })
+
+    // handle change
+    function handleChange() {
+    }
+
+    // 下载试卷
+    function customRequest(options) {
+      const { file, onProgress, onSuccess, onError } = options
+      axios.post('http://localhost:8080/people_task_1_msg', {
+          project_id: project_id.value,
+          file: file,
+          user_id: user_data.value.accountid
+        },{
+          headers: {
+            'Content-Type': 'multipart/form-data'
+            // 'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          onUploadProgress: progressEvent => {
+            onProgress(progressEvent);
+          }
+        }).then(function (response){
+            onSuccess(response)
+            ElMessage.success('试卷上传成功')
+        }).catch(function (error){
+            onError(error)
+            ElMessage.error('试卷上传失败')
+        })
+    }
+
+    //   const formData = new FormData()
+    //   formData.append('project_id', project_id.value)
+    //   formData.append('answer', file)
+    //   formData.append('user_id', user_data.value.accountid)
+    //   axios({
+    //     method: 'post',
+    //     url: 'http://localhost:8080/upload_operation_procedure',
+    //      // 后端接口URL
+    //     data: formData,
+    //     headers: {
+    //       'Content-Type': 'application/x-www-form-urlencoded'
+    //     },
+    //     onUploadProgress: progressEvent => {
+    //       onProgress(progressEvent);
+    //     }
+    //   })
+
+//     function getCurrentTime() {
+//   const now = new Date();
+//   return now.toLocaleString();
+// }
+//     const  isentry= ref(true)
+//     const  train= reactive({
+//         projectid: ''
+//     })
+//     const back= ref({
+//       res:'',
+//       isok:'',
+//       oktime:''
+//     })
 //     function handletrain(){
 //      if(isentry.value)
 //      {
@@ -267,8 +314,19 @@ function getTrainStatus() {
     <div v-else-if="test" id="content3">
         <div id="testPaper">
             <h2>考核试卷</h2>
-            <el-button type="primary" plain>下载试卷</el-button>
-            <el-button type="success" plain>上传作答</el-button>
+            <div style="display: flex;">
+                <el-button type="primary" plain>下载试卷</el-button>
+                <el-upload
+                    id="upload"
+                    class="upload-demo"
+                    action="/api/upload"
+                    :on-change="handleChange"
+                    :show-file-list="false"
+                    :http-request="customRequest"
+                >
+                    <el-button type="success" plain>上传作答</el-button>
+                </el-upload>
+            </div>
             <p>评分情况：</p>
         </div>
         <div id="testVideo">
@@ -376,5 +434,9 @@ function getTrainStatus() {
     }
     #content3 #authorization{
         margin-top: 2em;
+    }
+    #upload{
+        margin-left: 2em;
+        margin-top: -2px;
     }
 </style>

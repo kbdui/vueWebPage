@@ -31,6 +31,8 @@
 
           <!-- 审核提醒 -->
           <div v-if="r1" id="personReview1" class="standards-list">
+            <el-input class="searchInput" v-model="input1" style="width: 240px" placeholder="输入项目ID查询" />
+            <el-button class="searchButton" type="success" plain>查询</el-button>
             <div v-for="(standard, index) in standards" :key="index" class="standard-item mb-3 flex justify-between items-center">
               <el-link type="primary" :href="standard.link">
                 {{ standard.title }}
@@ -50,6 +52,8 @@
 
           <!-- 授权清单 -->
           <div v-else-if="r2" id="personReview1">
+            <el-input class="searchInput" v-model="input2" style="width: 240px" placeholder="输入项目ID查询" />
+            <el-button class="searchButton" @click="getAuthList" type="success" plain>查询</el-button>
             <!-- Export Button -->
             <el-button 
               type="success" 
@@ -60,21 +64,23 @@
             </el-button>
     
             <!-- Authorization List Table -->
-            <el-table :data="authList" style="width: 100%;font-size: 16px">
+            <el-table :data="allAuthList" style="width: 100%;font-size: 16px">
               <el-table-column 
-                prop="name" 
+                prop="user_id" 
                 label="被授权人"
                 width="180"
               />
               <el-table-column 
-                prop="authItem" 
-                label="授权项目"
+                prop="examination_state" 
+                label="授权状态"
               />
             </el-table>
           </div>
 
           <!-- 培训清单 -->
           <div v-else-if="r3" id="personReview1">
+            <el-input class="searchInput" v-model="input3" style="width: 240px" placeholder="输入项目ID查询" />
+            <el-button class="searchButton" @click="getTrainList" type="success" plain>查询</el-button>
             <!-- Export Button -->
             <el-button 
               type="success" 
@@ -85,15 +91,20 @@
             </el-button>
         
             <!-- Training List Table -->
-            <el-table :data="trainingData" style="width: 100%; font-size: 16PX;">
+            <el-table :data="allTrainList" style="width: 100%; font-size: 16PX;">
               <el-table-column 
-                prop="trainee" 
-                label="完成培训人" 
+                prop="name" 
+                label="培训人" 
                 width="180"
               />
               <el-table-column 
-                prop="course" 
-                label="培训项目"
+                prop="training" 
+                label="培训情况"
+                width="180"
+              />
+              <el-table-column 
+                prop="examination" 
+                label="考核状态"
               />
             </el-table>
           </div>
@@ -116,14 +127,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import jsPDF from 'jspdf'
-import { user_data } from '@/status'
-
 import Top from './Top.vue'
 import sHomepageMachine from './son_components/sHomepageMachine.vue'
 import sHomepageRegulation from './son_components/sHomepageRegulation.vue'
 import sHomepageSample from './son_components/sHomepageSample.vue'
+import axios from 'axios'
 
 const activeMainTab = ref('lists')
 const activeSecondaryTab = ref('personnel')
@@ -131,6 +141,9 @@ const activeTertiaryTab = ref('审核提醒')
 const r1 = ref(true)
 const r2 = ref(false)
 const r3 = ref(false)
+const input1 = ref()
+const input2 = ref()
+const input3 = ref()
 
 function chooseR1(){
   r1.value = true
@@ -288,6 +301,68 @@ const handleSelect1 = (key, keyPath) => {
     }
   ])
 
+  // 获取授权清单
+  const allAuthList = ref([])
+  function getAuthList() {
+    axios.post('http://localhost:8080/authorize_msg', {
+        project_id: input2.value
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+        allAuthList.value = response.data.data
+    }).catch(function (error){
+        if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+        } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('获取授权清单失败')
+    })
+  }
+
+  // 获取培训清单
+  const allTrainList = ref([])
+  function getTrainList() {
+    axios.post('http://localhost:8080/observe_progress', {
+        project_id: input3.value
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+        allTrainList.value = response.data.data
+    }).catch(function (error){
+        if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+        } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('获取培训清单失败')
+    })
+  }
+
 // Function to export PDF
   const exportToPDF = () => {
     try {
@@ -347,5 +422,11 @@ const handleSelect1 = (key, keyPath) => {
 :deep(.el-radio-button__inner) {
   font-size: 14px;
 
+}
+.searchInput {
+  margin: 0.5rem 0.5rem 0.5rem 0;
+}
+.searchButton {
+  margin: 0.5rem 1rem 0.5rem 0;
 }
 </style>

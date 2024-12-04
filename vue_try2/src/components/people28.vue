@@ -1,10 +1,12 @@
 <script lang="ts" setup>
-    import { ref } from 'vue'
+    import { onMounted, ref } from 'vue'
     import outWindow from './outWindow.vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
-    import { user_data } from '@/status'
     import topMessage from './son_components/topMessage.vue'
+    import { ElMessage } from 'element-plus'
+    import axios from 'axios'
+    import { project_id } from '@/status'
 
     const router = useRouter()
 
@@ -54,6 +56,144 @@
     const styleProps2 = ref({
         height: '35rem'
     });
+
+    // 上传培训视频
+    function customRequest(options) {
+      const { file, onProgress, onSuccess, onError } = options
+      axios.post('http://localhost:8080/upload_c_msg', {
+          project_id: project_id.value,
+          file: file
+        },{
+          headers: {
+            'Content-Type': 'multipart/form-data'
+            // 'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          onUploadProgress: progressEvent => {
+            onProgress(progressEvent);
+          }
+        }).then(function (response){
+            onSuccess(response)
+            if(response.data.data === true){
+                ElMessage.success('培训视频上传成功')
+            }
+            else ElMessage.error('培训视频上传失败')
+        }).catch(function (error){
+            onError(error)
+            ElMessage.error('培训视频上传失败')
+        })
+    }
+
+    // 获取试卷下载地址
+    const dawnLoadURL = ref('')
+    function getDownloadUrl() {
+        axios.post('http://localhost:8080/get_task_1_msg', {
+          project_id: project_id.value
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+            dawnLoadURL.value = response.data.data
+        }).catch(function (error){
+            if (error.response) {
+                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // 请求已经成功发起，但没有收到响应
+                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+                // 而在node.js中是 http.ClientRequest 的实例
+                console.log(error.request);
+            } else {
+                // 发送请求时出了点问题
+                console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('获取下载地址失败')
+        })
+    }
+
+    // 下载地址字符串还没裁，现在会去E:/no_game/git/back2/local_hub\D:/files/4000001/4000001paper.pdf下载
+    // 下载试卷
+    function downloadPdf() {
+        axios.post('http://localhost:8080/download', {
+          fileName: dawnLoadURL.value
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+            const link = document.createElement('a');
+            link.href = 'http://localhost:8080/download';
+            link.setAttribute('download', dawnLoadURL.value); // 设置下载的文件名
+            document.body.appendChild(link);
+            link.click(); // 触发下载
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL('http://localhost:8080/download'); // 释放URL对象 
+        }).catch(function (error){
+            if (error.response) {
+                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // 请求已经成功发起，但没有收到响应
+                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+                // 而在node.js中是 http.ClientRequest 的实例
+                console.log(error.request);
+            } else {
+                // 发送请求时出了点问题
+                console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('下载失败')
+        })
+    }
+
+    // 上传试卷
+    function uploadPdf(options) {
+        const { file, onProgress, onSuccess, onError } = options
+      axios.post('http://localhost:8080/upload_t_msg', {
+          project_id: project_id.value,
+          file: file
+        },{
+          headers: {
+            'Content-Type': 'multipart/form-data'
+            // 'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          onUploadProgress: progressEvent => {
+            onProgress(progressEvent);
+          }
+        }).then(function (response){
+            onSuccess(response)
+            if(response.data.data === true){
+                ElMessage.success('考核试卷上传成功')
+            }
+            else ElMessage.error('考核试卷上传失败')
+        }).catch(function (error){
+            onError(error)
+            ElMessage.error('考核试卷上传失败')
+        })
+    }
+
+    // handle change
+    function handleChange() {
+    }
+
+    // 一个用于从localStorage加载信息的函数
+    function loadData() {
+        const savedProjectId = localStorage.getItem('project_id');
+        if (savedProjectId) {
+            project_id.value = JSON.parse(savedProjectId);
+        }
+    }
+
+    onMounted(() => {
+        loadData()
+        getDownloadUrl()
+    })
+
 </script>
 
 <template>
@@ -103,7 +243,17 @@
 
     <!-- 具体内容 -->
     <div v-if="video" id="content228">
-        <el-button id="upvideo28" type="success">导入视频</el-button>
+        <div id="upload_video">
+            <el-upload
+                class="upload-demo"
+                action="/api/upload"
+                :on-change="handleChange"
+                :show-file-list="false"
+                :http-request="customRequest"
+            >
+                <el-button id="upvideo28" type="success">导入视频</el-button>
+            </el-upload>
+        </div>
         <div id="myvideo">
             <div
                 class="inline-flex line1"
@@ -116,7 +266,6 @@
             >
                 <p>这里放视频的标题或者内容的简要描述1</P>
                 <el-button class="paly_button" type="success" @click="openModal(1)" round>播放</el-button>
-                <el-button class="paly_button" style="width: auto;" type="primary" round>重新导入</el-button>
                 <el-button class="paly_button" type="danger" round>删除</el-button>
             </div>
             <div
@@ -130,7 +279,6 @@
             >
                 <p>这里放视频的标题或者内容的简要描述1</P>
                 <el-button class="paly_button" type="success" @click="openModal(1)" round>播放</el-button>
-                <el-button class="paly_button" style="width: auto;" type="primary" round>重新导入</el-button>
                 <el-button class="paly_button" type="danger" round>删除</el-button>
             </div>
         </div>
@@ -139,8 +287,17 @@
     <div v-else-if="test" id="content3">
         <div id="testPaper">
             <h2>考核试卷</h2>
-            <el-button type="primary" plain>下载试卷</el-button>
-            <el-button type="success" plain>上传试卷</el-button>
+            <el-button type="primary" @click="downloadPdf()" plain>下载试卷</el-button>
+            <el-upload
+                id="upload_paper"
+                class="upload-demo"
+                action="/api/upload"
+                :on-change="handleChange"
+                :show-file-list="false"
+                :http-request="uploadPdf"
+            >
+                <el-button type="success" plain>上传试卷</el-button>
+            </el-upload>
         </div>
         <div id="testVideo">
             <el-button type="warning" plain>考核管理</el-button>
@@ -182,9 +339,11 @@
     #p1{
         margin-top: 2rem;
     }
+    #upload_video{
+        margin-top: 1.5rem;
+    }
     #upvideo28{
-        margin-top: 2rem;
-        margin-left: -80%;
+        margin-left: 1rem;
     }
     .radius {
         height: auto;
@@ -248,5 +407,8 @@
         position: absolute;
         margin-top: 11.5rem;
         margin-left: 12rem;
+    }
+    #upload_paper{
+        margin-top: 1rem;
     }
 </style>

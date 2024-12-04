@@ -265,7 +265,7 @@
         })
     }
 
-    // 一个用于从localStorage加载user_data的函数
+    // 一个用于从localStorage加载信息的函数
     function loadData() {
         const savedData = localStorage.getItem('user_data');
         if (savedData) {

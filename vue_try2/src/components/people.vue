@@ -63,7 +63,7 @@
     function handleChange() {
     }
 
-    // 下载试卷
+    // 上传试卷
     function customRequest(options) {
       const { file, onProgress, onSuccess, onError } = options
       axios.post('http://localhost:8080/people_task_1_msg', {
@@ -87,135 +87,200 @@
         })
     }
 
-    //   const formData = new FormData()
-    //   formData.append('project_id', project_id.value)
-    //   formData.append('answer', file)
-    //   formData.append('user_id', user_data.value.accountid)
-    //   axios({
-    //     method: 'post',
-    //     url: 'http://localhost:8080/upload_operation_procedure',
-    //      // 后端接口URL
-    //     data: formData,
-    //     headers: {
-    //       'Content-Type': 'application/x-www-form-urlencoded'
-    //     },
-    //     onUploadProgress: progressEvent => {
-    //       onProgress(progressEvent);
-    //     }
-    //   })
+    // 上传考核视频
+    function customRequest2(options) {
+      const { file, onProgress, onSuccess, onError } = options
+      axios.post('http://localhost:8080/people_task_2_msg', {
+          project_id: project_id.value,
+          file: file,
+          user_id: user_data.value.accountid
+        },{
+          headers: {
+            'Content-Type': 'multipart/form-data'
+            // 'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          onUploadProgress: progressEvent => {
+            onProgress(progressEvent);
+          }
+        }).then(function (response){
+            onSuccess(response)
+            if(response.data.data === true){
+                ElMessage.success('试卷上传成功')
+            }
+            else ElMessage.error('试卷上传失败')
+        }).catch(function (error){
+            onError(error)
+            ElMessage.error('试卷上传失败')
+        })
+    }
 
-//     function getCurrentTime() {
-//   const now = new Date();
-//   return now.toLocaleString();
-// }
-//     const  isentry= ref(true)
-//     const  train= reactive({
-//         projectid: ''
-//     })
-//     const back= ref({
-//       res:'',
-//       isok:'',
-//       oktime:''
-//     })
-//     function handletrain(){
-//      if(isentry.value)
-//      {
-//         axios.post('http://localhost:8080/people_msg',
-//         {
-//             projectid:train.projectid
-//         },{
-//             headers: {
-//             'Content-Type': 'application/x-www-form-urlencoded'
-//         }
-//           })
-//           .then(function (response) {
-//             if(response.data.data.res===1)
-//           {
-//             alert('开始学习')
-//             console.log(response)
-//         //    router.push("/details/")
-//           }
-//           else if(response.data.data.res===2)
-//           {
-//             alert("学习项目为空")
-//             console.log(response)
+    // 获取试卷下载地址
+    const dawnLoadURL = ref('')
+    function getDownloadUrl() {
+        axios.post('http://localhost:8080/get_task_1_msg', {
+          project_id: project_id.value
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+            dawnLoadURL.value = response.data.data
+        }).catch(function (error){
+            if (error.response) {
+                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // 请求已经成功发起，但没有收到响应
+                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+                // 而在node.js中是 http.ClientRequest 的实例
+                console.log(error.request);
+            } else {
+                // 发送请求时出了点问题
+                console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('获取下载地址失败')
+        })
+    }
 
-//            // router.push("/details/")
-//           }
-//           if(response.data.data.isok===1)
-//           {
-//             alert("该人员已学习完毕")
-//             response.data.oktime=getCurrentTime()
-//             console.log(response)
-//           //  router.push("/details/")
-//           }
-//           else if(response.data.data.isok===2)
-//           {
-//             alert("该人员未学习完毕")
-//             console.log(response)
-//           //  router.push("/details/")
-//           }
-//           })
-//           .catch(function (error) {
-//     console.error('Error:', error);
-// });
-//         }
+    // 下载地址字符串还没裁，现在会去E:/no_game/git/back2/local_hub\D:/files/4000001/4000001paper.pdf下载
+    // 下载试卷
+    function downloadPdf() {
+        axios.post('http://localhost:8080/download', {
+          fileName: dawnLoadURL.value
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+            const link = document.createElement('a');
+            link.href = 'http://localhost:8080/download';
+            link.setAttribute('download', dawnLoadURL.value); // 设置下载的文件名
+            document.body.appendChild(link);
+            link.click(); // 触发下载
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL('http://localhost:8080/download'); // 释放URL对象 
+        }).catch(function (error){
+            if (error.response) {
+                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // 请求已经成功发起，但没有收到响应
+                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+                // 而在node.js中是 http.ClientRequest 的实例
+                console.log(error.request);
+            } else {
+                // 发送请求时出了点问题
+                console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('下载失败')
+        })
+    }
 
-//     // 返回响应式数据和函数，以便在模板中使用
-//     return {
-//       isentry,
-//       train,
-//       handletrain,
-//       back
-//     };
-//     }
+    // 获取学习状态
+    const isok = ref()
+    const isover = ref()
+    const overtime = ref()
+    function getTrainStatus() {
+        axios.post('http://localhost:8080/people_msg', {
+            project_id: project_id.value,
+            user_id: user_data.value.accountid
+        },{
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            isok.value = response.data.data.is_ok
+            if(isok.value === 1) {
+                isover.value = '已完成'
+                overtime.value = response.data.data.oktime
+            }
+            else {
+                isover.value = '未完成'
+                overtime.value = '未完成'
+            }
+        }).catch(function (error){
+            if (error.response) {
+            // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+            } else if (error.request) {
+            // 请求已经成功发起，但没有收到响应
+            // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+            // 而在node.js中是 http.ClientRequest 的实例
+            console.log(error.request);
+            } else {
+            // 发送请求时出了点问题
+            console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('获取学习状态失败')
+        })
+    }
 
-// 获取学习状态
-const isok = ref()
-const isover = ref()
-const overtime = ref()
-function getTrainStatus() {
-    axios.post('http://localhost:8080/people_msg', {
-        project_id: project_id.value,
-        user_id: user_data.value.accountid
-    },{
-        headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    }).then(function (response){
-        isok.value = response.data.data.is_ok
-        if(isok.value === 1) {
-            isover.value = '已完成'
-            overtime.value = response.data.data.oktime
-        }
-        else {
-            isover.value = '未完成'
-            overtime.value = '未完成'
-        }
-    }).catch(function (error){
-        if (error.response) {
-        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-        } else if (error.request) {
-        // 请求已经成功发起，但没有收到响应
-        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-        // 而在node.js中是 http.ClientRequest 的实例
-        console.log(error.request);
-        } else {
-        // 发送请求时出了点问题
-        console.log('Error', error.message);
-        }
-        console.log(error.config)
-        alert('状态码错误')
+    // 获取考核进度
+    const progress = ref({
+        progress: String,
+        task_1: String,
+        task_2: String,
+        is_autho: String,
+        auth_time: String
     })
-}
+    function getTestProgress() {
+        axios.post('http://localhost:8080/task_msg', {
+            project_id: project_id.value,
+            user_id: user_data.value.accountid
+        },{
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            progress.value = response.data.data
+        }).catch(function (error){
+            if (error.response) {
+            // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+            } else if (error.request) {
+            // 请求已经成功发起，但没有收到响应
+            // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+            // 而在node.js中是 http.ClientRequest 的实例
+            console.log(error.request);
+            } else {
+            // 发送请求时出了点问题
+            console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('获取考核进度失败')
+        })
+    }
+
+    // 一个用于从localStorage加载user_data的函数
+    function loadData() {
+        const savedData = localStorage.getItem('user_data');
+        if (savedData) {
+            user_data.value = JSON.parse(savedData);
+        }
+        const savedProjectId = localStorage.getItem('project_id');
+        if (savedProjectId) {
+            project_id.value = JSON.parse(savedProjectId);
+        }
+    }
   
 
     onMounted(() => {
     //   handletrain();
+    loadData()
     getTrainStatus()
+    getDownloadUrl()
+    getTestProgress()
     });
 </script>
 
@@ -302,7 +367,7 @@ function getTrainStatus() {
         <div id="testPaper">
             <h2>考核试卷</h2>
             <div style="display: flex;">
-                <el-button type="primary" plain>下载试卷</el-button>
+                <el-button type="primary" @click="downloadPdf()" plain>下载试卷</el-button>
                 <el-upload
                     id="upload"
                     class="upload-demo"
@@ -314,17 +379,25 @@ function getTrainStatus() {
                     <el-button type="success" plain>上传作答</el-button>
                 </el-upload>
             </div>
-            <p>评分情况：</p>
+            <p>笔试进度：{{ progress.task_1 }}</p>
         </div>
         <div id="testVideo">
             <h2>考核视频</h2>
-            <el-button type="success" plain>上传操作考核视频</el-button>
-            <p>评分情况：</p>
+            <el-upload
+                class="upload-demo"
+                action="/api/upload"
+                :on-change="handleChange"
+                :show-file-list="false"
+                :http-request="customRequest2"
+            >
+                <el-button type="success" plain>上传操作考核视频</el-button>
+            </el-upload>
+            <p>操作视频考核进度：{{ progress.task_2 }}</p>
         </div>
         <div id="authorization">
             <h2>授权结果</h2>
-            <p>授权情况：</p>
-            <p>授权时间：</p>
+            <p>授权情况：{{ progress.is_autho }}</p>
+            <p>授权时间：{{ progress.auth_time }}</p>
         </div>
     </div>
   </div>

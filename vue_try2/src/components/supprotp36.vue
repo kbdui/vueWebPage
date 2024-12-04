@@ -3,13 +3,7 @@
       <div id="top">
         <div id="top1">
             <!-- page header 页头 -->
-            <el-page-header @back="goBack">
-            <template #content>
-                <span class="text-large font-600 mr-3">
-                GB 19083-2003 4.1 医用防护口罩>基本要求
-                </span>
-            </template>
-            </el-page-header>
+            <TopMessage></TopMessage>
 
             <!-- 头像框 -->
             <headshot></headshot>
@@ -129,6 +123,8 @@ import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { project_id } from '@/status';
+import topMessage from './son_components/topMessage.vue';
+import TopMessage from './son_components/topMessage.vue';
 
 const procedures = ref([]);
 const tmp = ref([]);
@@ -331,11 +327,6 @@ const handleSelect1 = (key, keyPath) => {
   if (key.match('2')) router.push('/machineSelect');
   if (key.match('4')) router.push('/p38');
   console.log(key, keyPath);
-};
-// page header 页头
-const goBack = () => {
-  router.push('/supportStandardQuery');
-  console.log('go back');
 };
 
 </script>  

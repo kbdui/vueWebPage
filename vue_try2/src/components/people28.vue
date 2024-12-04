@@ -4,14 +4,9 @@
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
     import { user_data } from '@/status'
+    import topMessage from './son_components/topMessage.vue'
 
     const router = useRouter()
-
-    // page header 页头
-    const goBack = () => {
-        router.push('/supportStandardQuery')
-        console.log('go back')
-    }
 
     // menu 菜单
     const activeIndex1 = ref('1')
@@ -65,13 +60,7 @@
   <div id="top">
     <div id="top1">
         <!-- page header 页头 -->
-        <el-page-header @back="goBack">
-        <template #content>
-            <span class="text-large font-600 mr-3">
-            GB 19083-2003 4.1 医用防护口罩>基本要求
-            </span>
-        </template>
-        </el-page-header>
+        <topMessage></topMessage>
 
         <!-- 头像框 -->
         <headshot></headshot>

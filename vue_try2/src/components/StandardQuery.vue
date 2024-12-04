@@ -18,7 +18,7 @@
         <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
           <div v-if="projects.length === 0">没有项目数据</div>
             <router-link to="/details/" class="action-button"
-             @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.project_name)"
+             @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.projectname)"
             >
               <strong>项目名称：</strong> {{ project.projectname }}
             </router-link>
@@ -132,19 +132,16 @@ const userInitials = computed(() => {
   return userInfo.value.name.slice(0, 2)
 })
   
-function handleClick(projectId, standardNumber, projecttype, project_name) {
-      // 更新 project_id 引用
+function handleClick(projectId, standardNumber, projecttype, projectname) {
       project_id.value = projectId
-      title.value = standardNumber + projecttype + project_name
+      title.value = standardNumber +'  '+ projecttype +'  '+ projectname
       saveData()
       console.log("project_id:",project_id.value)
-      // 阻止默认的路由跳转行为
-      // 使用编程式导航
-      // router.push('/supportDetails/');
     }
+
     function saveData() {
         localStorage.setItem('project_id', JSON.stringify(project_id.value))
-        localStorage.setItem('title', JSON.stringify(sampleNumber.value))
+        localStorage.setItem('title', JSON.stringify(title.value))
     }
 const handleExcelUpload = (event) => {
   const file = event.target.files[0];

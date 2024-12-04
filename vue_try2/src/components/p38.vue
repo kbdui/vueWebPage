@@ -3,13 +3,7 @@
       <div id="top">
         <div id="top1">
             <!-- page header 页头 -->
-            <el-page-header @back="goBack">
-            <template #content>
-                <span class="text-large font-600 mr-3">
-                GB 19083-2003 4.1 医用防护口罩>基本要求
-                </span>
-            </template>
-            </el-page-header>
+            <TopMessage></TopMessage>
 
             <!-- 头像框 -->
             <headshot></headshot>
@@ -114,16 +108,11 @@
   
   <script lang="ts" setup>
   import { ref } from 'vue'
-  import Top from './Top.vue'
   import { useRouter } from 'vue-router'
+  import topMessage from './son_components/topMessage.vue';
+import TopMessage from './son_components/topMessage.vue';
 
 const router = useRouter()
-
-// page header 页头
-const goBack = () => {
-    router.push('/supportStandardQuery')
-    console.log('go back')
-}
 
 // menu 菜单
 const activeIndex1 = ref('4')

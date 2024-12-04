@@ -25,7 +25,9 @@
       <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
         <div v-if="projects.length === 0">没有项目数据</div>
     
-        <router-link to="/supportDetails/" class="action-button" @click="handleClick(project.projectid)" >
+        <router-link to="/supportDetails/" class="action-button" 
+          @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.projectname)" 
+        >
           <strong>项目名称：</strong> {{ project.projectname }}
         </router-link>
           <p><strong>项目ID：</strong>{{ project.projectid }}</p>
@@ -117,15 +119,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import {reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
 import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
-import { project_id } from '@/status';
+import { project_id, title } from '@/status';
 // import * as XLSX from 'xlsx'
 import Top from './Top.vue'
-import { user_data } from '@/status'
 const router = useRouter()
 
 const userInfo = ref({
@@ -139,14 +139,11 @@ const userAvatar = ref('https://example.com/avatar.jpg')
 const userInitials = computed(() => {
 return userInfo.value.name.slice(0, 2)
 })
-function handleClick(projectId) {
-      // 更新 project_id 引用
-      project_id.value = projectId;
-      saveprojectid()
-      console.log("project_id:",project_id.value);
-      // 阻止默认的路由跳转行为
-      // 使用编程式导航
-      // router.push('/supportDetails/');
+function handleClick(projectId, standardNumber, projecttype, projectname) {
+      project_id.value = projectId
+      title.value = standardNumber +'  '+ projecttype +'  '+ projectname
+      saveData()
+      console.log("project_id:",project_id.value)
     }
 const handleExcelUpload = (event) => {
 const file = event.target.files[0];
@@ -318,14 +315,14 @@ const handlePageChange = (newPage) => {
 currentPage.value = newPage;
 // 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
-function saveprojectid() {
-        localStorage.setItem('project_id', JSON.stringify(project_id.value));
+function saveData() {
+        localStorage.setItem('project_id', JSON.stringify(project_id.value))
+        localStorage.setItem('title', JSON.stringify(title.value))
     }
 
 // const handleRowClick = (row) => {
 onMounted(() => {
 search()
-handleClick()
 })
 </script>
 <style scoped>

@@ -4,13 +4,7 @@
     <div class="header">
       <div id="top1">
           <!-- page header 页头 -->
-          <el-page-header @back="goBack">
-          <template #content>
-              <span style="color: rgb(30, 193, 30);" class="text-large font-600 mr-3">
-              GB 19083-2003 4.1 医用防护口罩>基本要求
-              </span>
-          </template>
-          </el-page-header>
+          <topMessage></topMessage>
 
           <!-- 头像框 -->
           <headshot></headshot>
@@ -126,6 +120,7 @@ import headshot from './headshot.vue'
 import { project_id,equipment_id } from '@/status'
 import outWindow from './outWindow.vue'
 import axios from 'axios'
+import topMessage from './son_components/topMessage.vue'
 
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)
@@ -227,11 +222,6 @@ function saveequipmentid() {
 //     quantity: 1
 //   }
 // ])
-
-const goBack = () => {
-  router.push('/standard')
-  console.log('go back')
-}
 
 const showDetails = (row) => {
   selectedEquipment.value = row 

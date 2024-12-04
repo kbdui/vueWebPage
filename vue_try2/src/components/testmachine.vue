@@ -137,15 +137,15 @@ const exportToPDF = async () => {
       <el-menu-item index="6">样品</el-menu-item>
     </el-menu>
     <el-menu
-    :default-active="activeIndex2"
-    class="el-menu-demo"
-    mode="horizontal"
-    active-text-color="#ffd04b"
-    @select="handleSelect2"
-  >
-    <el-menu-item index="1">清单</el-menu-item>
-    <el-menu-item index="2">预置清单</el-menu-item>
-  <!-- menu 菜单 --></el-menu>
+      :default-active="activeIndex2"
+      class="el-menu-demo"
+      mode="horizontal"
+      active-text-color="#ffd04b"
+      @select="handleSelect2"
+    >
+      <el-menu-item index="1">清单</el-menu-item>
+      <el-menu-item index="2">预置清单</el-menu-item>
+    </el-menu>
   </div>
 <br>
 <div v-if="list" id="list">

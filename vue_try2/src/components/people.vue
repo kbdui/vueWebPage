@@ -7,7 +7,10 @@
     import OutWindow from './outWindow.vue'
     import { ElMessage } from 'element-plus'
     import topMessage from './son_components/topMessage.vue'
+    import { useRoute } from 'vue-router'
+
     const router = useRouter()
+    const route = useRoute()
 
     // menu 菜单
     const activeIndex1 = ref('1')
@@ -273,14 +276,22 @@
             project_id.value = JSON.parse(savedProjectId);
         }
     }
-  
+
+    // 获取路由之后的信息
+    function getRouterInfo() {
+        if(route.params.num === '2'){
+            activeIndex2.value = '6'
+            video.value = false
+            test.value = true
+        }
+    }
 
     onMounted(() => {
-    //   handletrain();
     loadData()
     getTrainStatus()
     getDownloadUrl()
     getTestProgress()
+    getRouterInfo()
     });
 </script>
 

@@ -28,15 +28,22 @@
         <el-menu-item index="4">样品</el-menu-item>
         </el-menu>
       </div>
-  
+
       <!-- Sub Navigation -->
-      <el-tabs v-model="activeSubTab">
-        <el-tab-pane label="清单" name="list"></el-tab-pane>
-        <el-tab-pane label="预置清单" name="preset"></el-tab-pane>
-      </el-tabs>
+      <el-menu
+        id = "s19_sub_nav"
+        :default-active="activeIndex2"
+        class="el-menu-demo"
+        mode="horizontal"
+        active-text-color="#ffd04b"
+        @select="handleSelect2"
+      >
+        <el-menu-item index="1">清单</el-menu-item>
+        <el-menu-item index="2">预置清单</el-menu-item>
+      </el-menu>
   
       <!-- List View -->
-      <template v-if="activeSubTab === 'list'">
+      <template v-if="list">
         <div class="list-items">
           <div v-for="item in listItems" :key="item.id" class="list-item">
             <div class="list-item-content">
@@ -73,7 +80,7 @@
       </template>
   
       <!-- Preset List View -->
-      <template v-if="activeSubTab === 'preset'">
+      <template v-else-if="yulist">
         <el-table :data="presetListData" border style="width: 100%">
           <el-table-column prop="standardNo" label="标准编号" min-width="150" />
           <el-table-column prop="productName" label="产品名称" min-width="150" />
@@ -247,6 +254,22 @@
         if(key.match('1')) router.push('/people13')
         if(key.match('2')) router.push('/testmachine')
         if(key.match('3')) router.push('/Regulations18')
+        console.log(key, keyPath)
+    }
+
+    // Sub Navigation
+    const list = ref(true)
+    const yulist = ref(false)
+    const activeIndex2 = ref('1')
+    const handleSelect2 = (key: string, keyPath: string[]) => {
+        if(key.match('1')){
+            list.value = true
+            yulist.value = false
+        }
+        else if(key.match('2')){
+            list.value = false
+            yulist.value = true
+        }
         console.log(key, keyPath)
     }
   
@@ -582,5 +605,8 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+  }
+  #s19_sub_nav {
+    margin-bottom: 2rem;
   }
   </style>

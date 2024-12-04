@@ -34,33 +34,39 @@
   
       <!-- Project List -->
       <div class="project-list">
-        <div v-for="(project, index) in projects" :key="index" class="project-item">
+        <div v-for="(project, index) in projectData" :key="index" class="project-item">
           <el-card>
             <div class="project-content">
               <!-- Project Title -->
               <el-link type="primary" class="project-title">
-                {{ project.title }}
+                {{ project.standardnumber }}  {{ project.projecttype }}  {{ project.projectname }}
               </el-link>
   
               <!-- Status Section -->
               <div class="status-section">
                 <div class="status-item">
-                  培训情况：
+                  <el-button type="primary" 
+                  @click="goSeeTrainStatus(project.projectid, project.standardnumber, project.projecttype, project.projectname)"
+                   plain>查看培训情况</el-button>
+                  <!-- 培训情况：
                   <el-tag 
                     :type="project.trainingStatus ? 'success' : 'danger'"
                     effect="plain"
                   >
                     {{ project.trainingStatus ? '已完成' : '未完成' }}
-                  </el-tag>
+                  </el-tag> -->
                 </div>
                 <div class="status-item">
-                  授权情况：
+                  <el-button type="success" 
+                  @click="goSeeAuthorizationStatus(project.projectid,  project.standardnumber, project.projecttype, project.projectname)" 
+                  plain>查看授权情况</el-button>
+                  <!-- 授权情况：
                   <el-tag 
                     :type="project.authorizationStatus ? 'success' : 'danger'"
                     effect="plain"
                   >
                     {{ project.authorizationStatus ? '已完成' : '未完成' }}
-                  </el-tag>
+                  </el-tag> -->
                 </div>
               </div>
             </div>
@@ -71,14 +77,15 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { ref,onMounted } from 'vue'
   import { useRouter } from 'vue-router'
-  import { user_data } from '@/status'
   import headshot from './headshot.vue'
+  import axios from 'axios'
+  import { project_id, title } from '@/status'
 
   const router = useRouter()
 
-  // menu 菜单
+    // menu 菜单
     const activeIndex1 = ref('1')
     const handleSelect1 = (key: string, keyPath: string[]) => {
         if(key.match('2')) router.push('/testmachine')
@@ -86,30 +93,47 @@
         if(key.match('4')) router.push('/samplep19')
         console.log(key, keyPath)
     }
-  
-  const projects = ref([
-    {
-      title: '项目GB 19083-2003 4.1 医用防护口罩>基本要求(点击跳转到对应项目界面)',
-      trainingStatus: true,
-      authorizationStatus: false
-    },
-    {
-      title: '项目GB 19083-2003 4.1 医用防护口罩>口罩带连接强度',
-      trainingStatus: false,
-      authorizationStatus: true
-    },
-    {
-      title: '项目GB 19083-2003 4.1 医用防护口罩>过滤效率',
-      trainingStatus: false,
-      authorizationStatus: false
-    }
-  ])
 
-  // page header 页头
+    // 获取所有项目
+    const projectData = ref([])
+    function search() {
+      axios.get('http://localhost:8080/all_project')
+      .then(function (response) {
+          projectData.value = response.data.data
+      })
+      .catch(function (error) {
+        console.error('Error:', error);
+      });
+    }
+
+    // 查看培训情况
+    function goSeeTrainStatus(pid: String, standardnumber: String, projecttype: String, projectname: String) {
+      project_id.value = pid
+      title.value = standardnumber + '  ' + projecttype + '  ' + projectname
+      localStorage.setItem('project_id', JSON.stringify(project_id.value))
+      localStorage.setItem('title', JSON.stringify(title.value))
+      router.push('/details/1')
+    }
+
+    // 查看授权情况
+    function goSeeAuthorizationStatus(pid: String, standardnumber: String, projecttype: String, projectname: String) {
+      project_id.value = pid
+      title.value = standardnumber + '  ' + projecttype + '  ' + projectname
+      localStorage.setItem('project_id', JSON.stringify(project_id.value))
+      localStorage.setItem('title', JSON.stringify(title.value))
+      router.push('/details/2')
+    }
+
+   // page header 页头
     const goBack = () => {
         router.push('/entry')
         console.log('go back')
     }
+
+    onMounted(() => {
+      search()
+    })
+
   </script>
   
   <style scoped>

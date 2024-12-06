@@ -6,6 +6,7 @@
     import { project_id } from '@/status'
     import axios from 'axios'
     import topMessage from './son_components/topMessage.vue'
+    import { ElMessage } from 'element-plus'
 
     const router = useRouter()
 
@@ -65,9 +66,11 @@
             }
         }).catch(function(error){
             console.log(error)
+            ElMessage.error('获取操作规程失败')
         })
     }
 
+    // 获取所有的对比实验
     const compareList = ref()
     function getAllcompare(){
         axios.post('http://localhost:8080/download_compare_plan',{
@@ -81,6 +84,43 @@
             compareList.value = (String)(compareList.value).split('/').pop()
         }).catch(function(error){
             console.log(error)
+            ElMessage.error('获取对比实验失败')
+        })
+    }
+
+    // 根据输入地址下载目标文件
+    function downloadFile(url: string) {
+        axios.post('http://localhost:8080/download', {
+          fileName: url
+        },{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }).then(function (response){
+            const link = document.createElement('a');
+            link.href = response.data.url; // 假设服务器返回文件的实际URL
+            link.setAttribute('download', url); // 设置下载的文件名
+            document.body.appendChild(link);
+            link.click(); // 触发下载
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(link.href); // 释放URL对象 
+        }).catch(function (error){
+            if (error.response) {
+                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // 请求已经成功发起，但没有收到响应
+                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+                // 而在node.js中是 http.ClientRequest 的实例
+                console.log(error.request);
+            } else {
+                // 发送请求时出了点问题
+                console.log('Error', error.message);
+            }
+            console.log(error.config)
+            ElMessage.error('下载失败')
         })
     }
 
@@ -124,7 +164,7 @@
         <div v-for="operation in operationList" class="content_pdf">
             <p>{{ operation }}</p>
             <!-- <el-button type="primary" plain>查看</el-button> -->
-            <el-button type="success" plain>下载</el-button>
+            <el-button type="success" @click="downloadFile(operation)" plain>下载</el-button>
         </div>
    </div>
 
@@ -134,7 +174,7 @@
         <div v-if="compareList != 'null'" class="content_compare">
             <p>{{ compareList }}</p>
             <!-- <el-button type="primary" plain>查看</el-button> -->
-            <el-button type="success" plain>下载</el-button>
+            <el-button type="success" @click="downloadFile(compareList)" plain>下载</el-button>
         </div>
         <div v-if="compareList != 'null'" class="content_status">
             <!-- <p>申请状态</p> -->

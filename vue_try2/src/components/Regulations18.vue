@@ -31,22 +31,22 @@
     <!-- 内容 -->
     <div id="content18">
         <h2>对比实验申请记录</h2>
-        <div v-for="(project, index) in records" :key="index" class="project-item18">
+        <div v-for="(record, index) in records" :key="index" class="project-item18">
           <el-card>
             <div class="project-content18">
               <!-- Project Title -->
               <el-link type="primary" class="project-title">
-                {{ project.title }}
+                {{ record.project.categories }}  {{ record.project.projecttype }}  {{ record.project.projectname }}
               </el-link>
   
               <!-- Status Section -->
                 <div class="status-item18">
                   进行状态：
                   <el-tag 
-                    :type="project.Status ? 'primary' : 'success'"
+                    :type="record.projectTest.state === 'Finish' ? 'success' : 'primary'"
                     effect="plain"
                   >
-                    {{ project.Status ? '计划' : '完成' }}
+                    {{ record.projectTest.state === 'Finish' ? '完成' : '计划' }}
                   </el-tag>
                 </div>
             </div>
@@ -56,39 +56,62 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref } from 'vue'
-    import { useRouter } from 'vue-router'
-    import headshot from './headshot.vue'
-    import { user_data } from '@/status'
+  import { ref,onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import headshot from './headshot.vue'
+  import { user_data } from '@/status'
+  import axios from 'axios'
+  import { ElMessage } from 'element-plus'
 
-    const router = useRouter()
+  const router = useRouter()
 
-    // page header 页头
-    const goBack = () => {
-        router.push('/entry')
-        console.log('go back')
+  // page header 页头
+  const goBack = () => {
+      router.push('/entry')
+      console.log('go back')
+  }
+
+  // menu 菜单
+  const activeIndex1 = ref('3')
+  const handleSelect1 = (key: string, keyPath: string[]) => {
+      if(key.match('1')) router.push('/people13')
+      if(key.match('2')) router.push('/testmachine')
+      if(key.match('4')) router.push('/samplep19')
+      console.log(key, keyPath)
+  }
+
+  // 获取对比实验申请记录
+  const records = ref([])
+  function getRecords() {
+    axios.post('http://localhost:8080/show_my_compare_plan',{
+        account_id : user_data.value.accountid
+    },{
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
     }
+    }).then(function(response){
+        records.value = response.data.data
+    }).catch(function(error){
+        console.log(error)
+        ElMessage.error('获取对比实验申请记录失败')
+    })
+  }
 
-    // menu 菜单
-    const activeIndex1 = ref('3')
-    const handleSelect1 = (key: string, keyPath: string[]) => {
-        if(key.match('1')) router.push('/people13')
-        if(key.match('2')) router.push('/testmachine')
-        if(key.match('4')) router.push('/samplep19')
-        console.log(key, keyPath)
-    }
 
-    // 列表内容
-    const records = ref([
-        {
-        title: '项目GB 19083-2003 4.1 医用防护口罩>基本要求(点击跳转到对应项目界面)',
-        Status: true,
-        },
-        {
-        title: '项目GB 19083-2003 4.2 医用防护口罩> 口罩带连接强度(点击跳转到对应项目界面)',
-        Status: false,
-        }
-    ])
+  // 一个用于从localStorage加载user_data的函数
+  function loadUserData() {
+      const savedData = localStorage.getItem('user_data');
+      if (savedData) {
+          user_data.value = JSON.parse(savedData);
+      }
+  }
+
+  // 组件挂载时执行的函数
+  onMounted(() => {
+      loadUserData();
+      getRecords();
+  })
+
 </script>
 
 <style>

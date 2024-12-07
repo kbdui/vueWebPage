@@ -36,7 +36,7 @@
             <div class="project-content18">
               <!-- Project Title -->
               <el-link type="primary" class="project-title">
-                {{ record.project.categories }}  {{ record.project.projecttype }}  {{ record.project.projectname }}
+                {{ record.projectTest.testid }}  {{ record.project.categories }}  {{ record.project.projecttype }}  {{ record.project.projectname }}
               </el-link>
   
               <!-- Status Section -->

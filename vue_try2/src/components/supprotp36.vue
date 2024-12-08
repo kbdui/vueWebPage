@@ -54,11 +54,10 @@
           下载
         </el-button>
 
-        <!-- 删除按钮 -->
         <el-button 
           type="danger" 
           size="small"
-          @click="deletePdf(procedure.filename)"
+          @click="deletePdf(index)"
         >
           删除
         </el-button>
@@ -71,43 +70,26 @@
       <div class="section">
         <div class="section-header">
           <h2>对比实验</h2>
-
-          <el-upload
-            class="upload-demo"
-            action="/api/upload"
-            :on-success="handleComparisonUpload"
-            :on-error="handleUploadError"
-            :show-file-list="false"
-          >
             <el-button type="success" size="small">导入</el-button>
-          </el-upload>
         </div>
   
         <div class="comparison-list">
-          <div v-if="comparisonFile" class="comparison-item">
+          <div v-for="(comparisonFile, index) in comparisonFiles" :key="index" class="procedure-item">
             <span class="filename">{{ comparisonFile.filename }}</span>
+            
             <div class="actions">
               <el-button 
                 type="warning" 
                 size="small"
-                @click="viewComparison"
+                @click="downloadComparison()"
               >
                 下载查看
               </el-button>
-              
-              <el-upload
-                class="upload-demo"
-                action="/api/upload"
-                :on-success="handleComparisonUpload"
-                :on-error="handleUploadError"
-                :show-file-list="false"
-              >
-               
-              </el-upload>
+
               <el-button 
                 type="danger" 
                 size="small"
-                @click="deleteComparison"
+                @click="deleteComparison()"
               >
                 删除
               </el-button>
@@ -127,7 +109,9 @@ import topMessage from './son_components/topMessage.vue';
 import TopMessage from './son_components/topMessage.vue';
 
 const procedures = ref([]);
+const comparisonFiles = ref([]);
 const tmp = ref([]);
+const tmp_com = ref([]);
 //pdf文件应该都放在相对应的projectid文件夹下的子文件夹才能正确访问到，并且projectid文件夹下应该包含两个文件夹，
 // 分别存放操作规程和对比实验文件
 
@@ -136,10 +120,42 @@ function loadProjectId() {
   const savedData = localStorage.getItem('project_id');
   if (savedData) {
       project_id.value = JSON.parse(savedData);
-      console.log(project_id.value);
+      // console.log(project_id.value);
   }
 }
-//获取后端文件
+//获取后端对比文件的函数
+async function fetchComparison() {
+  try {
+    const response = await axios.post('http://localhost:8080/download_compare_plan', 
+      `project_id=${project_id.value}`, 
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    if (response.data && response.data.data) {
+      // 假设后端返回的data是一个包含文件地址的字符串
+      const comparisonFileUrl = response.data.data;
+      tmp_com.value = response.data.data;
+      console.log("tmp_com中的数据为：");
+      console.log(tmp_com.value);
+      // 将文件地址存储到响应式变量中，以便在Vue模板中使用
+      comparisonFiles.value = [{
+        filename: comparisonFileUrl.split('/').pop(), // 提取文件名
+        url: comparisonFileUrl // 文件的完整URL
+      }];
+    } else {
+      console.error('数据结构不符合预期:', response.data);
+      ElMessage.error('数据结构不符合预期，请检查后端返回的数据');
+    }
+  } catch (error) {
+    console.error('获取对比实验文件失败：', error);
+    ElMessage.error('获取对比实验文件失败，请重试');
+  }
+}
+//获取后端操作规程文件
 async function fetchProcedures() {
   try {
     const response = await axios.post('http://localhost:8080/download_operation_procedure', {
@@ -151,8 +167,9 @@ async function fetchProcedures() {
     });
 
     if (response.data && response.data.data) {
-      tmp.value = response.data.data;
-      console.log(tmp.value);
+       tmp.value = response.data.data;
+       console.log("tmp中的数据为：");
+       console.log(tmp.value);
       procedures.value = response.data.data.map(file => {
         const filename = file.split('#').pop(); // 提取文件名
         return {
@@ -219,7 +236,47 @@ async function downloadPdf(index) {
     ElMessage.error('下载PDF文件失败，请重试');
   }
 }
-// 自定义上传方法
+
+// 下载对比实验文件
+async function downloadComparison() {
+  
+  const filename = tmp_com.value;
+  // 确保 tmp_com.value 存在
+  if (!tmp_com.value) {
+    ElMessage.error('文件地址不存在');
+    return;
+  }
+
+  console.log("项目ID为：" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+
+  try {
+    // 假设 tmp_com.value 包含的是文件位置（例如：pic/1.jpg）
+    const response = await axios({
+      url: 'http://localhost:8080/download', // 接口URL
+      method: 'POST', // 请求方法为POST
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded' // 设置请求头
+      },
+      data: `fileName=${encodeURIComponent(filename)}`, // 传递文件位置参数
+      responseType: 'blob' // 指定响应类型为blob
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    console.log("下载地址为：" + url);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename); // 设置下载的文件名
+    document.body.appendChild(link);
+    link.click(); // 触发下载
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url); // 释放URL对象
+  } catch (error) {
+    console.error('下载文件失败：', error);
+    ElMessage.error('下载文件失败，请重试');
+  }
+}
+//上传操作规程方法
 function customRequest(options) {
       const { file, onProgress, onSuccess, onError } = options;
 
@@ -249,29 +306,77 @@ function customRequest(options) {
       });
     }
 
+// 删除PDF文件的函数
+function deletePdf(index) {
+  // 获取要删除的文件信息
+  const procedure = procedures.value[index];
+  if (!procedure) {
+    ElMessage.error('文件信息不存在');
+    return;
+  }
 
-function handleChange(file, fileList) {
+  // 在tmp数组中找到对应的完整路径
+  const filePath = tmp.value.find(path => path.includes(procedure.filename));
+  if (!filePath) {
+    ElMessage.error('文件路径不存在');
+    return;
+  }
+  console.log("要删除的文件路径为：" + filePath);
+  // let filepath ="/files/" + filePath.split("/").pop();
+  console.log("要删除的文件路径为：" + filePath);
+  // 构造请求参数
+  const params = new URLSearchParams();
+  params.append('file_address', filePath); // 使用找到的完整路径作为参数
+
+  // 发送删除请求
+  axios.post('http://localhost:8080/delete_operation_procedure_and_compare_plan', params, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
+  .then(response => {
+    // 检查响应是否成功
+    if (response && response.data ) {
+      // 成功删除后，从列表中移除该文件
+      procedures.value.splice(index, 1);
+      tmp.value = tmp.value.filter(path => path !== filePath); // 同时从tmp数组中移除对应的路径
+      ElMessage.success('文件删除成功');
+    } else {
+      // 后端返回的响应不包含预期的成功标识
+      ElMessage.error('删除失败：后端返回未知错误');
+    }
+  })
+  .catch(error => {
+    // 处理请求错误
+    console.error('删除文件失败：', error);
+    ElMessage.error('删除文件失败，请重试');
+  });
 }
 
-//删除PDF文件的函数
-function deletePdf(filename) {
+
+
+
+function deleteComparison() {
+  const filename = tmp_com.value;
+  console.log("要删除的文件名为：" + filename);
   // 确认是否要删除文件
-  const fileToDelete = procedures.value.find(file => file.filename === filename);
-  if (!fileToDelete) {
+
+  if (!filename) {
     console.log("未找到文件");
+    ElMessage.error('未找到文件');
     return;
   }
 
   // 从 URL 中提取文件路径并删除url前缀
-  const filepath_ = decodeURIComponent(fileToDelete.url);
+  const filepath_ = decodeURIComponent(filename);
   const tmp = "http://localhost:8080/files/";
   const filepathWithoutPrefix = filepath_.replace(tmp, "");
 
-  // 在文件名前加上 # 号，形成 /#文件名 的格式
-  const filepathWithHash = "/" + "#" + filepathWithoutPrefix;
-  // 使用绝对地址才能删除
-  const Path="D:/files/" +project_id.value + filepathWithHash;
-  console.log("删除的文件路径为：" + Path);
+  // // 在文件名前加上 # 号，形成 /#文件名 的格式
+  // const filepathWithHash = "/" + "#" + filepathWithoutPrefix;
+  // // 使用绝对地址才能删除
+  // const Path=project_id.value + filepathWithHash;
+  // console.log("删除的文件路径为：" + Path);
 
   new Promise((resolve, reject) => {
     const confirmed = confirm('此操作将永久删除该文件, 是否继续?');
@@ -286,7 +391,7 @@ function deletePdf(filename) {
     axios({
       method: 'POST',
       url: 'http://localhost:8080/delete_operation_procedure_and_compare_plan',
-      data: `file_address=${encodeURIComponent(Path)}`,
+      data: `file_address=${encodeURIComponent(filepath_)}`,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -312,12 +417,10 @@ function deletePdf(filename) {
 onMounted(() => {
   loadProjectId();
   fetchProcedures();
+  fetchComparison();
 });
 
-// 对比实验相关函数
-const viewComparison = () => {
-  
-};
+
 const router = useRouter();
 
 // menu 菜单

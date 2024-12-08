@@ -78,7 +78,7 @@
               shadow="hover"
             >
               <div class="equipment-content">
-                <div class="equipment-image">
+                <div class="equipment-image" @click="handleUploadPicture(item)">
                   <el-image
                     :src="item.picture_url"
                     fit="cover"
@@ -87,7 +87,7 @@
                     <template #error>
                       <div class="image-placeholder">
                         <el-icon><Picture /></el-icon>
-                        <span>没有照片</span>
+                        <span>点击上传照片</span>
                       </div>
                     </template>
                   </el-image>
@@ -99,13 +99,10 @@
                     <span class="label">设备名称:</span>
                     <span class="value">{{ item.scheme_name }}</span>
                   </div>
+            
                   <div class="info-row">
                     <span class="label">生产厂家:</span>
                     <span class="value">{{ item.source }}</span>
-                  </div>
-                  <div class="info-row">
-                    <span class="label">生产编号:</span>
-                    <span class="value">{{ item.scheme_number }}</span>
                   </div>
                   <div class="info-row">
                     <span class="label">设备ID:</span>
@@ -211,6 +208,7 @@ const dialogVisible = ref(false)
 const isSampleExist = ref(false);
 const newmachinename = ref('')
 const projectid=project_id
+const newid = ref('')
 const newname = ref('')
 const newsource = ref('')
  const data=ref({
@@ -241,11 +239,74 @@ const handleEquipmentSubmit = (newEquipment) => {
    console.log(newEquipment)
   newname.value=newEquipment.name
   newsource.value=newEquipment.source
-  console.log(newname.value,newsource.value)
+  console.log("newsource是",newsource.value)
   // ElMessage.success('设备添加成功')
   addnewscheme()
 }
 
+const uploadEquipmentPicture = async (scheme_id: number, file: File) => {
+  // 检查文件类型是否为PDF
+  if (file.type !== 'application/pdf') {
+    ElMessage.error('请上传PDF格式的文件')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('scheme_id', scheme_id.toString())
+  formData.append('file', file)
+
+  try {
+    const response = await axios.post('http://localhost:8080/add_equip_pic', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    // 修改判断逻辑 - 当response.data.data为true时表示上传成功
+    if (response.data.data === false) { // 修改判断条件
+      ElMessage.success('PDF上传成功')
+      // 刷新设备列表以显示新上传的PDF
+      await getallequipments()
+      
+      // 强制重新渲染图片组件
+      const index = equipmentDetails.value.findIndex(item => item.scheme_id === scheme_id)
+      if (index !== -1) {
+        const updatedItem = {...equipmentDetails.value[index]}
+        updatedItem.picture_url = updatedItem.picture_url  // 添加时间戳避免缓存
+        equipmentDetails.value[index] = updatedItem
+      }
+    } else {
+      // 添加更详细的错误信息
+      console.error('上传响应:', response.data)
+      ElMessage.error('PDF上传失败，请检查文件大小是否超限或格式是否正确')
+    }
+  } catch (error) {
+    console.error('上传错误:', error)
+    ElMessage.error('PDF上传过程中发生错误')
+  }
+}
+
+const handleUploadPicture = (item) => {
+  console.log('Selected item:', item)
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.pdf' // 只接受 PDF 文件
+  
+  input.onchange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // 验证文件类型
+      if (file.type !== 'application/pdf') {
+        ElMessage.error('请上传 PDF 格式的文件')
+        return
+      }
+      console.log('Selected file:', file)
+      uploadEquipmentPicture(item.scheme_id, file)
+    }
+  }
+  
+  input.click()
+}
  function getallmachine()
  {
     axios.post('http://localhost:8080/equipments_by_project',{
@@ -273,8 +334,8 @@ const handleEquipmentSubmit = (newEquipment) => {
   }
  }).then(function(response){
    equipmentDetails.value=response.data.data
-   console.log(response.data.data)
-   console.log(equipmentDetails.value)
+  // console.log(response.data.data)
+  // console.log(equipmentDetails.value)
  }).catch(function(error){
   console.log(error)
  })
@@ -308,7 +369,7 @@ function addnewscheme(){
     axios.post('http://localhost:8080/add_equip_scheme',{
       equipment_id : equipment_id.value,
       name: newname.value,
-      source: newsource.value,
+      source: newsource.value
     },
     {
       headers: {
@@ -363,10 +424,51 @@ const handleEdit = (item) => {
 const handleAdd = () => {
   inputDialogRef.value.open()
 }
-const viewPdf = (item) => {
-  ElMessage.success(`查看${item.scheme_detail}的PDF详情`)
+const uploadEquipmentPdf = async (scheme_id: number, file: File) => {
+  // Validate PDF file type
+  if (file.type !== 'application/pdf') {
+    ElMessage.error('请上传PDF格式的文件')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('scheme_id', scheme_id.toString())
+  formData.append('file', file)
+
+  try {
+    const response = await axios.post('http://localhost:8080/add_equip_pdf', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    if (response.data.data === false) {
+      ElMessage.success('PDF上传成功')
+      await getallequipments() // Refresh equipment list
+    } else {
+      ElMessage.error('PDF上传失败')
+    }
+  } catch (error) {
+    console.error('上传错误:', error)
+    ElMessage.error('PDF上传过程中发生错误')
+  }
 }
 
+const viewPdf = (item) => {
+  // Create file input element
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.pdf'
+  
+  input.onchange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      uploadEquipmentPdf(item.scheme_id, file)
+    }
+  }
+  
+  input.click()
+}
 const addToPreset = (item) => {
   ElMessage.success(`已将${item.name}添加到预置清单，数量：${item.quantity}`)
 }
@@ -697,5 +799,35 @@ onMounted(() => {
 .button-group {
   display: flex;
   gap: 12px;
+}
+.equipment-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer; /* 添加指针样式 */
+  transition: all 0.3s; /* 添加过渡效果 */
+}
+
+.equipment-image:hover {
+  opacity: 0.8; /* 悬停时的透明度效果 */
+  background-color: #e4e7ed;
+}
+
+.image-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  font-size: 14px;
+}
+
+.image-placeholder .el-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
 }
 </style>

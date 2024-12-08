@@ -7,31 +7,23 @@
 
         <!-- Request List -->
         <div class="request-list">
-            <el-card v-for="(request, index) in sampleRequests" :key="index" class="request-card">
+            <el-card v-for="(item, index) in allLists" :key="index" class="request-card">
                 <div class="request-info">
-                <div>清单编号：{{ request.id }}</div>
-                <div>记录时间：{{ request.date }}</div>
-                <div>需求人：{{ request.requester }}</div>
-                <div class="materials">
-                    计划申请物料：
-                    <div v-for="(item, itemIndex) in request.items" :key="itemIndex">
-                    {{ item.name }} 我需要{{ item.quantity }}个
-                    </div>
-                    <div>......</div>
-                </div>
-                <div class="status">
-                    状态：
-                    <span class="status-text" :class="request.status === '已发放' ? 'released' : 'pending'">
-                    {{ request.status }}
-                    </span>
-                </div>
-                <div class="status-button" v-if="request.status === '已发放'">
-                    <el-button type="success" size="small">已发放</el-button>
-                </div>
+                  <p>清单编号：{{ item.order_id }}</p>
+                  <p class="request_people">申请人：{{ item.user.name }}</p>
+                  <p class="status">
+                      状态：
+                      <span class="status-text" :class="item.order_state === 'Finish' ? 'released' : 'pending'">
+                      {{ item.order_state }}
+                      </span>
+                  </p>
+                  <!-- <div class="status-button" v-if="request.status === '已发放'">
+                      <el-button type="success" size="small">已发放</el-button>
+                  </div> -->
                 </div>
                 <div class="action-buttons">
-                    <el-button type="primary" size="small" @click="showDetails(request)">详情</el-button>
-                    <el-button type="danger" size="small" @click="deleteRequest(request)">删除</el-button>
+                    <el-button type="primary" size="small" @click="showDetails(item)">详情</el-button>
+                    <el-button type="danger" size="small" @click="deleteRequest(item)">删除</el-button>
                 </div>
             </el-card>
         </div>
@@ -40,28 +32,51 @@
         <el-dialog
         v-model="detailsVisible"
         :title="selectedRequest ? `清单详情` : ''"
-        width="80%"
+        width="77%"
         class="details-dialog"
         :close-on-click-modal="true"
         >
             <template v-if="selectedRequest">
-                <div class="details-header">
-                <div>清单编号：{{ selectedRequest.id }}</div>
-                <div>记录时间：{{ selectedRequest.date }}</div>
-                <div>需求人：{{ selectedRequest.requester }}</div>
+              <div class="details-header">
+                <div>清单编号：{{ selectedRequest.order_id }}</div>
+                <div>记录时间：{{ selectedRequest.order_time }}</div>
+                <div>需求人：{{ selectedRequest.user.name }}</div>
                 <div class="status-line">
-                    状态：<span class="status-text">{{ selectedRequest.status }}</span>
+                    状态：<span class="status-text">{{ selectedRequest.order_state }}</span>
                 </div>
-                </div>
-                
-                <el-table :data="selectedRequest.detailItems" border style="width: 100%; margin-top: 20px">
-                <el-table-column prop="standardCode" label="标准编号" width="180" />
-                <el-table-column prop="productName" label="产品名称" width="150" />
-                <el-table-column prop="sampleName" label="样品名称" width="150" />
-                <el-table-column prop="manufacturer" label="生产厂家" width="150" />
-                <el-table-column prop="specification" label="规格型号" width="120" />
-                <el-table-column prop="requestQuantity" label="申请需求" width="120" />
-                <el-table-column prop="actualQuantity" label="实际数量" width="120" />
+              </div>
+              
+              <el-table :data="selectedRequest.detail" style="width: 100%">
+                <el-table-column prop="standardNo" label="标准编号" width="180">
+                  <template #default="scope">
+                    {{ scope.row.samplenumber || '/' }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="productName" label="产品名称" width="120">
+                  <template #default="scope">
+                    {{ scope.row.typename || '/' }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="sampleName" label="样品名称" width="150">
+                  <template #default="scope">
+                    {{ scope.row.samplename || '/' }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="specModel" label="规格型号" width="100">
+                  <template #default="scope">
+                    {{ scope.row.model || '/' }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="申请数量" width="120">
+                  <template #default="scope">
+                    {{ scope.row.sampleid }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="actualQuantity" label="实际数量" width="120">
+                  <template #default="scope">
+                    {{ scope.row.sampleid }}
+                  </template>
+                </el-table-column>
                 <el-table-column label="操作" width="120">
                     <template #default="scope">
                     <el-button
@@ -72,13 +87,13 @@
                     </el-button>
                     </template>
                 </el-table-column>
-                </el-table>
+              </el-table>
             </template>
 
             <template #footer>
-                <div class="dialog-footer">
-                <el-button type="danger" @click="detailsVisible = false">关闭</el-button>
-                </div>
+                <!-- <div class="dialog-footer">
+                  <el-button type="danger" @click="detailsVisible = false">关闭</el-button>
+                </div> -->
             </template>
         </el-dialog>
 
@@ -104,108 +119,151 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import html2pdf from 'html2pdf.js'
-const detailsVisible = ref(false)
-const editQuantityVisible = ref(false)
-const selectedRequest = ref(null)
-const editingItem = ref(null)
-const editingIndex = ref(-1)
+  import { ref,onMounted } from 'vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import html2pdf from 'html2pdf.js'
+  import axios from 'axios'
+  const detailsVisible = ref(false)
+  const editQuantityVisible = ref(false)
+  const selectedRequest = ref(null)
+  const editingItem = ref(null)
+  const editingIndex = ref(-1)
 
-const sampleRequests = ref([
-  {
-    id: '20132453467',
-    date: '2024.10.23 14:23:21',
-    requester: '甲',
-    status: '计划采购',
-    items: [
-      { name: '酸度计', quantity: 10 },
-      { name: '天平', quantity: 30 }
-    ],
-    detailItems: [
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        productName: '酸度计',
-        sampleName: 'WDJ型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        specification: '/',
-        requestQuantity: '要10个',
-        actualQuantity: 10,
-        operation: '编辑实际数量'
-      },
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        productName: '酸度计',
-        sampleName: 'KIU型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        specification: '/',
-        requestQuantity: '要20个',
-        actualQuantity: 20,
-        operation: '编辑实际数量'
-      },
-      {
-        standardCode: 'GB 19083-2023 4.2',
-        productName: '天平',
-        sampleName: 'LIO型天平',
-        manufacturer: 'Xxx公司/厂',
-        specification: '/',
-        requestQuantity: '要30个',
-        actualQuantity: 30,
-        operation: '编辑实际数量'
-      }
-    ]
+  // const sampleRequests = ref([
+  //   {
+  //     id: '20132453467',
+  //     date: '2024.10.23 14:23:21',
+  //     requester: '甲',
+  //     status: '计划采购',
+  //     items: [
+  //       { name: '酸度计', quantity: 10 },
+  //       { name: '天平', quantity: 30 }
+  //     ],
+  //     detailItems: [
+  //       {
+  //         standardCode: 'GB 19083-2023 4.1',
+  //         productName: '酸度计',
+  //         sampleName: 'WDJ型酸度计',
+  //         manufacturer: 'Xxx公司/厂',
+  //         specification: '/',
+  //         requestQuantity: '要10个',
+  //         actualQuantity: 10,
+  //         operation: '编辑实际数量'
+  //       },
+  //       {
+  //         standardCode: 'GB 19083-2023 4.1',
+  //         productName: '酸度计',
+  //         sampleName: 'KIU型酸度计',
+  //         manufacturer: 'Xxx公司/厂',
+  //         specification: '/',
+  //         requestQuantity: '要20个',
+  //         actualQuantity: 20,
+  //         operation: '编辑实际数量'
+  //       },
+  //       {
+  //         standardCode: 'GB 19083-2023 4.2',
+  //         productName: '天平',
+  //         sampleName: 'LIO型天平',
+  //         manufacturer: 'Xxx公司/厂',
+  //         specification: '/',
+  //         requestQuantity: '要30个',
+  //         actualQuantity: 30,
+  //         operation: '编辑实际数量'
+  //       }
+  //     ]
+  //   }
+  // ])
+
+  const showDetails = (request) => {
+    selectedRequest.value = request
+    detailsVisible.value = true
   }
-])
 
-const showDetails = (request) => {
-  selectedRequest.value = request
-  detailsVisible.value = true
-}
+  const deleteRequest = (request) => {
+    ElMessageBox.confirm(`是否确定删除样品记录 ${request.order_id}?`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      const index = allLists.value.indexOf(request)
+      allLists.value.splice(index, 1)
+      // axios.post('http://localhost:8080/del_sample', {
+      //     sample_id: request.order_id
+      // },{
+      //     headers: {
+      //     'Content-Type': 'application/x-www-form-urlencoded'
+      //     }
+      // }).then(function (response){
+      //   if(response.data.data === true) ElMessage.success('样品记录删除成功')
+      //   else ElMessage.error('样品记录删除失败')
+      // }).catch(function (error){
+      //   if (error.response) {
+      //     // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+      //     console.log(error.response.data);
+      //     console.log(error.response.status);
+      //     console.log(error.response.headers);
+      //   } else if (error.request) {
+      //     // 请求已经成功发起，但没有收到响应
+      //     // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+      //     // 而在node.js中是 http.ClientRequest 的实例
+      //     console.log(error.request);
+      //   } else {
+      //     // 发送请求时出了点问题
+      //     console.log('Error', error.message);
+      //   }
+      //   console.log(error.config)
+      //   ElMessage.error('样品记录删除失败')
+      // })
+    }).catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '已取消删除'
+      })
+    })
+  }
 
-const deleteRequest = (request) => {
-  ElMessageBox.confirm(`是否确定删除清单 ${request.id}?`, '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    const index = sampleRequests.value.indexOf(request)
-    sampleRequests.value.splice(index, 1)
-    ElMessage({
-      type: 'success',
-      message: '删除成功'
+  const exportToPDF = () => {
+    const element = document.querySelector('.request-list')
+    html2pdf()
+      .from(element)
+      .save('样品需求清单.pdf')
+  }
+
+  const editActualQuantity = (index, row) => {
+    editingItem.value = { ...row }
+    editingIndex.value = index
+    editQuantityVisible.value = true
+  }
+
+  const saveActualQuantity = () => {
+    if (selectedRequest.value && editingIndex.value !== -1) {
+      selectedRequest.value.detailItems[editingIndex.value].actualQuantity = editingItem.value.actualQuantity
+      editQuantityVisible.value = false
+      ElMessage({
+        type: 'success',
+        message: '实际数量已更新'
+      })
+    }
+  }
+
+  // 获取所有所有人清单
+  const allLists = ref([])
+  function getAllLists() {
+    axios.get('http://localhost:8080/get_all_sample_order')
+    .then(function (response) {
+      allLists.value = response.data.data
     })
-  }).catch(() => {
-    ElMessage({
-      type: 'info',
-      message: '已取消删除'
-    })
+    .catch(function (error) {
+      console.error('Error:', error);
+      ElMessage.error('获取样品清单失败')
+    });
+  }
+
+  // 组件挂载时执行
+  onMounted(() => {
+    getAllLists()
   })
-}
 
-const exportToPDF = () => {
-  const element = document.querySelector('.request-list')
-  html2pdf()
-    .from(element)
-    .save('样品需求清单.pdf')
-}
-
-const editActualQuantity = (index, row) => {
-  editingItem.value = { ...row }
-  editingIndex.value = index
-  editQuantityVisible.value = true
-}
-
-const saveActualQuantity = () => {
-  if (selectedRequest.value && editingIndex.value !== -1) {
-    selectedRequest.value.detailItems[editingIndex.value].actualQuantity = editingItem.value.actualQuantity
-    editQuantityVisible.value = false
-    ElMessage({
-      type: 'success',
-      message: '实际数量已更新'
-    })
-  }
-}
 </script>
 
 <style scoped>
@@ -270,11 +328,13 @@ const saveActualQuantity = () => {
   padding: 0 20px;
 }
 
-.request-card {
+.request-card { 
   margin-bottom: 20px;
+  display: grid;
 }
 
 .request-info {
+  display: flex;
   line-height: 2;
 }
 
@@ -282,10 +342,12 @@ const saveActualQuantity = () => {
   margin: 10px 0;
 }
 
+.request_people {
+  margin-left: 2rem;
+}
+
 .status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  margin-left: 2rem;
 }
 
 .status-text {
@@ -303,8 +365,8 @@ const saveActualQuantity = () => {
 .action-buttons {
   display: flex;
   justify-content: flex-end;
+  margin-top: -1.8rem;
   gap: 10px;
-  margin-top: 20px;
 }
 
 .details-dialog :deep(.el-dialog__header) {

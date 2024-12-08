@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<!-- <script lang="ts" setup>
     import { ref,onMounted } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
@@ -130,7 +130,7 @@
         getAllOperations()
         getAllcompare()
     })
-</script>
+</script> -->
 
 <template>
     <div id="top">
@@ -156,31 +156,44 @@
     </el-menu>
   </div>
 
-  <el-button id="leave" @click="openModal()" type="primary" plain>留言</el-button>
+  <div id="leave_btn">
+    <el-button id="r_leave" @click="openModal()" type="primary" plain>留言</el-button>
+  </div>
   
   <!-- 操作规程 -->
-   <div id="r_content1">
+   <!-- <div id="r_content1">
         <h2>操作规程</h2>
         <div v-for="operation in operationList" class="content_pdf">
             <p>{{ operation }}</p>
-            <!-- <el-button type="primary" plain>查看</el-button> -->
             <el-button type="success" @click="downloadFile(operation)" plain>下载</el-button>
         </div>
-   </div>
+   </div> -->
+   <div class="procedures-list">
+      <div v-for="(procedure, index) in procedures" :key="index" class="procedure-item">
+        <span class="filename">{{ procedure.filename }}</span>
+        <div class="actions">
+          <el-button 
+            type="primary" 
+            size="small"
+            @click="downloadPdf(index)"
+          >
+            下载
+          </el-button>
+        </div>
+      </div>
+    </div>
 
    <!-- 对比实验 -->
-    <div id="r_content2">
+    <!-- <div id="r_content2">
         <h2>对比实验</h2>
         <div v-if="compareList != 'null'" class="content_compare">
             <p>{{ compareList }}</p>
-            <!-- <el-button type="primary" plain>查看</el-button> -->
             <el-button type="success" @click="downloadFile(compareList)" plain>下载</el-button>
         </div>
         <div v-if="compareList != 'null'" class="content_status">
-            <!-- <p>申请状态</p> -->
             <el-button type="primary" plain>申请对比实验</el-button>
         </div>
-      </div>
+      </div> -->
 
    <!-- 留言窗口 -->
     <outWindow 
@@ -192,6 +205,7 @@
    >
    </outWindow>
 </template>
+
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -362,8 +376,13 @@ onMounted(() => {
         justify-content: space-between;
         align-items: center;
     }
-    #leave{
+    #leave_btn {
+      width: 100%;
+      height: 3rem;
+    }
+    #r_leave{
         float: right;
+        margin-top: 1rem;
         margin-right: 3rem;
     }
     #r_content1{

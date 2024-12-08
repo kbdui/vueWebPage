@@ -45,28 +45,28 @@
       <!-- List View -->
       <template v-if="list">
         <div class="list-items">
-          <div v-for="item in listItems" :key="item.id" class="list-item">
+          <div v-for="item in listItems2" :key="item.id" class="list-item">
             <div class="list-item-content">
               <div class="list-item-header">
-                <div>清单编号：{{ item.id }}</div>
-                <div>记录时间：{{ item.timestamp }}</div>
+                <div>清单编号：{{ item.order_id }}</div>
+                <div>记录时间：{{ item.order_time }}</div>
               </div>
               <div class="list-item-body">
                 <div>计划申请物料：</div>
-                <div v-for="(material, index) in item.materials" :key="index" class="material-item">
-                  {{ material.name }} 我需要{{ material.quantity }}个
+                <div v-for="(material, index) in item.detail" :key="index" class="material-item">
+                  {{ material.samplename }} 我需要{{ material.sampleid }}个
                 </div>
                 <div class="status-line">
-                  状态：<span :class="['status', item.status.type]">{{ item.status.text }}</span>
+                  状态：<span :class="['status', transformState(item.order_state)]">{{ item.order_state }}</span>
                 </div>
               </div>
               <div class="list-item-footer">
-                <el-button 
+                <!-- <el-button 
                   type="danger" 
                   @click="handleDelete(item)"
                 >
                   删除
-                </el-button>
+                </el-button> -->
                 <el-button 
                   type="primary" 
                   @click="handleDetails(item)"
@@ -81,7 +81,7 @@
   
       <!-- Preset List View -->
       <template v-else-if="yulist">
-        <el-table :data="presetListData" border style="width: 100%">
+        <el-table :data="presetListData" style="width: 100%">
           <el-table-column prop="standardNo" label="标准编号" min-width="150" />
           <el-table-column prop="productName" label="产品名称" min-width="150" />
           <el-table-column prop="sampleName" label="样品名称" min-width="150" />
@@ -145,37 +145,53 @@
       <el-dialog
         v-model="detailsDialogVisible"
         :title="''"
-        width="80%"
+        width="60%"
         :show-close="false"
         destroy-on-close
       >
         <div v-if="selectedItem" class="details-dialog">
           <div class="dialog-header">
-            <div>清单编号：{{ selectedItem.id }}</div>
-            <div>记录时间：{{ selectedItem.timestamp }}</div>
+            <div>清单编号：{{ selectedItem.order_id }}</div>
+            <div>记录时间：{{ selectedItem.order_time }}</div>
           </div>
           <div class="status-section">
-            状态：<span :class="['status', selectedItem.status.type]">
-              {{ selectedItem.status.text }}
+            状态：<span :class="['status', transformState(selectedItem.order_state)]">
+              {{ selectedItem.order_state }}
             </span>
           </div>
           
-          <el-table :data="selectedItem.details" border style="width: 100%">
-            <el-table-column prop="standardNo" label="标准编号" width="180" />
-            <el-table-column prop="productName" label="产品名称" width="120" />
-            <el-table-column prop="sampleName" label="样品名称" width="150" />
-            <el-table-column prop="manufacturer" label="生产厂家" width="150" />
+          <el-table :data="selectedItem.detail" style="width: 100%">
+            <el-table-column prop="standardNo" label="标准编号" width="180">
+              <template #default="scope">
+                {{ scope.row.samplenumber || '/' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="productName" label="产品名称" width="120">
+              <template #default="scope">
+                {{ scope.row.typename || '/' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="sampleName" label="样品名称" width="150">
+              <template #default="scope">
+                {{ scope.row.samplename || '/' }}
+              </template>
+            </el-table-column>
+            <!-- <el-table-column prop="manufacturer" label="生产厂家" width="150">
+              <template #default="scope">
+                {{ scope.row.samplenumber || '/' }}
+              </template>
+            </el-table-column> -->
             <el-table-column prop="specModel" label="规格型号" width="100">
               <template #default="scope">
-                {{ scope.row.specModel || '/' }}
+                {{ scope.row.model || '/' }}
               </template>
             </el-table-column>
-            <el-table-column label="申请需求" width="120">
+            <el-table-column label="申请数量" width="120">
               <template #default="scope">
-                要{{ scope.row.quantity }}个
+                {{ scope.row.sampleid }}
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="200">
+            <!-- <el-table-column label="操作" width="200">
               <template #default="scope">
                 <el-button
                   type="primary"
@@ -192,17 +208,17 @@
                   删除
                 </el-button>
               </template>
-            </el-table-column>
+            </el-table-column> -->
           </el-table>
   
-          <div class="dialog-footer">
+          <!-- <div class="dialog-footer">
             <el-button 
               type="danger" 
               @click="detailsDialogVisible = false"
             >
               关闭
             </el-button>
-          </div>
+          </div> -->
         </div>
       </el-dialog>
   
@@ -234,10 +250,11 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref, computed } from 'vue'
+  import { ref, computed,onMounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
-    import { useRouter } from 'vue-router'
+  import { useRouter } from 'vue-router'
   import headshot from './headshot.vue'
+  import axios from 'axios'
   import { user_data } from '@/status'
 
     const router = useRouter()
@@ -393,7 +410,7 @@
     })
   }
   
-  const handleDetails = (item) => {
+  function handleDetails(item) {
     selectedItem.value = item
     detailsDialogVisible.value = true
   }
@@ -493,6 +510,56 @@
       ElMessage.success('修改成功')
     }
   }
+
+  function transformState(state : String) {
+    return state === 'Finish' ? 'completed' : 'pending'
+  }
+ 
+  // 获取个人清单
+  const listItems2 = ref([])
+  function getPersonalList() {
+    axios.post('http://localhost:8080/show_my_order', {
+        account_id: user_data.value.accountid
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+      listItems2.value = response.data.data
+    }).catch(function (error){
+      if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+      } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+      }
+      console.log(error.config)
+      ElMessage.error('个人清单获取失败')
+    })
+  }
+
+  // 在刷新页面时重新加载用户数据
+  function loadUserData() {
+      const savedData = localStorage.getItem('user_data');
+      if (savedData) {
+          user_data.value = JSON.parse(savedData);
+      }
+  }
+
+  // 组件挂载时加载数据
+  onMounted(() => {
+    loadUserData()
+    getPersonalList()
+  })
+
   </script>
   
   <style scoped>

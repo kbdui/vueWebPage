@@ -6,7 +6,7 @@
             <el-page-header @back="goBack">
             <template #content>
                 <span class="text-large font-600 mr-3">
-                GB 19083-2003 4.1 医用防护口罩>基本要求
+                支持人员的规程页面
                 </span>
             </template>
             </el-page-header>
@@ -60,7 +60,6 @@
           下载
         </el-button>
 
-        <!-- 删除按钮 -->
         <el-button 
           type="danger" 
           size="small"
@@ -244,6 +243,7 @@ async function downloadPdf(index) {
 
 // 下载对比实验文件
 async function downloadComparison() {
+  
   const filename = tmp_com.value;
   // 确保 tmp_com.value 存在
   if (!tmp_com.value) {
@@ -424,10 +424,7 @@ onMounted(() => {
   fetchComparison();
 });
 
-// 对比实验相关函数
-const viewComparison = () => {
-  
-};
+
 const router = useRouter();
 
 // menu 菜单

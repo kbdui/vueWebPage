@@ -19,11 +19,9 @@
         <el-form-item label="生产厂家" prop="source">
           <el-input v-model="form.source" placeholder="请输入生产厂家" />
         </el-form-item>
-  
         <el-form-item label="设备ID" prop="equipmentId">
           <el-input v-model="form.equipmentId" placeholder="请输入设备ID" />
         </el-form-item>
-  
         <el-form-item label="需求数量" prop="quantity">
           <el-input-number
             v-model="form.quantity"
@@ -60,7 +58,7 @@
     name: [
       { required: true, message: '请输入设备名称', trigger: 'blur' }
     ],
-    manufacturer: [
+   source: [
       { required: true, message: '请输入生产厂家', trigger: 'blur' }
     ],
     equipmentId: [

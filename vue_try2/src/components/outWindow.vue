@@ -2,7 +2,7 @@
     import { ref,onMounted } from 'vue'
     import { Close } from '@element-plus/icons-vue'
     import axios from 'axios'
-    
+    const progressStatus = ref('播放中');
     // 传入的props
     const props = defineProps({
         isVisible: Boolean,
@@ -60,7 +60,15 @@
           alert('状态码错误')
         })
     }
-
+// 在 <outWindow> 组件的 <script> 部分
+const updateProgressStatus = (videoElement) => {
+  const progress = (videoElement.currentTime / videoElement.duration) * 100;
+  if (progress >= 100) {
+    progressStatus.value = '已完成';
+  } else {
+    progressStatus.value = `${progress.toFixed(2)}%`;
+  }
+};
     // 组件挂载时执行事件
     onMounted(() => {
         if(props.outWindowType===true) getMessages()

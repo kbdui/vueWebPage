@@ -285,7 +285,23 @@
             test.value = true
         }
     }
+    document.addEventListener('DOMContentLoaded', function() {
+    var video = document.querySelector('.video1');
+    var progress = document.getElementById('videoProgress');
+    var progressMarker = document.getElementById('progressMarker');
 
+    // 更新进度条
+    video.addEventListener('timeupdate', function() {
+        var percentage = (video.currentTime / video.duration) * 100;
+        progress.value = percentage;
+    });
+
+    // 视频播放结束
+    video.addEventListener('ended', function() {
+        progress.value = 100; // 设置进度条为100%
+        progressMarker.textContent = '已完成';
+    });
+});
     onMounted(() => {
     loadData()
     getTrainStatus()
@@ -414,7 +430,7 @@
   </div>
 
   <!-- 视频播放窗口 -->
-   <outWindow 
+   <!-- <outWindow 
     :isVisible = "showModal"
     :messageType = "'Offiers'"
     :outWindowType = false
@@ -423,8 +439,19 @@
         <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
             Your browser does not support the video element.
         </video>
-   </outWindow>
-
+   </outWindow> -->
+   <outWindow 
+    :isVisible="showModal"
+    :messageType="'Offiers'"
+    :outWindowType=false
+    @closeModal="closeModal(1)"
+>
+    <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
+        Your browser does not support the video element.
+    </video>
+    <progress id="videoProgress" value="0" max="100"></progress>
+    <div id="progressMarker">播放中...</div>
+</outWindow>
    <!-- 留言窗口 -->
     <outWindow 
     :isVisible = "showModal2"
@@ -510,4 +537,13 @@
         margin-left: 2em;
         margin-top: -2px;
     }
+    #progressMarker {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border-radius: 5px;
+}
 </style>

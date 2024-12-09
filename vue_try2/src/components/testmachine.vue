@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-    import { ref } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
     import { user_data } from '@/status'
     import { ElMessage } from 'element-plus'
+    import axios from 'axios'
     import html2canvas from 'html2canvas'
     import jsPDF from 'jspdf'
     const router = useRouter()
@@ -41,12 +42,7 @@ const status1 = ref('已采购');
 const status2 = ref('点击完成');
 //显示表单
 const showModal = ref(false);
-const detailInfo = ref({
-  id: '201123029433',
-  time: '2023.10.12 23:11:23',
-  person: '张三',
-  equipment: '设备,设备2,设备3'
-});
+
 // 定义一个方法来更新状态
 function updateStatus(newStatus) {
   if (status1.value === '点击完成') {
@@ -61,23 +57,14 @@ const formData = ref({
   name: '',
   email: ''
 });
-
 // 方法
 const submitForm = () => {
   console.log('表单数据：', formData.value);
   // 这里可以添加发送数据到服务器的代码
 };
 //预置清单显示表格
-const tableData = [
-  {
-    标准编号: 'GB-19083-2023 4.1',
-    器械品类: '酸度计',
-    设备名称: 'WDJ型酸度计',
-    生产厂家:'Xxx公司/厂',
-    设备详情:'详情',
-    购买数量:10,
-  },
-]
+const tableData = ref([])
+const equipmentList = ref([])
 const generatePresetList = () => {
   console.log('Generating preset list')
   ElMessage.success('预置清单已生成')
@@ -106,6 +93,93 @@ const exportToPDF = async () => {
     ElMessage.error('PDF导出失败，请重试')
   }
 }
+
+function fetchEquipmentOrders() {
+  axios.post('http://localhost:8080/get_personal_equip_order', {
+    uid: user_data.value.accountid
+  },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(response => {
+    if (response.data.code === 1) {
+      
+      response.data.data.forEach(order => {
+        order.detail.forEach(item => {
+          equipmentList.value.push({
+            id: item.scheme_id,
+            name: item.scheme_name,
+            source: item.source, 
+            quantity: item.num,
+            schemeNumber: item.scheme_number,
+            time: order.order_time,
+            status: order.order_state
+          })
+        })
+      })
+      console.log(equipmentList.value)
+    } else {
+      console.log(response.data.data)
+      ElMessage.error('Failed to fetch equipment orders')
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching equipment orders:', error)
+    ElMessage.error('Error fetching equipment orders')
+  })
+}
+
+// 使用computed计算属性来获取去重后的设备列表
+const uniqueEquipmentList = computed(() => {
+  // 使用Map按设备名称分组存储设备信息
+  const equipmentMap = new Map()
+
+  // 遍历设备列表,按名称分组
+  equipmentList.value.forEach(equipment => {
+    if (!equipmentMap.has(equipment.name)) {
+      // 如果是新的设备名称,创建新条目
+      equipmentMap.set(equipment.name, {
+        ids: new Set([equipment.id]),
+        name: equipment.name,
+        sources: new Set([equipment.source]),
+        quantities: new Set([equipment.quantity]), 
+        schemeNumbers: new Set([equipment.schemeNumber]),
+        times: new Set([equipment.time]),
+        statuses: new Set([equipment.status])
+      })
+    } else {
+      // 已存在的设备名称,添加到现有集合中
+      const existing = equipmentMap.get(equipment.name)
+      existing.ids.add(equipment.id)
+      existing.sources.add(equipment.source)
+      existing.quantities.add(equipment.quantity)
+      existing.schemeNumbers.add(equipment.schemeNumber) 
+      existing.times.add(equipment.time)
+      existing.statuses.add(equipment.status)
+    }
+  })
+
+  // 将Map转换为数组
+  const equipmentArray = Array.from(equipmentMap.values()).map(item => ({
+    ids: Array.from(item.ids).join(', '),
+    name: item.name,
+    sources: Array.from(item.sources).join(', '),
+    quantities: Array.from(item.quantities).join(', '),
+    schemeNumbers: Array.from(item.schemeNumbers).join(', '),
+    times: Array.from(item.times).join(', '),
+    statuses: Array.from(item.statuses).join(', ')
+  }))
+
+  return {
+    equipments: equipmentArray,
+    items: equipmentList.value
+  }
+})
+onMounted(() => {
+  fetchEquipmentOrders()
+
+})
 </script>
 
 <template>
@@ -152,46 +226,24 @@ const exportToPDF = async () => {
 <!-- 导出清单按钮 -->
 <el-button type="success" id="export" size="mini" >导出清单</el-button>
   <!-- //list-->
-  <el-card style="max-width: 100%"  color="light blue">
-  <P id="index">清单编号：201123029433</P>
-   <P id="time">记录时间：2023.10.12 23:11:23</P>
-   <P>计划采购设备：设备,设备2,设备3</P>
-   <p id="status1">状态：购置完成</p>
-   <el-button v-if="status1 !== '已采购'" type="success" id="download" size="mini" >标为完成</el-button>
-   <el-button type="success" id="delete" size="mini" >删除</el-button>
-   <el-button type="success" @click="showModal = true" id="detail" size="mini">详情</el-button>
-  </el-card>
-  <!-- //list-->
-  <el-card style="max-width: 100%"  color="light blue">
-  <P  id="index">清单编号：201123029433</P>
-   <P id="time">记录时间：2023.10.12 23:11:23</P>
-   <P>计划采购设备：设备,设备2,设备3</P>
-   <p id="status2" name="任务1">状态：计划采购</p>
-   <el-button v-if="status2 !== '已采购'" type="success" id="download" size="mini" >标为完成</el-button>
-   <el-button type="success" id="delete" size="mini" >删除</el-button>
-   <el-button type="success" @click="showModal = true" id="detail" size="mini">详情</el-button>
-   <div v-if="showModal" class="modal">
-    <div class="modal-content" style="text-align: center;">
-      <span class="close" @click="showModal = false">&times;</span>
-      <h2>设备详情</h2>
-      <el-form>
-        <el-form-item label="清单编号">
-          <el-input v-model="detailInfo.id" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="记录时间">
-          <el-input v-model="detailInfo.time" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="计划采购人">
-          <el-input v-model="detailInfo.person" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="计划采购设备">
-          <el-input v-model="detailInfo.equipment" disabled></el-input>
-        </el-form-item>
-      </el-form>
+
+    <div v-for="(equipment, index) in uniqueEquipmentList.equipments" :key="index">
+      <el-card style="max-width: 100%" color="light blue" class="mb-2">
+        <P id="index">清单编号：{{ equipment.ids }}</P>
+        <P id="time">记录时间：{{ equipment.times }}</P>
+        <P>设备信息：{{ equipment.name }}</P>
+        <p :id="'status' + index">状态：{{ equipment.statuses }}</p>
+        <el-button 
+          v-if="equipment?.statuses !== 'Finish'"
+          type="success" 
+          :id="'download' + index" 
+          size="mini"
+        >标为完成</el-button>
+        <el-button type="success" :id="'delete' + index" size="mini">删除</el-button>
+        <el-button type="success" @click="showModal = true" :id="'detail' + index" size="mini">详情</el-button>
+      </el-card>
     </div>
-  </div>
-  </el-card>
-  <!-- //点击预置清单 -->
+    <!-- //点击预置清单 -->
 </div>
 <div v-else-if="yulist">
     <el-table :data="tableData" style="width: 100%" height="25%">
@@ -202,7 +254,7 @@ const exportToPDF = async () => {
         <el-table-column prop="设备详情" label="设备详情" />
         <el-table-column prop="购买数量" label="购买数量" />  
         <el-table-column label="操作" width="200">
-                <template #default="scope">
+                <template >
                   <el-button type="primary" size="mini" >修改数量</el-button>
                   <el-button type="danger" size="mini">详情</el-button>
                 </template>
@@ -216,7 +268,7 @@ const exportToPDF = async () => {
         <el-table-column prop="设备详情" label="设备详情" />
         <el-table-column prop="购买数量" label="购买数量" />  
         <el-table-column label="操作" width="200">
-                <template #default="scope">
+                <template>
                   <el-button type="primary" size="mini">修改数量</el-button>
                   <el-button type="danger" size="mini">详情</el-button>
                 </template>
@@ -391,3 +443,4 @@ const exportToPDF = async () => {
 function data() {
   throw new Error('Function not implemented.');
 }
+

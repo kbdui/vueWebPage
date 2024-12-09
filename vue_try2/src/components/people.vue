@@ -440,18 +440,19 @@
             Your browser does not support the video element.
         </video>
    </outWindow> -->
-   <outWindow 
-    :isVisible="showModal"
-    :messageType="'Offiers'"
-    :outWindowType=false
-    @closeModal="closeModal(1)"
->
-    <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
-        Your browser does not support the video element.
-    </video>
-    <progress id="videoProgress" value="0" max="100"></progress>
-    <div id="progressMarker">播放中...</div>
-</outWindow>
+    <outWindow 
+        :isVisible="showModal"
+        :messageType="'Offiers'"
+        :outWindowType=false
+        @closeModal="closeModal(1)"
+    >
+        <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
+            Your browser does not support the video element.
+        </video>
+        <progress id="videoProgress" value="0" max="100"></progress>
+        <div id="progressMarker">播放中...</div>
+    </outWindow>
+
    <!-- 留言窗口 -->
     <outWindow 
     :isVisible = "showModal2"

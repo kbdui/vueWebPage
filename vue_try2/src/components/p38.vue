@@ -107,10 +107,10 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { ref,onMounted } from 'vue'
   import { useRouter } from 'vue-router'
-  import topMessage from './son_components/topMessage.vue';
-import TopMessage from './son_components/topMessage.vue';
+  import TopMessage from './son_components/topMessage.vue'
+  import axios from 'axios'
 
 const router = useRouter()
 
@@ -230,6 +230,9 @@ const handleSelect1 = (key: string, keyPath: string[]) => {
       specifications: []
     }
   }
+
+  
+
   </script>
   
   <style scoped>

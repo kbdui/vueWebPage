@@ -253,7 +253,7 @@ const uploadEquipmentPicture = async (scheme_id: number, file: File) => {
     })
 
     // 修改判断逻辑 - 当response.data.data为true时表示上传成功
-    if (response.data.data === false) { // 修改判断条件
+    if (response.data.data === true) { // 修改判断条件
       ElMessage.success('PDF上传成功')
       // 刷新设备列表以显示新上传的PDF
       await getallequipments()
@@ -432,7 +432,7 @@ const uploadEquipmentPdf = async (scheme_id: number, file: File) => {
       }
     })
 
-    if (response.data.data === false) {
+    if (response.data.data ===true) {
       ElMessage.success('PDF上传成功')
       await getallequipments() // Refresh equipment list
     } else {

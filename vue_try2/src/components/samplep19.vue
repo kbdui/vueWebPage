@@ -54,7 +54,7 @@
               <div class="list-item-body">
                 <div>计划申请物料：</div>
                 <div v-for="(material, index) in item.detail" :key="index" class="material-item">
-                  {{ material.samplename }} 我需要{{ material.sampleid }}个
+                  我需要{{ material.number }}个 {{ material.samplename }}
                 </div>
                 <div class="status-line">
                   状态：<span :class="['status', transformState(item.order_state)]">{{ item.order_state }}</span>
@@ -188,7 +188,7 @@
             </el-table-column>
             <el-table-column label="申请数量" width="120">
               <template #default="scope">
-                {{ scope.row.sampleid }}
+                {{ scope.row.number || '/' }}
               </template>
             </el-table-column>
             <!-- <el-table-column label="操作" width="200">

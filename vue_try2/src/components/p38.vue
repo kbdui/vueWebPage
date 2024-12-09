@@ -33,7 +33,7 @@
         </div>
   
         <!-- Table -->
-        <el-table :data="tableData" border style="width: 100%">
+        <el-table :data="tableData" style="width: 100%">
           <el-table-column prop="standardName" label="标准名称" width="180" />
           <el-table-column prop="standardNumber" label="标准编号" width="180" />
           <el-table-column prop="productName" label="产品名称" width="180" />

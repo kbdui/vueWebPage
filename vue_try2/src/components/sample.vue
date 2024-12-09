@@ -7,6 +7,7 @@
     import topMessage from './son_components/topMessage.vue'
 
     const router = useRouter()
+    const input1 = ref('')
 
     // menu 菜单
     const activeIndex1 = ref('4')
@@ -31,122 +32,48 @@
         height: '35rem'
     });
 
-    //表格内容
-  const  tableData = [
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: '普通口罩',
-    product: '107厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: '普通口罩',
-    product: '113厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: 'N95口罩',
-    product: '113厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: 'N95口罩',
-    product: '113厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: 'N95口罩',
-    product: '113厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: 'N95口罩',
-    product: '113厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-  {
-    name: '医用防护口罩',
-    id:"GB 19083-2023",
-    productname: '医用防护口罩',
-    samplename: 'N95口罩',
-    product: '113厂',
-    size: '/',
-    requirement: '输入框',
-    opration: '添加到预置清单',
-  },
-]
+  // 通过标准号获取样品列表
+  const sampleList = ref([])
+  function getSampleList() {
+    axios.post('http://localhost:8080/get_sample_by_id', {
+      project_id: project_id.value
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(function (response){
+      sampleList.value = response.data.data
+    }).catch(function (error){
+      if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+      } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+      }
+      console.log(error.config)
+      alert('状态码错误')
+    })
+  } 
 
-// 通过标准号获取样品列表
-const sampleList = ref([])
-function getSampleList() {
-  axios.post('http://localhost:8080/get_sample_by_number', {
-    number: project_id.value
-  },{
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    }
-  }).then(function (response){
-    sampleList.value = response.data.data
-  }).catch(function (error){
-    if (error.response) {
-      // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-    } else if (error.request) {
-      // 请求已经成功发起，但没有收到响应
-      // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-      // 而在node.js中是 http.ClientRequest 的实例
-      console.log(error.request);
-    } else {
-      // 发送请求时出了点问题
-      console.log('Error', error.message);
-    }
-    console.log(error.config)
-    alert('状态码错误')
+  // 加载project_id和sampleNumber
+  function loadData() {
+      const projectId = localStorage.getItem('project_id')
+      if (projectId) project_id.value = JSON.parse(projectId)
+  }
+
+  // 挂载组件时执行的方法
+  onMounted(() => {
+      loadData()
+      getSampleList()
   })
-} 
-
-// 加载project_id和sampleNumber
-function loadData() {
-    const projectId = localStorage.getItem('project_id')
-    if (projectId) project_id.value = JSON.parse(projectId)
-}
-
-// 挂载组件时执行的方法
-onMounted(() => {
-    loadData()
-    getSampleList()
-})
 
 </script>
 
@@ -181,13 +108,47 @@ onMounted(() => {
   </div>
 
     <el-table :data="sampleList" style="width: 100%">
-        <el-table-column prop="sampleid" label="样品ID" width="100" />
-        <el-table-column prop="projectid" label="项目ID" width="100" />
-        <el-table-column prop="source" label="源" />
-        <el-table-column prop="samplenumber" label="样品编号" width="100" />
-        <el-table-column prop="samplename" label="样品名称" width="100" />
-        <el-table-column prop="model" label="型号规格" />
-        <el-table-column prop="typename" label="类型" width="100" />
+        <el-table-column prop="sampleid" label="样品ID">
+          <template #default="scope">
+            {{ scope.row.sampleid || '/' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="source" label="源">
+          <template #default="scope">
+            {{ scope.row.source || '/' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="samplename" label="样品名称">
+          <template #default="scope">
+            {{ scope.row.samplename || '/' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="model" label="型号规格">
+          <template #default="scope">
+            {{ scope.row.model || '/' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="typename" label="类型">
+          <template #default="scope">
+            {{ scope.row.typename || '/' }}
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="typename" label="申请数量">
+          <template #default="scope">
+            <el-input v-model="input1" style="width: 100px" placeholder="输入申请数量" />
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="typename" label="添加到预置清单">
+          <template #default="scope">
+            <el-button @click="" type="primary" plain>添加</el-button>
+          </template>
+        </el-table-column>
     </el-table>
 
     <!-- 留言窗口 -->
@@ -215,10 +176,6 @@ onMounted(() => {
       margin-left: 90%;
       margin-top: 1em;
     }
-    /* #scontent1 h2{
-      width: 10rem;
-      color: rgb(30, 193, 30);
-    } */
     #scontent1 p{
         font-size: small;
     }

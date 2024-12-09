@@ -206,7 +206,9 @@
    </outWindow>
 </template>
 
+
 <script lang="ts" setup>
+
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
@@ -368,7 +370,7 @@ onMounted(() => {
     const styleProps2 = ref({
         height: '35rem'
     });
-</script>
+</script> -->
 
 <style>
      #top1{

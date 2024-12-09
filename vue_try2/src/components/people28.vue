@@ -237,7 +237,7 @@
 
         <!-- 按钮 -->
         <div id="p_button128">
-            <!-- <el-button id="add" type="success" plain>加入记录</el-button> -->
+            <el-button id="add" type="success" plain>加入记录</el-button>
         </div>
     </div>
 

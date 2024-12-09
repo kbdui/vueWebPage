@@ -96,6 +96,30 @@
             </div>
           </div>
         </div>
+      <el-button type="warning" size="medium" @click="fetchOngoingTest">对比试验管理</el-button>
+      <el-dialog
+        v-model="dialogVisible"
+        title="对比实验管理"
+        width="60%"
+        :before-close="handleClose"
+        >
+        <p class="text-sm mb-4">本轮对比实验首次被申请时间: {{ date }}</p>
+
+        <h3 class="font-medium mb-2">申请人员表</h3>
+
+        <el-table :data="userAccountList" style="width: 100%">
+          <el-table-column prop="name" label="姓名" />
+          <el-table-column prop="institution" label="所属机构" />
+          <el-table-column prop="contact" label="联系方式" />
+        </el-table>
+
+    <div class="mt-4 flex justify-between items-center">
+      <div>
+      <el-button type="success" @click="markTestAsComplete">完成</el-button>
+      <el-button type="danger" @click="dialogVisible = false">关闭</el-button>
+    </div>
+      </div>
+    </el-dialog>
       </div>
     </div>
   </template>
@@ -105,7 +129,6 @@ import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { project_id } from '@/status';
-import topMessage from './son_components/topMessage.vue';
 import TopMessage from './son_components/topMessage.vue';
 
 const procedures = ref([]);
@@ -115,12 +138,86 @@ const tmp_com = ref([]);
 //pdf文件应该都放在相对应的projectid文件夹下的子文件夹才能正确访问到，并且projectid文件夹下应该包含两个文件夹，
 // 分别存放操作规程和对比实验文件
 
+const handleComplete = () => {
+  ElMessage.success('实验已完成')
+  dialogVisible.value = false
+}
 // 加载项目ID
 function loadProjectId() {
   const savedData = localStorage.getItem('project_id');
   if (savedData) {
       project_id.value = JSON.parse(savedData);
       // console.log(project_id.value);
+  }
+}
+
+
+const dialogVisible = ref(false);
+const date = ref(''); // 用于存储对比实验首次被申请的时间
+const userAccountList = ref([]); // 用于存储申请人员表的数据
+
+// 获取对比实验管理数据
+async function fetchOngoingTest() {
+  try {
+    const response = await axios.post('http://localhost:8080/show_project_test_ongoing', 
+      `project_id=${project_id.value}`, 
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    if (response.data && response.data.data) {
+      const data = response.data.data;
+
+      date.value = data.date; // 更新实验时间
+
+      userAccountList.value = data.userAccountList; // 更新人员信息
+
+      dialogVisible.value = true; // 显示对话框
+    } else {
+      console.error('数据结构不符合预期:', response.data);
+      ElMessage.error('数据结构不符合预期，请检查后端返回的数据');
+    }
+  } catch (error) {
+    console.error('获取对比实验管理数据失败:', error);
+    ElMessage.error('获取对比实验管理数据失败，请重试');
+  }
+}
+
+
+
+const handleClose = (done) => {
+  ElMessage.info('关闭弹窗！');
+  done();
+}
+
+// const handleComplete = () => {
+//   ElMessage.success('实验已完成');
+//   dialogVisible.value = false;
+// }
+// 标记对比实验为已完成
+async function markTestAsComplete() {
+  try {
+    const response = await axios.post('http://localhost:8080/finish_test', 
+      `project_id=${project_id.value}`, 
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    if (response.data) {
+      ElMessage.success('对比实验已标记为完成');
+      dialogVisible.value = false;
+    } else {
+      ElMessage.error('操作失败，请重试');
+    }
+  } catch (error) {
+    console.error('标记对比实验为完成失败:', error);
+    ElMessage.error('标记对比实验为完成失败，请重试');
   }
 }
 //获取后端对比文件的函数

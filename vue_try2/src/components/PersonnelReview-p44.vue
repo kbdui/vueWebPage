@@ -165,101 +165,10 @@ function chooseR3(){
 
 // Mock data
 const procurementLists = ref([
-  {
-    id: '201123029432',
-    recordTime: '2023.10.12 23:11:23',
-    purchaser: '甲',
-    status: '计划采购',
-    equipment: [
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'UIO型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 10
-      },
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'XCJ型天平',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 5
-      }
-    ]
-  },
-  {
-    id: '2013245367',
-    recordTime: '2024.10.23 14:23:21',
-    purchaser: '荣成',
-    status: '计划采购',
-    equipment: [
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'WDJ型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 10
-      },
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'KIU型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 20
-      },
-      {
-        standardCode: 'GB 19083-2023 4.2',
-        category: '天平',
-        name: 'LIO型天平',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 30
-      }
-    ]
-  }
+
 ])
 
-const standards = ref([
-  {
-    title: 'GB 19083-2003 4.1 医用防护口罩>基本要求(点击跳转到对应页面)',
-    link: '#',
-    pendingVideos: 38,
-    pendingTests: 38
-  },
-  {
-    title: 'GB 19083-2003 4.2 医用防护口罩>口罩带连接强度',
-    link: '#',
-    pendingVideos: 45,
-    pendingTests: 2
-  },
-  {
-    title: 'GB 19083-2003 4.3 医用防护口罩>过滤效率',
-    link: '#',
-    pendingVideos: 3,
-    pendingTests: 66
-  },
-  {
-    title: 'GB 19083-2003 4.4 医用防护口罩>呼吸阻力',
-    link: '#',
-    pendingVideos: 4,
-    pendingTests: 9
-  },
-  {
-    title: 'GB 19083-2003 4.5 医用防护口罩>死腔',
-    link: '#',
-    pendingVideos: 1,
-    pendingTests: 5
-  },
-  {
-    title: 'GB 19083-2003 4.5 医用防护口罩>死腔',
-    link: '#',
-    pendingTests: 5
-  },
-  {
-    title: 'GB 19083-2003 4.5 医用防护口罩>死腔',
-    link: 'https://www.baidu.com',
-    pendingVideos: 5
-  }
-])
+const standards = ref([])
 
 const router = useRouter()
 

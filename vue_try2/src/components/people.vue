@@ -8,8 +8,8 @@
     import { ElMessage } from 'element-plus'
     import topMessage from './son_components/topMessage.vue'
     import { useRoute } from 'vue-router'
-    import { PDFDocument, rgb } from 'pdf-lib';
-    import fontkit from '@pdf-lib/fontkit';
+    // import { PDFDocument, rgb } from 'pdf-lib';
+    // import fontkit from '@pdf-lib/fontkit';
     const router = useRouter()
     const route = useRoute()
 

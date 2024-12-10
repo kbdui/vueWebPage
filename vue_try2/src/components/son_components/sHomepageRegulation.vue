@@ -91,8 +91,19 @@
   }
 
   const completeProject = (row) => {
-    row.status = 'Finish'
-    ElMessage.success('项目已标记为完成')
+    row.projectTest.state = 'Finish'
+    axios.post('http://localhost:8080/finish_test', {
+      project_id: row.projectTest.testid
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(function (response){
+        onSuccess(response)
+        ElMessage.success('项目已标记为完成')
+    }).catch(function (error){
+        ElMessage.error('状态修改失败')
+    })
   }
 
   const viewDetails = (project) => {

@@ -2,13 +2,13 @@
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
-    import { project_id } from '@/status'
+    import { project_id,user_data } from '@/status'
     import axios from 'axios'
     import topMessage from './son_components/topMessage.vue'
     import { ElMessage } from 'element-plus'
 
     const router = useRouter()
-    const input1 = ref('')
+    const input1 = ref([])
 
     // menu 菜单
     const activeIndex1 = ref('4')
@@ -62,12 +62,46 @@
       console.log(error.config)
       ElMessage.error('获取样品列表失败')
     })
-  } 
+  }
+
+  // 添加样品到预置清单
+  function addSampleToPresetList(goods_id: string, num: number) {
+    axios.post('http://localhost:8080/add_sample_order', {
+      account_id: user_data.value.accountid,
+      goods_id: goods_id,
+      goods_amount: num
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(function (response){
+      if(response.data.data === true) ElMessage.success('添加成功')
+    }).catch(function (error){
+      if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+      } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+      }
+      console.log(error.config)
+      ElMessage.error('获取样品列表失败')
+    })
+  }
 
   // 加载project_id和sampleNumber
   function loadData() {
       const projectId = localStorage.getItem('project_id')
       if (projectId) project_id.value = JSON.parse(projectId)
+      const userdata = localStorage.getItem('user_data')
+      if (userdata) user_data.value = JSON.parse(userdata)
   }
 
   // 挂载组件时执行的方法
@@ -141,13 +175,13 @@
       
       <el-table-column prop="typename" label="申请数量">
         <template #default="scope">
-          <el-input v-model="input1" style="width: 100px" placeholder="输入申请数量" />
+          <el-input v-model="input1[scope.$index]" style="width: 100px" placeholder="输入申请数量" />
         </template>
       </el-table-column>
       
       <el-table-column prop="typename" label="添加到预置清单">
         <template #default="scope">
-          <el-button @click="" type="primary" plain>添加</el-button>
+          <el-button @click="addSampleToPresetList(scope.row.sampleid, input1[scope.$index])" type="primary" plain>添加</el-button>
         </template>
       </el-table-column>
     </el-table>

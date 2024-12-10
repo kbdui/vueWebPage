@@ -67,7 +67,7 @@
           <el-table-column label="操作" width="180">
             <template #default="scope">
               <!-- <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button> -->
-              <el-button type="text" @click="deleteSample(scope.row)">删除</el-button>
+              <el-button type="text" @click="deleteSample(scope.row.sampleid, scope.$index)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -276,7 +276,8 @@
   }
 
   // 删除样品
-  function deleteSample(sample_id : string) {
+  function deleteSample(sample_id : string, index : number) {
+    sampleList.value.splice(index, 1)
     axios.post('http://localhost:8080/del_sample', {
       sample_id: sample_id
     },{

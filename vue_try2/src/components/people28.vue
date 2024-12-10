@@ -6,7 +6,7 @@
     import topMessage from './son_components/topMessage.vue'
     import { ElMessage } from 'element-plus'
     import axios from 'axios'
-    import { project_id } from '@/status'
+    import { project_id, user_data } from '@/status'
 
     const router = useRouter()
 
@@ -35,7 +35,7 @@
     const showModal = ref(false)
     function openModal(i: number, url: string){
         if(i==1) {
-            fullVideoUrl.value = url
+            getFullVideoUrl(url)
             showModal.value = true
         }
     }
@@ -241,6 +241,33 @@
         const savedProjectId = localStorage.getItem('project_id');
         if (savedProjectId) {
             project_id.value = JSON.parse(savedProjectId);
+        }
+    }
+
+    // 更新localStorage中的视频完成信息
+    const videoStorage = ref(new Map())
+    function updateLocalVideoStorage(num: number) {
+        const str = 'video_storage' + user_data.value.accountid
+        const tmp = localStorage.getItem(str)
+        if (tmp === null) {
+            videoStorage.value = new Map()
+        }
+        else {
+            videoStorage.value = JSON.parse(tmp)
+        }
+
+        if (videoStorage.value.has(project_id.value)) {
+            var tmp2 = videoStorage.value.get(project_id.value) + 1
+            videoStorage.value.set(project_id.value, tmp2)
+        }
+        else {
+            videoStorage.value.set(project_id.value, 1)
+        }
+
+        localStorage.setItem(str, JSON.stringify(videoStorage.value))
+
+        if(num === videoStorage.value.get(project_id.value)) {
+            ElMessage.success('已完成培训视频学习')
         }
     }
 

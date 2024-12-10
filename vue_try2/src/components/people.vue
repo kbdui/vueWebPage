@@ -148,41 +148,40 @@
         })
     }
 
-    // 下载地址字符串还没裁，现在会去E:/no_game/git/back2/local_hub\D:/files/4000001/4000001paper.pdf下载
     // 下载试卷
-    function downloadPdf() {
-        axios.post('http://localhost:8080/download', {
-          fileName: dawnLoadURL.value
-        },{
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }).then(function (response){
+    async function downloadPdf() {
+        const filename = dawnLoadURL.value;
+        console.log("项目ID为:" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+        const strtmp="D:/files/";
+        const Path=filename.toString().replace(strtmp, "");
+        try {
+            const fullFileName =  decodeURIComponent(Path);
+
+            console.log("用来下载的文件地址为fullFileName:" + fullFileName);
+            const response = await axios({
+            url: `http://localhost:8080/download`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: `fileName=${fullFileName}`, // 传递完整的文件名
+            responseType: 'blob' // 指定响应类型为blob
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            console.log("下载地址为：" + url);
+
             const link = document.createElement('a');
-            link.href = 'http://localhost:8080/download';
-            link.setAttribute('download', dawnLoadURL.value); // 设置下载的文件名
+            link.href = url;
+            link.setAttribute('download', fullFileName); // 设置下载的文件名
             document.body.appendChild(link);
             link.click(); // 触发下载
             document.body.removeChild(link);
-            window.URL.revokeObjectURL('http://localhost:8080/download'); // 释放URL对象 
-        }).catch(function (error){
-            if (error.response) {
-                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-            } else if (error.request) {
-                // 请求已经成功发起，但没有收到响应
-                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-                // 而在node.js中是 http.ClientRequest 的实例
-                console.log(error.request);
-            } else {
-                // 发送请求时出了点问题
-                console.log('Error', error.message);
-            }
-            console.log(error.config)
-            ElMessage.error('下载失败')
-        })
+            window.URL.revokeObjectURL(url); // 释放URL对象
+        } catch (error) {
+            console.error('下载试卷失败:', error);
+            ElMessage.error('下载试卷失败');
+        }
     }
 
     // 获取学习状态
@@ -440,18 +439,19 @@
             Your browser does not support the video element.
         </video>
    </outWindow> -->
-   <outWindow 
-    :isVisible="showModal"
-    :messageType="'Offiers'"
-    :outWindowType=false
-    @closeModal="closeModal(1)"
->
-    <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
-        Your browser does not support the video element.
-    </video>
-    <progress id="videoProgress" value="0" max="100"></progress>
-    <div id="progressMarker">播放中...</div>
-</outWindow>
+    <outWindow 
+        :isVisible="showModal"
+        :messageType="'Offiers'"
+        :outWindowType=false
+        @closeModal="closeModal(1)"
+    >
+        <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
+            Your browser does not support the video element.
+        </video>
+        <progress id="videoProgress" value="0" max="100"></progress>
+        <div id="progressMarker">播放中...</div>
+    </outWindow>
+
    <!-- 留言窗口 -->
     <outWindow 
     :isVisible = "showModal2"

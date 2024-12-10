@@ -432,7 +432,7 @@ const uploadEquipmentPdf = async (scheme_id: number, file: File) => {
       }
     })
 
-    if (response.data.data === false) {
+    if (response.data.data ===true) {
       ElMessage.success('PDF上传成功')
       await getallequipments() // Refresh equipment list
     } else {

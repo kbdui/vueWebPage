@@ -52,32 +52,43 @@
                     {{ scope.row.samplenumber || '/' }}
                   </template>
                 </el-table-column>
+
                 <el-table-column prop="productName" label="产品名称" width="120">
                   <template #default="scope">
                     {{ scope.row.typename || '/' }}
                   </template>
                 </el-table-column>
+
+                <el-table-column label="样品编号" width="120">
+                  <template #default="scope">
+                    {{ scope.row.sampleid || '/' }}
+                  </template>
+                </el-table-column>
+
                 <el-table-column prop="sampleName" label="样品名称" width="150">
                   <template #default="scope">
                     {{ scope.row.samplename || '/' }}
                   </template>
                 </el-table-column>
+
                 <el-table-column prop="specModel" label="规格型号" width="100">
                   <template #default="scope">
                     {{ scope.row.model || '/' }}
                   </template>
                 </el-table-column>
+
                 <el-table-column label="申请数量" width="120">
                   <template #default="scope">
-                    {{ scope.row.sampleid }}
+                    {{ scope.row.number || '/' }}
                   </template>
                 </el-table-column>
+
                 <el-table-column prop="actualQuantity" label="实际数量" width="120">
                   <template #default="scope">
-                    {{ scope.row.sampleid }}
+                    {{ scope.row.number || '/' }}
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="120">
+                <!-- <el-table-column label="操作" width="120">
                     <template #default="scope">
                     <el-button
                         size="small"
@@ -86,7 +97,7 @@
                         编辑实际数量
                     </el-button>
                     </template>
-                </el-table-column>
+                </el-table-column> -->
               </el-table>
             </template>
 

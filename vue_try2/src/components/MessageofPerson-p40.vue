@@ -225,7 +225,6 @@ import { ref, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import Top from './Top.vue';
-import { user_data } from '@/status';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 // 定义留言的数据结构
@@ -246,6 +245,7 @@ const dialogVisible = ref(false);
 const selectedMessage = ref<MessageList | null>(null);
 const activeTab = ref('Offiers');
 const activeIndex1 = ref('1');
+const router = useRouter();
 
 function fetchMessages(messageType: string) {
   axios.post('http://localhost:8080/get_message', {
@@ -319,7 +319,7 @@ const openMessageDialog = (message) => {
 
 const handleSelect1 = (key) => {
   if (key === '2') {
-    useRouter().push('/PersonnelReviewP44');
+    router.push('/PersonnelReviewP44');
   }
   console.log("handleSelect1方法打印的key:"+key);
 };

@@ -50,7 +50,7 @@ const back = user_data.value.accountType === "Experimenters" ? ref('/entry') : r
 const userAvatar = ref('https://example.com/avatar.jpg')
 
 const userInitials = computed(() => {
-  return userInfo.value.name.slice(0, 2)
+  return user_data.value.name.slice(0, 2)
 })
 
 const handleCommand = (command) => {

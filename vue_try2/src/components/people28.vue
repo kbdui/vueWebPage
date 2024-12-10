@@ -33,8 +33,11 @@
 
     // 打开/关闭小窗口
     const showModal = ref(false)
-    function openModal(i: number){
-        if(i==1) showModal.value = true
+    function openModal(i: number, url: string){
+        if(i==1) {
+            fullVideoUrl.value = url
+            showModal.value = true
+        }
     }
     function closeModal(i: number) {
         if(i==1) showModal.value = false
@@ -110,27 +113,21 @@
                 console.log('Error', error.message);
             }
             console.log(error.config)
-            ElMessage.error('获取下载地址失败')
+            ElMessage.error('获取试卷下载地址失败')
         })
     }
 
-    // 下载地址字符串还没裁，现在会去E:/no_game/git/back2/local_hub\D:/files/4000001/4000001paper.pdf下载
-    // 下载试卷
-    function downloadPdf() {
-        axios.post('http://localhost:8080/download', {
-          fileName: dawnLoadURL.value
+    // 获取视频地址
+    const videoUrls = ref([])
+    function getVideoUrl() {
+        axios.post('http://localhost:8080/download_c_msg', {
+          project_id: project_id.value
         },{
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           }
         }).then(function (response){
-            const link = document.createElement('a');
-            link.href = 'http://localhost:8080/download';
-            link.setAttribute('download', dawnLoadURL.value); // 设置下载的文件名
-            document.body.appendChild(link);
-            link.click(); // 触发下载
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL('http://localhost:8080/download'); // 释放URL对象 
+            videoUrls.value = response.data.data
         }).catch(function (error){
             if (error.response) {
                 // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
@@ -147,8 +144,66 @@
                 console.log('Error', error.message);
             }
             console.log(error.config)
-            ElMessage.error('下载失败')
+            ElMessage.error('获取视频路径失败')
         })
+    }
+
+    // 获取完整视频路径
+    const fullVideoUrl = ref('')
+    async function getFullVideoUrl(url: string) {
+        const strtmp="D:/files/";
+        const Path=url.toString().replace(strtmp, "");
+        try {
+            const fullFileName =  decodeURIComponent(Path);
+            const response = await axios({
+            url: `http://localhost:8080/download`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: `fileName=${fullFileName}`, // 传递完整的文件名
+            responseType: 'blob' // 指定响应类型为blob
+            });
+            fullVideoUrl.value = window.URL.createObjectURL(new Blob([response.data]));
+        } catch (error) {
+            ElMessage.error('获取视频路径失败');
+        }
+    }
+
+    // 下载试卷
+    async function downloadPdf() {
+        const filename = dawnLoadURL.value;
+        console.log("项目ID为:" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+        const strtmp="D:/files/";
+        const Path=filename.toString().replace(strtmp, "");
+        try {
+            const fullFileName =  decodeURIComponent(Path);
+
+            console.log("用来下载的文件地址为fullFileName:" + fullFileName);
+            const response = await axios({
+            url: `http://localhost:8080/download`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: `fileName=${fullFileName}`, // 传递完整的文件名
+            responseType: 'blob' // 指定响应类型为blob
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            console.log("下载地址为：" + url);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fullFileName); // 设置下载的文件名
+            document.body.appendChild(link);
+            link.click(); // 触发下载
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url); // 释放URL对象
+        } catch (error) {
+            console.error('下载试卷失败:', error);
+            ElMessage.error('下载试卷失败');
+        }
     }
 
     // 上传试卷
@@ -192,6 +247,7 @@
     onMounted(() => {
         loadData()
         getDownloadUrl()
+        getVideoUrl()
     })
 
 </script>
@@ -263,22 +319,10 @@
                 :style="{
                 boxShadow: `var(${getCssVarName('light')})`,
                 }"
+                v-for="(item, index) in videoUrls"
             >
-                <p>这里放视频的标题或者内容的简要描述1</P>
-                <el-button class="paly_button" type="success" @click="openModal(1)" round>播放</el-button>
-                <el-button class="paly_button" type="danger" round>删除</el-button>
-            </div>
-            <div
-                class="inline-flex line1"
-                h="30"
-                w="30"
-                m="2"
-                :style="{
-                boxShadow: `var(${getCssVarName('light')})`,
-                }"
-            >
-                <p>这里放视频的标题或者内容的简要描述1</P>
-                <el-button class="paly_button" type="success" @click="openModal(1)" round>播放</el-button>
+                <p>培训视频{{ index }}</P>
+                <el-button class="paly_button" type="success" @click="openModal(1, item)" round>播放</el-button>
                 <el-button class="paly_button" type="danger" round>删除</el-button>
             </div>
         </div>
@@ -308,9 +352,11 @@
   <!-- 视频播放窗口 -->
    <outWindow 
     :isVisible = "showModal"
+    :messageType="'Offiers'"
+    :outWindowType = false
     @closeModal = "closeModal(1)"
    >
-        <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
+        <video class="video1" :src=fullVideoUrl poster="./images/photo1.png" controls>
             Your browser does not support the video element.
         </video>
    </outWindow>

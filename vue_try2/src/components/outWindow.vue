@@ -31,37 +31,37 @@
   const allMessages = ref([])
   const partMessages = ref([])
   function getMessages() {
-      axios.post('http://localhost:8080/get_message', {
-        message_type: props.messageType
-      },{
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+    axios.post('http://localhost:8080/get_message', {
+      message_type: props.messageType
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(function (response){
+      allMessages.value = response.data.data
+      for(let i=0;i<allMessages.value.length;i++) {
+        if(allMessages.value[i].messagetype === props.messageType) {
+            partMessages.value.push(allMessages.value[i])
         }
-      }).then(function (response){
-        allMessages.value = response.data.data
-        for(let i=0;i<allMessages.value.length;i++) {
-          if(allMessages.value[i].messagetype === props.messageType) {
-              partMessages.value.push(allMessages.value[i])
-          }
-        }
-      }).catch(function (error){
-        if (error.response) {
-          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-        } else if (error.request) {
-          // 请求已经成功发起，但没有收到响应
-          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-          // 而在node.js中是 http.ClientRequest 的实例
-          console.log(error.request);
-        } else {
-          // 发送请求时出了点问题
-          console.log('Error', error.message);
-        }
-        console.log(error.config)
-        alert('状态码错误')
-      })
+      }
+    }).catch(function (error){
+      if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+      } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+      }
+      console.log(error.config)
+      alert('状态码错误')
+    })
   }
 
   // 发送留言

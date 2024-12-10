@@ -240,8 +240,7 @@ onMounted(() => {
           size="mini"
         >标为完成</el-button>
         <el-button type="success" :id="'delete' + index" size="mini">删除</el-button>
-        <el-button type="success" @click="showModal = true" :id="'detail' + index" size="mini">详情</el-button>
-      </el-card>
+     </el-card>
     </div>
     <!-- //点击预置清单 -->
 </div>

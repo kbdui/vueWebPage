@@ -125,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref ,onMounted} from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import jsPDF from 'jspdf'
@@ -209,6 +209,7 @@ const handleSelect1 = (key, keyPath) => {
       course: 'GB 19083-2003 4.1 医用防护口罩>基本要求'
     }
   ])
+  const allEquipmentOrders = ref([])
 
   // 获取授权清单
   const allAuthList = ref([])
@@ -308,6 +309,7 @@ const handleSelect1 = (key, keyPath) => {
       console.error('PDF export error:', error)
     }
   }
+
 </script>
 
 <style scoped>

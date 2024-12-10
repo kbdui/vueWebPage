@@ -11,57 +11,45 @@
 
     <!-- Procurement Lists -->
     <div class="lists-container">
-        <el-card v-for="list in procurementLists" 
-                :key="list.id" 
+        <el-card v-for="list in allEquipmentOrders" 
+                :key="list.order_id" 
                 class="list-card"
         >
         <div class="list-header">
-            <div>清单编号：{{ list.id }}</div>
-            <div>记录时间：{{ list.recordTime }}</div>
-            <div>计划采购人：{{ list.purchaser }}</div>
+            <div>用户名：{{ list.user.name }}</div>
+            <div>订单ID：{{ list.order_id }}</div>
+            <div>订单时间：{{ list.order_time }}</div>
+            <div>订单状态：{{ list.order_state }}</div>
         </div>
         
         <div class="equipment-list">
-            <div>计划采购设备：</div>
+            <div>设备信息：</div>
             <ul>
-            <li v-for="(item, index) in list.equipment" 
-                :key="index"
-            >
-                {{ item.name }} x{{ item.quantity }}
-            </li>
+                <li v-for="item in list.detail" :key="item.scheme_id">
+                    {{ item.scheme_name }} x{{ item.num }}
+                    <div>设备ID：{{ item.scheme_id }}</div>
+                    <div>来源：{{ item.source }}</div>
+                    <div>方案编号: {{ item.scheme_number }}</div>
+                </li>
             </ul>
         </div>
 
         <div class="list-footer">
-            <div class="status">
-            状态：
-            <span :class="{ 
-                'status-planned': list.status === '计划采购',
-                'status-completed': list.status === '购置完成'
-            }">
-                {{ list.status }}
-            </span>
-            </div>
             <div class="action-buttons">
-            <el-button 
-                v-if="list.status === '计划采购'"
-                type="warning"
-                @click="markAsComplete(list)"
-            >
-                标为完成
-            </el-button>
-            <el-button 
-                type="danger"
-                @click="deleteList(list.id)"
-            >
-                删除
-            </el-button>
-            <el-button 
-                type="primary"
-                @click="showDetails(list)"
-            >
-                详情
-            </el-button>
+                <el-button 
+                    v-if="list.order_state === '计划采购'"
+                    type="warning"
+                    @click="markAsComplete(list)"
+                >
+                    标为完成
+                </el-button>
+                <el-button 
+                    type="danger"
+                    @click="deleteList(list.order_id)"
+                >
+                    删除
+                </el-button>
+             
             </div>
         </div>
         </el-card>
@@ -71,17 +59,17 @@
 <!-- Details Dialog -->
 <el-dialog
     v-model="detailsVisible"
-    :title="`清单编号：${selectedList?.id || ''}`"
+    :title="`设备ID：${selectedList?.ids || ''}`"
     width="80%"
     destroy-on-close
 >
     <div class="dialog-content">
     <div class="dialog-header">
-        <div>记录时间：{{ selectedList?.recordTime }}</div>
-        <div>计划采购人：{{ selectedList?.purchaser }}</div>
+        <div>记录时间：{{ selectedList?.times }}</div>
+        <div>来源：{{ selectedList?.sources }}</div>
         <div class="status">
-        状态：<span :class="{ 'status-planned': selectedList?.status === '计划采购' }">
-            {{ selectedList?.status }}
+        状态：<span :class="getStatusClass(selectedList?.statuses)">
+            {{ selectedList?.statuses }}
         </span>
         </div>
     </div>
@@ -159,71 +147,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import html2pdf from 'html2pdf.js';
 const activeTab = ref('lists')
 const subTab = ref('equipment')
 const detailsVisible = ref(false)
 const equipmentDetailsVisible = ref(false)
+const allEquipmentOrders = ref([])
 const selectedList = ref(null)
 const selectedEquipment = ref(null)
-
+import axios from 'axios'
+import { computed } from 'vue'
 // Mock data
-const procurementLists = ref([
-  {
-    id: '201123029432',
-    recordTime: '2023.10.12 23:11:23',
-    purchaser: '甲',
-    status: '计划采购',
-    equipment: [
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'UIO型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 10
-      },
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'XCJ型天平',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 5
-      }
-    ]
-  },
-  {
-    id: '2013245367',
-    recordTime: '2024.10.23 14:23:21',
-    purchaser: '荣成',
-    status: '计划采购',
-    equipment: [
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'WDJ型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 10
-      },
-      {
-        standardCode: 'GB 19083-2023 4.1',
-        category: '酸度计',
-        name: 'KIU型酸度计',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 20
-      },
-      {
-        standardCode: 'GB 19083-2023 4.2',
-        category: '天平',
-        name: 'LIO型天平',
-        manufacturer: 'Xxx公司/厂',
-        quantity: 30
-      }
-    ]
-  }
-])
-
 // Mark list as complete
 const markAsComplete = (list) => {
   ElMessageBox.confirm(
@@ -246,9 +182,9 @@ const markAsComplete = (list) => {
 }
 
 // Delete list
-const deleteList = (id) => {
+const deleteList = (ids) => {
   ElMessageBox.confirm(
-    '是否确认删除该采购清单？',
+    '是否确认删除该设备记录？',
     '警告',
     {
       confirmButtonText: '确定',
@@ -257,7 +193,7 @@ const deleteList = (id) => {
     }
   )
     .then(() => {
-      procurementLists.value = procurementLists.value.filter(list => list.id !== id)
+      // 这里需要调用后端API删除数据
       ElMessage({
         type: 'success',
         message: '删除成功',
@@ -266,6 +202,27 @@ const deleteList = (id) => {
     .catch(() => {})
 }
 
+
+function getAllEquipmentOrders() {
+  axios.get('http://localhost:8080/get_all_equip_order')
+    .then(function (response) {
+     allEquipmentOrders.value = response.data.data
+     console.log("所拥有的数据为",response.data.data)
+
+     })
+    .catch(function (error) {
+      if (error.response) {
+   
+      } else if (error.request) {
+        console.log(error.request)
+      } else {
+        console.log('Error', error.message)
+      }
+      console.log(error.config)
+      ElMessage.error('获取设备订单列表失败')
+    })
+}
+console.log("allEquipmentOrders.value",allEquipmentOrders.value)
 // Show details
 const showDetails = (list) => {
   selectedList.value = list
@@ -338,6 +295,20 @@ const exportToPDF = () => {
     })
   })
 }
+// 添加状态样式处理方法
+const getStatusClass = (status) => {
+  if (status.includes('计划采购')) {
+    return 'status-planned'
+  }
+  if (status.includes('购置完成')) {
+    return 'status-completed'
+  }
+  return ''
+}
+
+onMounted(() => {
+  getAllEquipmentOrders()
+})
 </script>
 
 <style scoped>

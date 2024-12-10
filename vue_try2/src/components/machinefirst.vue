@@ -117,7 +117,7 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import headshot from './headshot.vue'
-import { project_id,equipment_id } from '@/status'
+import { project_id,equipment_id,user_data} from '@/status'
 import outWindow from './outWindow.vue'
 import axios from 'axios'
 import topMessage from './son_components/topMessage.vue'
@@ -182,6 +182,29 @@ const router = useRouter()
     }
   
 }
+const addToPreset = async (item) => {
+  try {
+    const response = await axios.post('http://localhost:8080/add_equip_order', {
+      account_id: user_data.value.accountid,
+      goods_id: item.scheme_id,
+      goods_amount: item.quantity
+    }, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    console.log("添加信息为",user_data.value.accountid,item.scheme_id,item.quantity)
+    if (response.data.data) {
+      ElMessage.success(`已将${item.scheme_name}添加到预置清单，数量：${item.quantity}`)
+    } else {
+      ElMessage.error('添加失败：用户ID不存在或商品不存在')
+    }
+  } catch (error) {
+    console.error('添加预置清单失败:', error)
+    ElMessage.error('添加到预置清单失败，请稍后重试')
+  }
+}
+
 function saveequipmentid() {
         localStorage.setItem('equipment_id', JSON.stringify(equipment_id.value));
     }
@@ -236,9 +259,6 @@ const viewPdf = (item) => {
   ElMessage.success(`查看${item.scheme_detail}的PDF详情`)
 }
 
-const addToPreset = (item) => {
-  ElMessage.success(`已将${item.name}添加到预置清单，数量：${item.quantity}`)
-}
 
 // 打开/关闭小窗口
 const showModal2 = ref(false)

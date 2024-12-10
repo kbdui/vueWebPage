@@ -8,9 +8,11 @@
     import { ElMessage } from 'element-plus'
     import topMessage from './son_components/topMessage.vue'
     import { useRoute } from 'vue-router'
-
+    import { PDFDocument, rgb } from 'pdf-lib';
+    import fontkit from '@pdf-lib/fontkit';
     const router = useRouter()
     const route = useRoute()
+
 
     // menu 菜单
     const activeIndex1 = ref('1')
@@ -285,23 +287,70 @@
             test.value = true
         }
     }
-    document.addEventListener('DOMContentLoaded', function() {
-    var video = document.querySelector('.video1');
-    var progress = document.getElementById('videoProgress');
-    var progressMarker = document.getElementById('progressMarker');
 
-    // 更新进度条
-    video.addEventListener('timeupdate', function() {
-        var percentage = (video.currentTime / video.duration) * 100;
-        progress.value = percentage;
+
+    // 下载培训证书模板
+async function downloadpaperPdf() {
+  try {
+    const response = await fetch('http://localhost:5173/src/assets/培训证书模板.pdf');
+    console.log("模板文件路径为：" + decodeURIComponent(response.url));
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const pdfBytes = await response.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    
+    // 注册 fontkit
+    pdfDoc.registerFontkit(fontkit);
+
+    const firstPage = pdfDoc.getPage(0);
+
+    // 获取字体文件
+    const fontResponse = await fetch('http://localhost:5173/src/assets/SimSun.ttf');
+    const fontBytes = await fontResponse.arrayBuffer();
+    const font = await pdfDoc.embedFont(fontBytes); // 嵌入字体
+
+    // 定义多个文本和它们的位置
+    const texts = [
+      { text: '培 训 证 书', x: 550, y: 600, size: 80 },
+      { text: '证书编号：4000001', x: 700, y: 550, size: 20 },
+
+      { text: '兹证明 傅梦茵 先生/女士：', x: 350, y: 450, size: 35 },
+      {text:'   于2024年12月10日完成医用口罩，GB ',x:350,y:375,size:35},
+      {text:' 190803-2023 4.4，呼吸阻力 项目培训。',x:350,y:300,size:35},
+      {text:'特发此证',x:350,y:200,size:35},
+
+      {text:'签发单位：南京理工大学名茜医疗器械项目部',x:250,y:50,size:20},
+      {text:'日期：2024年12月10日',x:800,y:50,size:20}
+
+    ];
+
+    // 在不同位置添加文本
+    texts.forEach(textObj => {
+      firstPage.drawText(textObj.text, {
+        x: textObj.x,
+        y: textObj.y,
+        size: textObj.size,
+        color: rgb(0.5, 0.5, 0), // 黑色
+        font: font,
+      });
     });
 
-    // 视频播放结束
-    video.addEventListener('ended', function() {
-        progress.value = 100; // 设置进度条为100%
-        progressMarker.textContent = '已完成';
-    });
-});
+    const pdfBytesModified = await pdfDoc.save();
+    const blob = new Blob([pdfBytesModified], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', '培训证书.pdf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (error) {
+    console.error('Error fetching PDF:', error);
+  }
+}
+
     onMounted(() => {
     loadData()
     getTrainStatus()
@@ -361,7 +410,7 @@
     <div v-if="video" id="content2">
         <p id="p1">培训情况: {{ isover }}</p>
         <p>培训完成时间：{{ overtime }}</p>
-        <el-button id="download" type="success">下载培训证书</el-button>
+        <el-button id="download" type="success" @click="downloadpaperPdf()">下载培训证书</el-button>
         <div id="myvideo">
             <div
                 class="inline-flex line1"
@@ -430,7 +479,7 @@
   </div>
 
   <!-- 视频播放窗口 -->
-   <!-- <outWindow 
+   <outWindow 
     :isVisible = "showModal"
     :messageType = "'Offiers'"
     :outWindowType = false
@@ -439,19 +488,8 @@
         <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
             Your browser does not support the video element.
         </video>
-   </outWindow> -->
-   <outWindow 
-    :isVisible="showModal"
-    :messageType="'Offiers'"
-    :outWindowType=false
-    @closeModal="closeModal(1)"
->
-    <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
-        Your browser does not support the video element.
-    </video>
-    <progress id="videoProgress" value="0" max="100"></progress>
-    <div id="progressMarker">播放中...</div>
-</outWindow>
+   </outWindow>
+
    <!-- 留言窗口 -->
     <outWindow 
     :isVisible = "showModal2"
@@ -462,7 +500,6 @@
    >
    </outWindow>
 </template>
-
 <style>
     #top1{
         display: flex;

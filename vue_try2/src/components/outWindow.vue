@@ -97,7 +97,7 @@
         console.log('Error', error.message);
       }
       console.log(error.config)
-      alert('留言发送失败')
+      ElMessage.error('留言发送失败')
     })
   }
 

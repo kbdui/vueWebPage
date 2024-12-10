@@ -5,6 +5,7 @@
     import { project_id } from '@/status'
     import axios from 'axios'
     import topMessage from './son_components/topMessage.vue'
+    import { ElMessage } from 'element-plus'
 
     const router = useRouter()
     const input1 = ref('')
@@ -32,7 +33,7 @@
         height: '35rem'
     });
 
-  // 通过标准号获取样品列表
+  // 通过项目ID获取样品列表
   const sampleList = ref([])
   function getSampleList() {
     axios.post('http://localhost:8080/get_sample_by_id', {
@@ -59,7 +60,7 @@
         console.log('Error', error.message);
       }
       console.log(error.config)
-      alert('状态码错误')
+      ElMessage.error('获取样品列表失败')
     })
   } 
 
@@ -108,47 +109,47 @@
   </div>
 
     <el-table :data="sampleList" style="width: 100%">
-        <el-table-column prop="sampleid" label="样品ID">
-          <template #default="scope">
-            {{ scope.row.sampleid || '/' }}
-          </template>
-        </el-table-column>
+      <el-table-column prop="sampleid" label="样品ID">
+        <template #default="scope">
+          {{ scope.row.sampleid || '/' }}
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="source" label="源">
-          <template #default="scope">
-            {{ scope.row.source || '/' }}
-          </template>
-        </el-table-column>
+      <el-table-column prop="source" label="生产厂家">
+        <template #default="scope">
+          {{ scope.row.source || '/' }}
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="samplename" label="样品名称">
-          <template #default="scope">
-            {{ scope.row.samplename || '/' }}
-          </template>
-        </el-table-column>
+      <el-table-column prop="samplename" label="样品名称">
+        <template #default="scope">
+          {{ scope.row.samplename || '/' }}
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="model" label="型号规格">
-          <template #default="scope">
-            {{ scope.row.model || '/' }}
-          </template>
-        </el-table-column>
+      <el-table-column prop="model" label="型号规格">
+        <template #default="scope">
+          {{ scope.row.model || '/' }}
+        </template>
+      </el-table-column>
 
-        <el-table-column prop="typename" label="类型">
-          <template #default="scope">
-            {{ scope.row.typename || '/' }}
-          </template>
-        </el-table-column>
-        
-        <el-table-column prop="typename" label="申请数量">
-          <template #default="scope">
-            <el-input v-model="input1" style="width: 100px" placeholder="输入申请数量" />
-          </template>
-        </el-table-column>
-        
-        <el-table-column prop="typename" label="添加到预置清单">
-          <template #default="scope">
-            <el-button @click="" type="primary" plain>添加</el-button>
-          </template>
-        </el-table-column>
+      <el-table-column prop="typename" label="类型">
+        <template #default="scope">
+          {{ scope.row.typename || '/' }}
+        </template>
+      </el-table-column>
+      
+      <el-table-column prop="typename" label="申请数量">
+        <template #default="scope">
+          <el-input v-model="input1" style="width: 100px" placeholder="输入申请数量" />
+        </template>
+      </el-table-column>
+      
+      <el-table-column prop="typename" label="添加到预置清单">
+        <template #default="scope">
+          <el-button @click="" type="primary" plain>添加</el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <!-- 留言窗口 -->

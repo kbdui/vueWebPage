@@ -239,9 +239,10 @@
             link.click(); // 触发下载
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url); // 释放URL对象
+            ElMessage.success('下载成功')
         } catch (error) {
-            console.error('下载试卷失败:', error);
-            ElMessage.error('下载试卷失败，请尝试刷新页面');
+            console.error('下载失败:', error);
+            ElMessage.error('下载失败，请尝试刷新页面');
         }
     }
 
@@ -385,7 +386,93 @@
             ElMessage.error('授权失败')
         })
     }
-    
+
+    // 获取检测人员试卷下载地址
+    const download_test_url = ref('')
+    function download_test_paper(id: number) {
+        axios.post('http://localhost:8080/get_write_msg', {
+            project_id: project_id.value,
+            user_id : id
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            download_test_url.value = response.data.data;
+        }).catch(function (error){
+            ElMessage.error('获取试卷下载地址失败')
+            console.log(error)
+        })
+    }
+
+    // 获取检测人员操作视频下载地址
+    const download_video_url = ref('')
+    function download_video(id: number) {
+        axios.post('http://localhost:8080/get_video_msg', {
+            project_id: project_id.value,
+            user_id : id
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            download_video_url.value = response.data.data;
+        }).catch(function (error){
+            ElMessage.error('获取操作视频下载地址失败')
+            console.log(error)
+        })
+    }
+
+    // 下载上面两个东西
+    async function downloadTestAndVideo(filename: string) {
+        console.log("项目ID为:" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+        const strtmp="D:/files/";
+        const Path=filename.toString().replace(strtmp, "");
+        try {
+            const fullFileName =  decodeURIComponent(Path);
+
+            console.log("用来下载的文件地址为fullFileName:" + fullFileName);
+            const response = await axios({
+            url: `http://localhost:8080/download`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: `fileName=${fullFileName}`, // 传递完整的文件名
+            responseType: 'blob' // 指定响应类型为blob
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            console.log("下载地址为：" + url);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fullFileName); // 设置下载的文件名
+            document.body.appendChild(link);
+            link.click(); // 触发下载
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url); // 释放URL对象
+            ElMessage.success('下载成功')
+        } catch (error) {
+            console.error('下载失败:', error);
+            ElMessage.error('下载失败，请尝试刷新页面');
+        }
+    }
+
+    // 急着睡觉就偷懒堆代码了
+    function downloadPaper(id: number) {
+        download_test_paper(id)
+        setTimeout(() => {
+            downloadTestAndVideo(download_test_url.value)
+        }, 1000)
+    }
+
+    function downloadVideo(id: number) {
+        download_video(id)
+        setTimeout(() => {
+            downloadTestAndVideo(download_video_url.value)
+        }, 1000)
+    }
     
     // 获取检测人员考核相关信息
     const peopleinfo = ref([])
@@ -556,7 +643,7 @@
                             <p>考核试卷：{{ person.assessmentPaperStatus }}</p>
                         </div>
                         <div class="paper_button">
-                            <el-button type="primary" plain >下载</el-button>
+                            <el-button type="primary" @click="downloadPaper(person.user_id)" plain >下载</el-button>
                             <el-button type="danger" plain @click="changeteststate2(person.user_id, index)">打回</el-button>
                             <el-button type="success" plain  @click="changeteststate3(person.user_id, index)"> 通过</el-button>
                         </div>
@@ -564,7 +651,7 @@
                     <div class="video_block">
                         <p>考核视频：{{ person.assessmentVideoStatus }}</p>
                         <div class="video_button">
-                            <el-button type="primary" plain >下载</el-button>
+                            <el-button type="primary" @click="downloadVideo(person.user_id)" plain >下载</el-button>
                             <el-button type="danger" plain @click="changevideostate2(person.user_id, index)">打回</el-button>
                             <el-button type="success" plain @click="changevideostate3(person.user_id, index)">通过</el-button>
                         </div>

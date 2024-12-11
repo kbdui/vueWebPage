@@ -9,7 +9,8 @@
     import { project_id, user_data,title } from '@/status'
 
     const router = useRouter()
-
+    //人信息
+    const peopleinfo = ref([])
     // menu 菜单
     const activeIndex1 = ref('1')
     const activeIndex2 = ref('5')
@@ -274,7 +275,72 @@
     // handle change
     function handleChange() {
     }
-
+    function changeteststate2()
+    {
+        axios.post('http://localhost:8080/change_3_msg', {
+            project_id: project_id.value,
+            user_id: user_data.value.accountid,
+            state: 2
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            console.log("考核状态为：", response.data.data)
+            
+        }).catch(function (error){
+            console.log(error)
+        })
+    }
+    function changeteststate3()
+    {
+        axios.post('http://localhost:8080/change_3_msg', {
+            project_id: project_id.value,
+            user_id: user_data.value.accountid,
+            state : 3
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            ElMessage("考核通过")
+            console.log("考核状态为：", response.data.data)
+        }).catch(function (error){
+            console.log(error)
+        })
+    }
+    function changevideostate2()
+    {
+        axios.post('http://localhost:8080/change_2_msg', {
+            project_id: project_id.value,
+            user_id: user_data.value.accountid,
+            state: 2
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            console.log("考核状态为：", response.data.data)
+        }).catch(function (error){
+            console.log(error)
+        })
+    }
+    function changevideostate3()
+    {
+        axios.post('http://localhost:8080/change_2_msg', {
+            project_id: project_id.value,
+            user_id: user_data.value.accountid,
+            state: 3
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            console.log("考核状态为：", response.data.data)
+        }).catch(function (error){
+            console.log(error)
+        })
+    }
     // 一个用于从localStorage加载信息的函数
     function loadData() {
         const savedProjectId = localStorage.getItem('project_id');
@@ -286,11 +352,27 @@
             title.value = JSON.parse(savedData);
         }
     }
+    function getpeople_info(){
+        axios.post('http://localhost:8080/observe_progress', {
+            project_id: project_id.value,
+            //user_id : user_data.value.accountid
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            peopleinfo.value = response.data.data;
+            console.log("人信息为：", peopleinfo.value);
+        }).catch(function (error){
+            console.log(error)
+        })
+    }
 
     onMounted(() => {
         loadData()
         getDownloadUrl()
         getVideoUrl()
+        getpeople_info()
     })
 
 </script>
@@ -412,33 +494,35 @@
         width="500px"
         :close-on-click-modal="false"
     >
-        <el-card class="people_card" style="max-width: 480px" shadow="hover">
-            <template  #header>
-            <div class="card-header">
-                <span>姓名：</span>
-            </div>
-            </template>
-            <div class="card-body">
-                <div class="paper_block">
-                    <div class="paper_title">
-                        <p>考核试卷：</p>
+        <div v-for="(person, index) in peopleinfo" :key="index">
+            <el-card class="people_card" style="max-width: 480px" shadow="hover">
+                <template #header>
+                    <div class="card-header">
+                        <span>姓名：{{ person.name }}</span>
                     </div>
-                    <div class="paper_button">
-                        <el-button type="primary" plain>下载</el-button>
-                        <el-button type="danger" plain>打回</el-button>
-                        <el-button type="success" plain>通过</el-button>
+                </template>
+                <div class="card-body">
+                    <div class="paper_block">
+                        <div class="paper_title">
+                            <p>考核试卷：{{person.examination}}</p>
+                        </div>
+                        <div class="paper_button">
+                            <el-button type="primary" plain >下载</el-button>
+                            <el-button type="danger" plain @click="changeteststate2">打回</el-button>
+                            <el-button type="success" plain  @click="changeteststate3"> 通过</el-button>
+                        </div>
+                    </div>
+                    <div class="video_block">
+                        <p>考核视频：{{person.training}}</p>
+                        <div class="video_button">
+                            <el-button type="primary" plain >下载</el-button>
+                            <el-button type="danger" plain @click="changevideostate2">打回</el-button>
+                            <el-button type="success" plain @click="changevideostate3">通过</el-button>
+                        </div>
                     </div>
                 </div>
-                <div class="video_block">
-                    <p>考核视频：</p>
-                    <div class="video_button">
-                        <el-button type="primary" plain>下载</el-button>
-                        <el-button type="danger" plain>打回</el-button>
-                        <el-button type="success" plain>通过</el-button>
-                    </div>
-                </div>
-            </div>
-        </el-card>
+            </el-card>
+        </div>
     </el-dialog>
 </template>
 

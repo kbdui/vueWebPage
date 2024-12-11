@@ -66,6 +66,10 @@
 
   // 添加样品到预置清单
   function addSampleToPresetList(goods_id: string, num: number) {
+    if (num === undefined) {
+      ElMessage.error('请输入申请数量')
+      return
+    }
     axios.post('http://localhost:8080/add_sample_order', {
       account_id: user_data.value.accountid,
       goods_id: goods_id,

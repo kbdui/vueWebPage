@@ -462,6 +462,7 @@ import { de } from 'element-plus/es/locale'
     modifyDialogVisible.value = true
   }
   
+  // 删除预置清单中的条目
   const deletePresetItem = (index) => {
     ElMessageBox.confirm(
       '确定要删除该项目吗？',
@@ -472,8 +473,35 @@ import { de } from 'element-plus/es/locale'
         type: 'warning',
       }
     ).then(() => {
-      presetListData.value.splice(index, 1)
-      ElMessage.success('删除成功')
+      axios.post('http://localhost:8080/delete_one_good', {
+        order_id: presetListData.value[0].order_id,
+        good_id: presetListData.value[0].detail[index].sampleid
+      },{
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).then(function (response){
+        if(response.data.data === true) ElMessage.success('删除成功')
+        else ElMessage.error('删除失败')
+      }).catch(function (error){
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('删除失败')
+      })
+      presetListData.value[0].detail.splice(index, 1)
     }).catch(() => {
       ElMessage.info('已取消删除')
     })
@@ -511,8 +539,33 @@ import { de } from 'element-plus/es/locale'
         type: 'warning',
       }
     ).then(() => {
-      presetListData.value = []
-      ElMessage.success('清单已清空')
+      axios.post('http://localhost:8080/del_order', {
+        order_id: presetListData.value[0].order_id
+      },{
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).then(function (response){
+        if(response.data.data === true) ElMessage.success('清空成功')
+      }).catch(function (error){
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('清空失败')
+      })
+      presetListData.value[0].detail = []
     })
   }
   

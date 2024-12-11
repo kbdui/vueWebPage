@@ -6,7 +6,7 @@
     import topMessage from './son_components/topMessage.vue'
     import { ElMessage } from 'element-plus'
     import axios from 'axios'
-    import { project_id, user_data } from '@/status'
+    import { project_id, user_data,title } from '@/status'
 
     const router = useRouter()
 
@@ -86,6 +86,9 @@
                 ElMessage.success('培训视频上传成功')
             }
             else ElMessage.error('培训视频上传失败')
+            setTimeout(() => {
+                window.location.reload()
+            }, 1000)
         }).catch(function (error){
             onError(error)
             ElMessage.error('培训视频上传失败')
@@ -278,32 +281,9 @@
         if (savedProjectId) {
             project_id.value = JSON.parse(savedProjectId);
         }
-    }
-
-    // 更新localStorage中的视频完成信息
-    const videoStorage = ref(new Map())
-    function updateLocalVideoStorage(num: number) {
-        const str = 'video_storage' + user_data.value.accountid
-        const tmp = localStorage.getItem(str)
-        if (tmp === null) {
-            videoStorage.value = new Map()
-        }
-        else {
-            videoStorage.value = JSON.parse(tmp)
-        }
-
-        if (videoStorage.value.has(project_id.value)) {
-            var tmp2 = videoStorage.value.get(project_id.value) + 1
-            videoStorage.value.set(project_id.value, tmp2)
-        }
-        else {
-            videoStorage.value.set(project_id.value, 1)
-        }
-
-        localStorage.setItem(str, JSON.stringify(videoStorage.value))
-
-        if(num === videoStorage.value.get(project_id.value)) {
-            ElMessage.success('已完成培训视频学习')
+        const savedData = localStorage.getItem('title');
+        if (savedData) {
+            title.value = JSON.parse(savedData);
         }
     }
 
@@ -384,9 +364,9 @@
                 }"
                 v-for="(item, index) in videoUrls"
             >
-                <p>培训视频{{ index }}</P>
+                <p style="margin-left: 2rem;">{{ title }} 培训视频{{ index+1 }}</P>
                 <el-button class="paly_button" type="success" @click="openModal(1, item)" round>播放</el-button>
-                <el-button class="paly_button" type="danger" round>删除</el-button>
+                <!-- <el-button class="paly_button" type="danger" round>删除</el-button> -->
             </div>
         </div>
     </div>
@@ -479,6 +459,7 @@
         display: flex;
     }
     #add{
+        visibility: hidden;
         margin-top: 2rem;
         margin-left: 2rem;
     }

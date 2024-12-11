@@ -43,6 +43,12 @@
         if(i==1) showModal.value = false
     }
 
+    // 打开考核管理窗口
+    const showTestModal = ref(false)
+    function openTestModal() {
+        showTestModal.value = true
+    }
+
     // 用于切换视频/考核页面
     const video = ref(true)
     const test = ref(false)
@@ -144,7 +150,7 @@
                 console.log('Error', error.message);
             }
             console.log(error.config)
-            ElMessage.error('获取视频路径失败')
+            ElMessage.error('获取视频地址失败')
         })
     }
 
@@ -168,6 +174,36 @@
         } catch (error) {
             ElMessage.error('获取视频路径失败');
         }
+    }
+
+    // 删除视频
+    function deleteVideo(url: string) {
+        // axios.post('http://localhost:8080/download_c_msg', {
+        //   project_id: project_id.value
+        // },{
+        //   headers: {
+        //     'Content-Type': 'application/x-www-form-urlencoded'
+        //   }
+        // }).then(function (response){
+        //     videoUrls.value = response.data.data
+        // }).catch(function (error){
+        //     if (error.response) {
+        //         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        //         console.log(error.response.data);
+        //         console.log(error.response.status);
+        //         console.log(error.response.headers);
+        //     } else if (error.request) {
+        //         // 请求已经成功发起，但没有收到响应
+        //         // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        //         // 而在node.js中是 http.ClientRequest 的实例
+        //         console.log(error.request);
+        //     } else {
+        //         // 发送请求时出了点问题
+        //         console.log('Error', error.message);
+        //     }
+        //     console.log(error.config)
+        //     ElMessage.error('获取视频地址失败')
+        // })
     }
 
     // 下载试卷
@@ -202,7 +238,7 @@
             window.URL.revokeObjectURL(url); // 释放URL对象
         } catch (error) {
             console.error('下载试卷失败:', error);
-            ElMessage.error('下载试卷失败');
+            ElMessage.error('下载试卷失败，请尝试刷新页面');
         }
     }
 
@@ -371,7 +407,7 @@
             </el-upload>
         </div>
         <div id="testVideo">
-            <el-button type="warning" plain>考核管理</el-button>
+            <el-button type="warning" @click="openTestModal()" plain>考核管理</el-button>
         </div>
     </div>
   </div>
@@ -387,6 +423,43 @@
             Your browser does not support the video element.
         </video>
    </outWindow>
+
+   <!-- 考核管理窗口 -->
+    <el-dialog
+        id="test_modal"
+        v-model="showTestModal"
+        :title='"考核管理"'
+        width="500px"
+        :close-on-click-modal="false"
+    >
+        <el-card class="people_card" style="max-width: 480px" shadow="hover">
+            <template  #header>
+            <div class="card-header">
+                <span>姓名：</span>
+            </div>
+            </template>
+            <div class="card-body">
+                <div class="paper_block">
+                    <div class="paper_title">
+                        <p>考核试卷：</p>
+                    </div>
+                    <div class="paper_button">
+                        <el-button type="primary" plain>下载</el-button>
+                        <el-button type="danger" plain>打回</el-button>
+                        <el-button type="success" plain>通过</el-button>
+                    </div>
+                </div>
+                <div class="video_block">
+                    <p>考核视频：</p>
+                    <div class="video_button">
+                        <el-button type="primary" plain>下载</el-button>
+                        <el-button type="danger" plain>打回</el-button>
+                        <el-button type="success" plain>通过</el-button>
+                    </div>
+                </div>
+            </div>
+        </el-card>
+    </el-dialog>
 </template>
 
 <style>
@@ -483,5 +556,23 @@
     }
     #upload_paper{
         margin-top: 1rem;
+    }
+    #test_modal {
+        height: 30rem;
+        overflow-y: scroll;
+    }
+    .card_body {
+        display: grid;
+    }
+    .paper_block {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .video_block {
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 </style>

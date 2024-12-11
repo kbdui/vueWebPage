@@ -45,7 +45,7 @@
                 </el-button>
                 <el-button 
                     type="danger"
-                    @click="deleteList(list.order_id)"
+                    @click="deleteList(list)"
                 >
                     删除
                 </el-button>
@@ -180,29 +180,6 @@ const markAsComplete = (list) => {
     })
     .catch(() => {})
 }
-
-// Delete list
-const deleteList = (ids) => {
-  ElMessageBox.confirm(
-    '是否确认删除该设备记录？',
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  )
-    .then(() => {
-      // 这里需要调用后端API删除数据
-      ElMessage({
-        type: 'success',
-        message: '删除成功',
-      })
-    })
-    .catch(() => {})
-}
-
-
 function getAllEquipmentOrders() {
   axios.get('http://localhost:8080/get_all_equip_order')
     .then(function (response) {
@@ -234,7 +211,35 @@ const showEquipmentDetails = (equipment) => {
   selectedEquipment.value = equipment
   equipmentDetailsVisible.value = true
 }
-
+function deleteList(item){
+  ElMessageBox.confirm(
+    '是否确认删除该设备记录？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+  .then(() => {
+    axios.post('http://localhost:8080/del_order', {
+      order_id: item.order_id,
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
+  .then(response => { 
+    if (response.data.data === true) {
+  
+    //  ElMessage.success('清单已成功删除')
+      getAllEquipmentOrders()
+    } else {
+      ElMessage.error('Failed to delete list')
+    }
+  })
+})
+}
 // Export to PDF
 const exportToPDF = () => {
   // Create a temporary div for PDF content

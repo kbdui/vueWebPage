@@ -3,7 +3,7 @@
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
     import { user_data } from '@/status'
-    import { ElMessage } from 'element-plus'
+    import { ElMessage ,ElMessageBox} from 'element-plus'
     import axios from 'axios'
     import html2canvas from 'html2canvas'
     import jsPDF from 'jspdf'
@@ -93,7 +93,30 @@ const exportToPDF = async () => {
     ElMessage.error('PDF导出失败，请重试')
   }
 }
-
+const preformedEquipmentList = ref([])
+function fetchpreformedEquipmentOrders() {
+  axios.post('http://localhost:8080/get_personal_equip_order', {
+    uid: user_data.value.accountid,
+    type: 'Preformed'
+  },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(response => {
+    if (response.data.code === 1) {
+      preformedEquipmentList.value = response.data.data
+      console.log("preformedEquipmentList.value",preformedEquipmentList.value)
+    } else {
+      console.log(response.data.data)
+      ElMessage.error('Failed to fetch equipment orders')
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching equipment orders:', error)
+    ElMessage.error('Error fetching equipment orders')
+  })
+}
 function fetchEquipmentOrders() {
   axios.post('http://localhost:8080/get_personal_equip_order', {
     uid: user_data.value.accountid
@@ -104,20 +127,7 @@ function fetchEquipmentOrders() {
       }
     }).then(response => {
     if (response.data.code === 1) {
-      
-      response.data.data.forEach(order => {
-        order.detail.forEach(item => {
-          equipmentList.value.push({
-            id: item.scheme_id,
-            name: item.scheme_name,
-            source: item.source, 
-            quantity: item.num,
-            schemeNumber: item.scheme_number,
-            time: order.order_time,
-            status: order.order_state
-          })
-        })
-      })
+      equipmentList.value = response.data.data
       console.log(equipmentList.value)
     } else {
       console.log(response.data.data)
@@ -130,55 +140,104 @@ function fetchEquipmentOrders() {
   })
 }
 
-// 使用computed计算属性来获取去重后的设备列表
-const uniqueEquipmentList = computed(() => {
-  // 使用Map按设备名称分组存储设备信息
-  const equipmentMap = new Map()
+const exportAndClearPreformedList = async () => {
+  ElMessage.info('正在导出清单并清空预置清单，请稍候...')
 
-  // 遍历设备列表,按名称分组
-  equipmentList.value.forEach(equipment => {
-    if (!equipmentMap.has(equipment.name)) {
-      // 如果是新的设备名称,创建新条目
-      equipmentMap.set(equipment.name, {
-        ids: new Set([equipment.id]),
-        name: equipment.name,
-        sources: new Set([equipment.source]),
-        quantities: new Set([equipment.quantity]), 
-        schemeNumbers: new Set([equipment.schemeNumber]),
-        times: new Set([equipment.time]),
-        statuses: new Set([equipment.status])
-      })
+  // Export the preformed equipment list to PDF
+  const element = document.getElementById('content-to-export')
+  if (!element) {
+    ElMessage.error('无法找到要导出的内容')
+    return
+  }
+
+  try {
+    const canvas = await html2canvas(element)
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const imgProps = pdf.getImageProperties(imgData)
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+    pdf.save('preformed_equipment_list.pdf')
+    ElMessage.success('清单已成功导出')
+
+    // Clear the preformed equipment list
+    preformedEquipmentList.value = []
+    ElMessage.success('预置清单已清空')
+  } catch (error) {
+    console.error('导出清单失败:', error)
+    ElMessage.error('导出清单失败，请重试')
+  }
+}
+function changeStatus(item){
+  axios.post('http://localhost:8080/change_preformed_order_state', {
+    order_id: item.order_id,
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  }).then(response => {
+    if (response.data.data === true) {
+      ElMessage.success('状态已成功改变')
+      fetchpreformedEquipmentOrders()
+      fetchEquipmentOrders()
+      console.log('Status changed successfully')
     } else {
-      // 已存在的设备名称,添加到现有集合中
-      const existing = equipmentMap.get(equipment.name)
-      existing.ids.add(equipment.id)
-      existing.sources.add(equipment.source)
-      existing.quantities.add(equipment.quantity)
-      existing.schemeNumbers.add(equipment.schemeNumber) 
-      existing.times.add(equipment.time)
-      existing.statuses.add(equipment.status)
+      console.log('Failed to change status')
+    }
+  }).catch(error => {
+    console.error('Error changing status:', error)
+  })
+}
+function deleteList(item){
+  ElMessageBox.confirm(
+    '是否确认删除该设备记录？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+  .then(() => {
+    axios.post('http://localhost:8080/del_order', {
+      order_id: item.order_id,
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
     }
   })
-
-  // 将Map转换为数组
-  const equipmentArray = Array.from(equipmentMap.values()).map(item => ({
-    ids: Array.from(item.ids).join(', '),
-    name: item.name,
-    sources: Array.from(item.sources).join(', '),
-    quantities: Array.from(item.quantities).join(', '),
-    schemeNumbers: Array.from(item.schemeNumbers).join(', '),
-    times: Array.from(item.times).join(', '),
-    statuses: Array.from(item.statuses).join(', ')
-  }))
-
-  return {
-    equipments: equipmentArray,
-    items: equipmentList.value
-  }
+  .then(response => { 
+    if (response.data.data === true) {
+  
+    //  ElMessage.success('清单已成功删除')
+       fetchEquipmentOrders()
+    } else {
+      ElMessage.error('Failed to delete list')
+    }
+  })
 })
+}
+function changefinish(item){
+  axios.post('http://localhost:8080/change_order_state', {
+    order_id: item.order_id,
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
+  .then(response => {
+    if (response.data.data === true) {
+      ElMessage.success('状态已成功改变')
+      fetchEquipmentOrders()
+    } else {
+      ElMessage.error('Failed to change status')
+    }
+  })
+}
 onMounted(() => {
   fetchEquipmentOrders()
-
+  fetchpreformedEquipmentOrders()
 })
 </script>
 
@@ -218,93 +277,70 @@ onMounted(() => {
       @select="handleSelect2"
     >
       <el-menu-item index="1">清单</el-menu-item>
-      <el-menu-item index="2">预置清单</el-menu-item>
+      <el-menu-item index="2" >预置清单</el-menu-item>
     </el-menu>
   </div>
 <br>
 <div v-if="list" id="list">
-<!-- 导出清单按钮 -->
-<el-button type="success" id="export" size="mini" >导出清单</el-button>
+  <!-- 导出清单按钮 -->
+  <el-button type="success" id="export" size="mini">导出清单</el-button>
   <!-- //list-->
+  <div class="lists-container">
+    <el-card v-for="list in equipmentList" :key="list.order_id" class="list-card">
+      <div class="list-header" style="font-size: 16px;">
+        <div>用户名：{{ list.user.name }}</div>
+        <div>订单ID：{{ list.order_id }}</div>
+        <div>订单时间：{{ list.order_time }}</div>
+        <div>订单状态：{{ list.order_state }}</div>
+        <div v-if="list.order_state === 'Ongoing'" style="text-align: right;">
+          <el-button type="primary" @click="changefinish(list)">点击完成</el-button>
+        </div>
+      </div>
 
-    <div v-for="(equipment, index) in uniqueEquipmentList.equipments" :key="index">
-      <el-card style="max-width: 100%" color="light blue" class="mb-2">
-        <P id="index">清单编号：{{ equipment.ids }}</P>
-        <P id="time">记录时间：{{ equipment.times }}</P>
-        <P>设备信息：{{ equipment.name }}</P>
-        <p :id="'status' + index">状态：{{ equipment.statuses }}</p>
-        <el-button 
-          v-if="equipment?.statuses !== 'Finish'"
-          type="success" 
-          :id="'download' + index" 
-          size="mini"
-        >标为完成</el-button>
-        <el-button type="success" :id="'delete' + index" size="mini">删除</el-button>
-     </el-card>
-    </div>
-    <!-- //点击预置清单 -->
+      <div class="equipment-list" style="font-size: 16px;">
+        <div>设备信息：</div>
+        <ul>
+          <li v-for="item in list.detail" :key="item.scheme_id">
+            {{ item.scheme_name }} x{{ item.num }}
+            <div>设备ID：{{ item.scheme_id }}</div>
+            <div>来源：{{ item.source }}</div>
+            <div>方案编号: {{ item.scheme_number }}</div>
+          </li>
+        </ul>
+      </div>
+      <div class="action-buttons" style="text-align: right">
+        <el-button type="primary" @click="deleteList(list)">删除清单</el-button>
+      </div>
+    </el-card>
+  </div>
 </div>
 <div v-else-if="yulist">
-    <el-table :data="tableData" style="width: 100%" height="25%">
-        <el-table-column prop="标准编号" label="标准编号" width="120" />
-        <el-table-column prop="器械品类" label="器械品类" width="120" />
-        <el-table-column prop="设备名称" label="设备名称" />
-        <el-table-column prop="生产厂家" label="生产厂家" />
-        <el-table-column prop="设备详情" label="设备详情" />
-        <el-table-column prop="购买数量" label="购买数量" />  
-        <el-table-column label="操作" width="200">
-                <template >
-                  <el-button type="primary" size="mini" >修改数量</el-button>
-                  <el-button type="danger" size="mini">详情</el-button>
-                </template>
-              </el-table-column>
-    </el-table>
-    <el-table :data="tableData" style="width: 100%"  height="25%">
-        <el-table-column prop="标准编号" label="标准编号" width="120" />
-        <el-table-column prop="器械品类" label="器械品类" width="120" />
-        <el-table-column prop="设备名称" label="设备名称" />
-        <el-table-column prop="生产厂家" label="生产厂家" />
-        <el-table-column prop="设备详情" label="设备详情" />
-        <el-table-column prop="购买数量" label="购买数量" />  
-        <el-table-column label="操作" width="200">
-                <template>
-                  <el-button type="primary" size="mini">修改数量</el-button>
-                  <el-button type="danger" size="mini">详情</el-button>
-                </template>
-              </el-table-column>
-    </el-table>
-    <el-table :data="tableData" style="width: 100%"  height="25%">
-        <el-table-column prop="标准编号" label="标准编号" width="120" />
-        <el-table-column prop="器械品类" label="器械品类" width="120" />
-        <el-table-column prop="设备名称" label="设备名称" />
-        <el-table-column prop="生产厂家" label="生产厂家" />
-        <el-table-column prop="设备详情" label="设备详情" />
-        <el-table-column prop="购买数量" label="购买数量" />  
-        <el-table-column label="操作" width="200">
-                <template #default="scope">
-                  <el-button type="primary" size="mini">修改数量</el-button>
-                  <el-button type="danger" size="mini">详情</el-button>
-                </template>
-              </el-table-column>
-    </el-table>
-    <el-table :data="tableData" style="width: 100%" height="25%">
-        <el-table-column prop="标准编号" label="标准编号" width="120" />
-        <el-table-column prop="器械品类" label="器械品类" width="120" />
-        <el-table-column prop="设备名称" label="设备名称" />
-        <el-table-column prop="生产厂家" label="生产厂家" />
-        <el-table-column prop="设备详情" label="设备详情" />
-        <el-table-column prop="购买数量" label="购买数量" />  
-        <el-table-column label="操作" width="200">
-                <template #default="scope">
-                  <el-button type="primary" size="mini">修改数量</el-button>
-                  <el-button type="danger" size="mini">详情</el-button>
-                </template>
-              </el-table-column>
-    </el-table>
-    </div>
-    <div class="action-buttons">
-      <el-button type="primary" @click="exportToPDF">生成清单</el-button>
-    </div>
+  <div class="lists-container">
+    <el-card v-for="list in preformedEquipmentList" :key="list.order_id" class="list-card">
+      <div class="list-header" style="font-size: 16px;">
+        <div>用户名：{{ list.user.name }}</div>
+        <div>订单ID：{{ list.order_id }}</div>
+        <div>订单时间：{{ list.order_time }}</div>
+        <div>订单状态：{{ list.order_state }}</div>
+      </div>
+
+      <div class="equipment-list" style="font-size: 16px;">
+        <div>设备信息：</div>
+        <ul>
+          <li v-for="item in list.detail" :key="item.scheme_id">
+            {{ item.scheme_name }} x{{ item.num }}
+            <div>设备ID：{{ item.scheme_id }}</div>
+            <div>来源：{{ item.source }}</div>
+            <div>方案编号: {{ item.scheme_number }}</div>
+          </li>
+        </ul>
+      </div>
+      <div class="action-buttons" style="text-align: right">
+        <el-button type="primary" @click="changeStatus(list)">生成清单</el-button>
+      </div>
+    </el-card>
+  </div>
+</div>
   </div>
 
 </template>
@@ -437,6 +473,28 @@ onMounted(() => {
         justify-content: center;
         gap: 10px;
       }
+      
+.list-card {
+  margin-bottom: 20px;
+}
+
+.list-header {
+  margin-bottom: 15px;
+}
+
+.list-header div {
+  margin-bottom: 5px;
+}
+
+.equipment-list {
+  margin-bottom: 15px;
+}
+
+.equipment-list ul {
+  list-style: none;
+  padding-left: 20px;
+  margin: 10px 0;
+}
 </style>
 
 function data() {

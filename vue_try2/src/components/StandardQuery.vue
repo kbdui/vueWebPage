@@ -1,4 +1,3 @@
-
 <template>
     <div class="standards-container">
       <Top></Top>
@@ -13,6 +12,7 @@
         </el-input>
         <el-button type="primary" @click="handleSearch" >搜索</el-button>
         <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button>
+        <el-button type="primary" @click="handleExcelUpload">导入Excel</el-button>
       </div>
       <div class="standards-list">
         <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
@@ -116,6 +116,7 @@ import { onMounted } from 'vue';
 import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
 // import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx'
 import Top from './Top.vue'
 import { user_data,project_id,title } from '@/status'
 const router = useRouter()
@@ -143,41 +144,41 @@ function handleClick(projectId, standardNumber, projecttype, projectname) {
         localStorage.setItem('project_id', JSON.stringify(project_id.value))
         localStorage.setItem('title', JSON.stringify(title.value))
     }
-const handleExcelUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      // 移除标题行
-      const importedData = jsonData.slice(1);
+const fileInput = ref(null)
 
-      // 将导入的数据添加到allStandards数组中
-      allStandards.value = [...allStandards.value, ...importedData.map((item) => ({
-        id: item[4], // 假设项目名称是ID
-        title: `${item[0]} ${item[2]}`, // 大类 + 标准名称
-        note: item[4], // 项目名称作为备注
-        link: `/details/${item[4]}` // 链接格式
-      }))];
+const triggerFileUpload = () => {
+  fileInput.value.click()
+}
 
-      ElMessage.success('Excel文件导入成功');
-    };
-    reader.readAsArrayBuffer(file);
+const handleExcelUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const response = await axios.post('http://localhost:8080/gen_project_by_excel', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    if (response.data.data === true) {
+      ElMessage.success('Excel导入成功')
+      // Refresh the project list
+      search()
+    } else {
+      ElMessage.error('Excel导入失败')
+    }
+  } catch (error) {
+    console.error('Excel上传错误:', error)
+    ElMessage.error('Excel上传失败')
   }
-};
 
-const importFromExcel = () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.xlsx, .xls';
-  input.onchange = handleExcelUpload;
-  input.click();
-};
+  // Clear the file input
+  event.target.value = ''
+}
 
   const searchQuery = ref('')
   const currentPage = ref(1)

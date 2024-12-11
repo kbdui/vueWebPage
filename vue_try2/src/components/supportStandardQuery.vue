@@ -17,7 +17,7 @@
     <div id="buttonGroup24">
       <div id="left24">
         <el-button type="primary" @click="openAddApplicationDialog">添加</el-button>
-        <el-button type="success" @click="importFromExcel">从excel统计表导入</el-button>
+        <el-button type="success" @click="handleExcelUpload">从excel统计表导入</el-button>
         <el-button type="success" @click="showApplicationsDialog">查看增加申请</el-button>
       </div>
     </div>
@@ -124,6 +124,7 @@ import { onMounted } from 'vue';
 import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
 import { project_id, title } from '@/status';
+import * as XLSX from 'xlsx';
 // import * as XLSX from 'xlsx'
 import Top from './Top.vue'
 const router = useRouter()
@@ -139,48 +140,39 @@ const userAvatar = ref('https://example.com/avatar.jpg')
 const userInitials = computed(() => {
 return userInfo.value.name.slice(0, 2)
 })
-function handleClick(projectId, standardNumber, projecttype, projectname) {
-      project_id.value = projectId
-      title.value = standardNumber +'  '+ projecttype +'  '+ projectname
-      saveData()
-      console.log("project_id:",project_id.value)
-    }
-const handleExcelUpload = (event) => {
-const file = event.target.files[0];
-if (file) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const data = new Uint8Array(e.target.result);
-    const workbook = XLSX.read(data, { type: 'array' });
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+// function handleClick(projectId, standardNumber, projecttype, projectname) {
+//       project_id.value = projectId
+//       title.value = standardNumber +'  '+ projecttype +'  '+ projectname
+//       saveData()
+//       console.log("project_id:",project_id.value)
+//     }
+// const handleExcelUpload = (event) => {
+// const file = event.target.files[0];
+// if (file) {
+//   const reader = new FileReader();
+//   reader.onload = (e) => {
+//     const data = new Uint8Array(e.target.result);
+//     const workbook = XLSX.read(data, { type: 'array' });
+//     const firstSheetName = workbook.SheetNames[0];
+//     const worksheet = workbook.Sheets[firstSheetName];
+//     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-    // 移除标题行
-    const importedData = jsonData.slice(1);
+//     // 移除标题行
+//     const importedData = jsonData.slice(1);
 
-    // 将导入的数据添加到allStandards数组中
-    allStandards.value = [...allStandards.value, ...importedData.map((item) => ({
-      id: item[4], // 假设项目名称是ID
-      title: `${item[0]} ${item[2]}`, // 大类 + 标准名称
-      note: item[4], // 项目名称作为备注
-      link: `/details/${item[4]}` // 链接格式
-    }))];
+//     // 将导入的数据添加到allStandards数组中
+//     allStandards.value = [...allStandards.value, ...importedData.map((item) => ({
+//       id: item[4], // 假设项目名称是ID
+//       title: `${item[0]} ${item[2]}`, // 大类 + 标准名称
+//       note: item[4], // 项目名称作为备注
+//       link: `/details/${item[4]}` // 链接格式
+//     }))];
 
-    ElMessage.success('Excel文件导入成功');
-  };
-  reader.readAsArrayBuffer(file);
-}
-};
-
-const importFromExcel = () => {
-const input = document.createElement('input');
-input.type = 'file';
-input.accept = '.xlsx, .xls';
-input.onchange = handleExcelUpload;
-input.click();
-};
-
+//     ElMessage.success('Excel文件导入成功');
+//   };
+//   reader.readAsArrayBuffer(file);
+// }
+// };
 const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(5)
@@ -305,21 +297,88 @@ applicationForm.value = {
   standardNumber: '',
   projectName: ''
 }
+  
+function handleClick(projectId, standardNumber, projecttype, projectname) {
+      project_id.value = projectId
+      title.value = standardNumber +'  '+ projecttype +'  '+ projectname
+      saveData()
+      console.log("project_id:",project_id.value)
+    }
 
-const handleSearch = () => {
-// Implement search logic here
-console.log('Searching for:', searchQuery.value);
-};
-
-const handlePageChange = (newPage) => {
-currentPage.value = newPage;
-// 可以在这里添加逻辑，比如重新获取数据或者更新视图
-};
-function saveData() {
+    function saveData() {
         localStorage.setItem('project_id', JSON.stringify(project_id.value))
         localStorage.setItem('title', JSON.stringify(title.value))
     }
 
+const fileInput = ref(null)
+
+const triggerFileUpload = () => {
+  fileInput.value.click()
+}
+
+const handleExcelUpload = async () => {
+  // 创建文件选择器
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+
+  input.click();
+  input.onchange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      ElMessage.error('未选择文件');
+      document.body.removeChild(input);
+      return;
+    }
+
+    // 检查文件类型
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      ElMessage.error('请上传Excel文件(.xlsx或.xls格式)');
+      document.body.removeChild(input);
+      return;
+    }
+
+    try {
+      // 创建FormData对象
+      const formData = new FormData();
+      
+      // 直接将文件添加到FormData中
+      formData.append('file', file);
+
+      // 使用FormData对象上传文件
+      const response = await axios.post('http://localhost:8080/gen_project_by_excel', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.data === true) {
+        ElMessage.success('Excel导入成功');
+        search(); // 刷新数据
+      } else {
+        ElMessage.error('Excel导入失败: ' + response.data.message);
+        console.log(response.data);
+      }
+    } catch (uploadError) {
+      console.error('Excel上传错误:', uploadError);
+      ElMessage.error('Excel上传失败: ' + uploadError.message);
+    } finally {
+      document.body.removeChild(input);
+    }
+  };
+
+const handleSearch = () => {
+  // Implement search logic here
+  console.log('Searching for:', searchQuery.value);
+};
+
+const handlePageChange = (newPage) => {
+  currentPage.value = newPage;
+  // 可以在这里添加逻辑，比如重新获取数据或者更新视图
+};
+}
 // const handleRowClick = (row) => {
 onMounted(() => {
 search()

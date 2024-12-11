@@ -193,11 +193,13 @@ const addToPreset = async (item) => {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     })
-    console.log("添加信息为",user_data.value.accountid,item.scheme_id,item.quantity)
     if (response.data.data) {
+      // Update the status to 'preformed' after confirming the item
+
       ElMessage.success(`已将${item.scheme_name}添加到预置清单，数量：${item.quantity}`)
     } else {
       ElMessage.error('添加失败：用户ID不存在或商品不存在')
+      console.log(response.data)
     }
   } catch (error) {
     console.error('添加预置清单失败:', error)

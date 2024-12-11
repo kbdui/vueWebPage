@@ -186,7 +186,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { equipment_id, project_id } from '@/status'
+import { equipment_id, project_id,user_data} from '@/status'
 import axios from 'axios'
 import { onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -459,8 +459,29 @@ const viewPdf = (item) => {
   
   input.click()
 }
-const addToPreset = (item) => {
-  ElMessage.success(`已将${item.name}添加到预置清单，数量：${item.quantity}`)
+const addToPreset = async (item) => {
+  try {
+    const response = await axios.post('http://localhost:8080/add_equip_order', {
+      account_id: user_data.value.accountid,
+      goods_id: item.scheme_id,
+      goods_amount: item.quantity
+    }, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    if (response.data.data) {
+      // Update the status to 'preformed' after confirming the item
+
+      ElMessage.success(`已将${item.scheme_name}添加到预置清单，数量：${item.quantity}`)
+    } else {
+      ElMessage.error('添加失败：用户ID不存在或商品不存在')
+      console.log(response.data)
+    }
+  } catch (error) {
+    console.error('添加预置清单失败:', error)
+    ElMessage.error('添加到预置清单失败，请稍后重试')
+  }
 }
 onMounted(() => {
     loadprojectid()

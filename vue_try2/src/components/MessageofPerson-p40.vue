@@ -26,9 +26,9 @@
       <el-tab-pane label="人员" name="Offiers">
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+          <!-- <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
-          </el-button>
+          </el-button> -->
         </div>
         <!-- Message List -->
         <div class="message-list">
@@ -71,9 +71,9 @@
       <el-tab-pane label="设备" name="equipment">
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+          <!-- <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
-          </el-button>
+          </el-button> -->
         </div>
         <!-- Message List -->
         <div class="message-list">
@@ -116,9 +116,9 @@
       <el-tab-pane label="规程" name="Stander">
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+          <!-- <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
-          </el-button>
+          </el-button> -->
         </div>
         <!-- Message List -->
         <div class="message-list">
@@ -161,9 +161,9 @@
       <el-tab-pane label="物料" name="Sample">
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+          <!-- <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
-          </el-button>
+          </el-button> -->
         </div>
         <!-- Message List -->
         <div class="message-list">

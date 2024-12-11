@@ -23,7 +23,7 @@
           <!-- 更小的导航栏 -->
           <div class="border-b pb-2 mb-4">
             <el-radio-group v-model="activeTertiaryTab" size="small">
-              <el-radio-button @click="chooseR1" label="审核提醒"></el-radio-button>
+              <!-- <el-radio-button @click="chooseR1" label="审核提醒"></el-radio-button> -->
               <el-radio-button @click="chooseR2" label="授权清单"></el-radio-button>
               <el-radio-button @click="chooseR3" label="培训清单"></el-radio-button>
             </el-radio-group>
@@ -51,7 +51,7 @@
           </div>
 
           <!-- 授权清单 -->
-          <div v-else-if="r2" id="personReview1">
+          <div v-if="r2" id="personReview1">
             <el-input class="searchInput" v-model="input2" style="width: 240px" placeholder="输入项目ID查询" />
             <el-button class="searchButton" @click="getAuthList" type="success" plain>查询</el-button>
             <el-button 
@@ -133,9 +133,9 @@ import axios from 'axios'
 import { jsPDF } from 'jspdf';
 
 const activeSecondaryTab = ref('personnel')
-const activeTertiaryTab = ref('审核提醒')
-const r1 = ref(true)
-const r2 = ref(false)
+const activeTertiaryTab = ref('授权清单')
+const r1 = ref(false)
+const r2 = ref(true)
 const r3 = ref(false)
 const input1 = ref()
 const input2 = ref()

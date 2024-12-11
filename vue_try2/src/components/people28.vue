@@ -9,8 +9,7 @@
     import { project_id, user_data,title } from '@/status'
 
     const router = useRouter()
-    //人信息
-    const peopleinfo = ref([])
+
     // menu 菜单
     const activeIndex1 = ref('1')
     const activeIndex2 = ref('5')
@@ -275,83 +274,121 @@
     // handle change
     function handleChange() {
     }
-    function changeteststate2()
+
+    // 改变考核状态
+    function changeteststate2(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_3_msg', {
+        axios.post('http://localhost:8080/change_2_msg', {
             project_id: project_id.value,
-            user_id: user_data.value.accountid,
+            user_id: id,
             state: 2
         },{
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         }).then(function (response){
-            console.log("考核状态为：", response.data.data)
-            
+            if(response.data.data === true) {
+                ElMessage.success('操作成功')
+                peopleinfo.value[index].assessmentPaperStatus = 'Reject'
+            }
+            else ElMessage.error('操作失败')
         }).catch(function (error){
             console.log(error)
         })
     }
-    function changeteststate3()
+
+    function changeteststate3(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_3_msg', {
+        axios.post('http://localhost:8080/change_2_msg', {
             project_id: project_id.value,
-            user_id: user_data.value.accountid,
+            user_id: id,
             state : 3
         },{
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         }).then(function (response){
-            ElMessage("考核通过")
-            console.log("考核状态为：", response.data.data)
+            if(response.data.data === true) {
+                ElMessage.success('操作成功')
+                peopleinfo.value[index].assessmentPaperStatus = 'Pass'
+                if(peopleinfo.value[index].assessmentVideoStatus === 'Pass') {
+                    changeauthstate(id)
+                }
+            }
+            else ElMessage.error('操作失败')
         }).catch(function (error){
             console.log(error)
         })
     }
-    function changevideostate2()
+
+    function changevideostate2(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_2_msg', {
+        axios.post('http://localhost:8080/change_3_msg', {
             project_id: project_id.value,
-            user_id: user_data.value.accountid,
+            user_id: id,
             state: 2
         },{
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         }).then(function (response){
-            console.log("考核状态为：", response.data.data)
+            if(response.data.data === true) {
+                ElMessage.success('操作成功')
+                peopleinfo.value[index].assessmentPaperStatus = 'Reject'
+            }
+            else ElMessage.error('操作失败')
         }).catch(function (error){
             console.log(error)
         })
     }
-    function changevideostate3()
+
+    function changevideostate3(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_2_msg', {
+        axios.post('http://localhost:8080/change_3_msg', {
             project_id: project_id.value,
-            user_id: user_data.value.accountid,
+            user_id: id,
             state: 3
         },{
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         }).then(function (response){
-            console.log("考核状态为：", response.data.data)
+            if(response.data.data === true) {
+                ElMessage.success('操作成功')
+                peopleinfo.value[index].assessmentVideoStatus = 'Pass'
+                if(peopleinfo.value[index].assessmentPaperStatus === 'Pass') {
+                    changeauthstate(id)
+                }
+            }
+            else ElMessage.error('操作失败')
         }).catch(function (error){
             console.log(error)
         })
     }
-    // 一个用于从localStorage加载信息的函数
-    function loadData() {
-        const savedProjectId = localStorage.getItem('project_id');
-        if (savedProjectId) {
-            project_id.value = JSON.parse(savedProjectId);
-        }
-        const savedData = localStorage.getItem('title');
-        if (savedData) {
-            title.value = JSON.parse(savedData);
-        }
+
+    // 改变授权状态
+    function changeauthstate(id: number){
+        axios.post('http://localhost:8080/change_4_msg', {
+            project_id: project_id.value,
+            user_id: id
+        },{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(function (response){
+            if(response.data.data === true) {
+                ElMessage.success('该人员已完成授权')
+            }
+            else ElMessage.error('授权失败')
+        }).catch(function (error){
+            console.log(error)
+            ElMessage.error('授权失败')
+        })
     }
+    
+    
+    // 获取检测人员考核相关信息
+    const peopleinfo = ref([])
     function getpeople_info(){
         axios.post('http://localhost:8080/observe_progress', {
             project_id: project_id.value,
@@ -366,6 +403,18 @@
         }).catch(function (error){
             console.log(error)
         })
+    }
+
+    // 一个用于从localStorage加载信息的函数
+    function loadData() {
+        const savedProjectId = localStorage.getItem('project_id');
+        if (savedProjectId) {
+            project_id.value = JSON.parse(savedProjectId);
+        }
+        const savedData = localStorage.getItem('title');
+        if (savedData) {
+            title.value = JSON.parse(savedData);
+        }
     }
 
     onMounted(() => {
@@ -501,23 +550,23 @@
                         <span>姓名：{{ person.name }}</span>
                     </div>
                 </template>
-                <div class="card-body">
+                <div class="card_body">
                     <div class="paper_block">
                         <div class="paper_title">
-                            <p>考核试卷：{{person.examination}}</p>
+                            <p>考核试卷：{{ person.assessmentPaperStatus }}</p>
                         </div>
                         <div class="paper_button">
                             <el-button type="primary" plain >下载</el-button>
-                            <el-button type="danger" plain @click="changeteststate2">打回</el-button>
-                            <el-button type="success" plain  @click="changeteststate3"> 通过</el-button>
+                            <el-button type="danger" plain @click="changeteststate2(person.user_id, index)">打回</el-button>
+                            <el-button type="success" plain  @click="changeteststate3(person.user_id, index)"> 通过</el-button>
                         </div>
                     </div>
                     <div class="video_block">
-                        <p>考核视频：{{person.training}}</p>
+                        <p>考核视频：{{ person.assessmentVideoStatus }}</p>
                         <div class="video_button">
                             <el-button type="primary" plain >下载</el-button>
-                            <el-button type="danger" plain @click="changevideostate2">打回</el-button>
-                            <el-button type="success" plain @click="changevideostate3">通过</el-button>
+                            <el-button type="danger" plain @click="changevideostate2(person.user_id, index)">打回</el-button>
+                            <el-button type="success" plain @click="changevideostate3(person.user_id, index)">通过</el-button>
                         </div>
                     </div>
                 </div>
@@ -625,6 +674,9 @@
     #test_modal {
         height: 30rem;
         overflow-y: scroll;
+    }
+    .people_card {
+        margin-bottom: 0.5rem;
     }
     .card_body {
         display: grid;

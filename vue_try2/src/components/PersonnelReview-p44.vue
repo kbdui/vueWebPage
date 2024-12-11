@@ -23,7 +23,7 @@
           <!-- 更小的导航栏 -->
           <div class="border-b pb-2 mb-4">
             <el-radio-group v-model="activeTertiaryTab" size="small">
-              <el-radio-button @click="chooseR1" label="审核提醒"></el-radio-button>
+              <!-- <el-radio-button @click="chooseR1" label="审核提醒"></el-radio-button> -->
               <el-radio-button @click="chooseR2" label="授权清单"></el-radio-button>
               <el-radio-button @click="chooseR3" label="培训清单"></el-radio-button>
             </el-radio-group>
@@ -137,9 +137,9 @@ import axios from 'axios'
 
 const activeMainTab = ref('lists')
 const activeSecondaryTab = ref('personnel')
-const activeTertiaryTab = ref('审核提醒')
-const r1 = ref(true)
-const r2 = ref(false)
+const activeTertiaryTab = ref('授权清单')
+const r1 = ref(false) 
+const r2 = ref(true)
 const r3 = ref(false)
 const input1 = ref()
 const input2 = ref()

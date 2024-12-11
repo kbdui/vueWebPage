@@ -81,34 +81,46 @@
   
       <!-- Preset List View -->
       <template v-else-if="yulist">
-        <el-table :data="presetListData" style="width: 100%">
-          <el-table-column prop="standardNo" label="标准编号" min-width="150" />
-          <el-table-column prop="productName" label="产品名称" min-width="150" />
-          <el-table-column prop="sampleName" label="样品名称" min-width="150" />
-          <el-table-column prop="manufacturer" label="生产厂家" min-width="120">
+        <el-table :data="presetListData[0].detail" style="width: 100%">
+          <el-table-column prop="standardNo" label="标准编号">
             <template #default="scope">
-              <span style="color: #0066FF">{{ scope.row.manufacturer }}</span>
+              {{ scope.row.samplenumber || '/' }}
             </template>
           </el-table-column>
-          <el-table-column prop="specModel" label="规格型号" min-width="120">
+
+          <el-table-column prop="productName" label="产品名称">
             <template #default="scope">
-              {{ scope.row.specModel || '/' }}
+              {{ scope.row.typename || '/' }}
             </template>
           </el-table-column>
-          <el-table-column label="申请需求" min-width="120">
+
+          <el-table-column prop="sampleName" label="样品名称">
             <template #default="scope">
-              我需要{{ scope.row.quantity }}个
+              {{ scope.row.samplename || '/' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
+          
+          <el-table-column prop="specModel" label="规格型号">
             <template #default="scope">
-              <el-button
+              {{ scope.row.model || '/' }}
+            </template>
+          </el-table-column>
+
+          <el-table-column label="申请数量">
+            <template #default="scope">
+              {{ scope.row.number || '/' }}
+            </template>
+          </el-table-column>
+
+          <el-table-column label="操作" fixed="right">
+            <template #default="scope">
+              <!-- <el-button
                 type="primary"
                 link
                 @click="modifyPresetRequest(scope.row)"
               >
                 修改需求
-              </el-button>
+              </el-button> -->
               <el-button
                 type="danger"
                 link
@@ -256,6 +268,7 @@
   import headshot from './headshot.vue'
   import axios from 'axios'
   import { user_data } from '@/status'
+import { de } from 'element-plus/es/locale'
 
     const router = useRouter()
 
@@ -346,44 +359,44 @@
   ])
   
   // Preset list data
-  const presetListData = ref([
-    {
-      standardNo: 'GB 19083-2023',
-      productName: '医用防护口罩',
-      sampleName: '一次性N95口罩',
-      manufacturer: '107厂',
-      specModel: '/',
-      quantity: 10,
-      status: '申请需求'
-    },
-    {
-      standardNo: 'GB 19083-2023',
-      productName: '医用防护口罩',
-      sampleName: '一次性普通口罩',
-      manufacturer: '107厂',
-      specModel: '/',
-      quantity: 10,
-      status: '申请需求'
-    },
-    {
-      standardNo: 'GB 19083-2023',
-      productName: '医用防护口罩',
-      sampleName: '一次性N75口罩',
-      manufacturer: '107厂',
-      specModel: '/',
-      quantity: 10,
-      status: '申请需求'
-    },
-    {
-      standardNo: 'GB 19083-2023',
-      productName: '医用防护口罩',
-      sampleName: '一次性N95口罩',
-      manufacturer: '113厂',
-      specModel: '/',
-      quantity: 10,
-      status: '申请需求'
-    }
-  ])
+  // const presetListData = ref([
+  //   {
+  //     standardNo: 'GB 19083-2023',
+  //     productName: '医用防护口罩',
+  //     sampleName: '一次性N95口罩',
+  //     manufacturer: '107厂',
+  //     specModel: '/',
+  //     quantity: 10,
+  //     status: '申请需求'
+  //   },
+  //   {
+  //     standardNo: 'GB 19083-2023',
+  //     productName: '医用防护口罩',
+  //     sampleName: '一次性普通口罩',
+  //     manufacturer: '107厂',
+  //     specModel: '/',
+  //     quantity: 10,
+  //     status: '申请需求'
+  //   },
+  //   {
+  //     standardNo: 'GB 19083-2023',
+  //     productName: '医用防护口罩',
+  //     sampleName: '一次性N75口罩',
+  //     manufacturer: '107厂',
+  //     specModel: '/',
+  //     quantity: 10,
+  //     status: '申请需求'
+  //   },
+  //   {
+  //     standardNo: 'GB 19083-2023',
+  //     productName: '医用防护口罩',
+  //     sampleName: '一次性N95口罩',
+  //     manufacturer: '113厂',
+  //     specModel: '/',
+  //     quantity: 10,
+  //     status: '申请需求'
+  //   }
+  // ])
   
   const hasRequestStatus = computed(() => {
     return presetListData.value.some(item => item.status === '申请需求')
@@ -449,6 +462,7 @@
     modifyDialogVisible.value = true
   }
   
+  // 删除预置清单中的条目
   const deletePresetItem = (index) => {
     ElMessageBox.confirm(
       '确定要删除该项目吗？',
@@ -459,30 +473,57 @@
         type: 'warning',
       }
     ).then(() => {
-      presetListData.value.splice(index, 1)
-      ElMessage.success('删除成功')
+      axios.post('http://localhost:8080/delete_one_good', {
+        order_id: presetListData.value[0].order_id,
+        good_id: presetListData.value[0].detail[index].sampleid
+      },{
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).then(function (response){
+        if(response.data.data === true) ElMessage.success('删除成功')
+        else ElMessage.error('删除失败')
+      }).catch(function (error){
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('删除失败')
+      })
+      presetListData.value[0].detail.splice(index, 1)
     }).catch(() => {
       ElMessage.info('已取消删除')
     })
   }
   
-  const submitPresetList = () => {
-    if (hasRequestStatus.value) {
-      ElMessage.warning('存在申请需求状态的项目，无法提交')
-      return
-    }
-    ElMessageBox.confirm(
-      '确定要提交预置清单吗？',
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info',
-      }
-    ).then(() => {
-      ElMessage.success('提交成功')
-    })
-  }
+  // const submitPresetList = () => {
+  //   if (hasRequestStatus.value) {
+  //     ElMessage.warning('存在申请需求状态的项目，无法提交')
+  //     return
+  //   }
+  //   ElMessageBox.confirm(
+  //     '确定要提交预置清单吗？',
+  //     '提示',
+  //     {
+  //       confirmButtonText: '确定',
+  //       cancelButtonText: '取消',
+  //       type: 'info',
+  //     }
+  //   ).then(() => {
+  //     ElMessage.success('提交成功')
+  //   })
+  // }
   
   const clearPresetList = () => {
     if (presetListData.value.length === 0) {
@@ -498,8 +539,33 @@
         type: 'warning',
       }
     ).then(() => {
-      presetListData.value = []
-      ElMessage.success('清单已清空')
+      axios.post('http://localhost:8080/del_order', {
+        order_id: presetListData.value[0].order_id
+      },{
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).then(function (response){
+        if(response.data.data === true) ElMessage.success('清空成功')
+      }).catch(function (error){
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('清空失败')
+      })
+      presetListData.value[0].detail = []
     })
   }
   
@@ -546,6 +612,79 @@
     })
   }
 
+  // 获取预置清单
+  const presetListData = ref([
+    {
+      status: 'XXX',
+      order_id: 1,
+      detail: []
+    }
+  ])
+  function getPresetList() {
+    axios.post('http://localhost:8080/show_my_order', {
+        account_id: user_data.value.accountid,
+        type: 'Preformed'
+
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+      if(response.data.data.length > 0) presetListData.value = response.data.data
+    }).catch(function (error){
+      if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+      } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+      }
+      console.log(error.config)
+      ElMessage.error('预置清单获取失败')
+    })
+  }
+
+  // 提交预置清单
+  function submitPresetList() {
+    axios.post('http://localhost:8080/change_preformed_order_state', {
+        order_id: presetListData.value[0].order_id,
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+      if (response.data.data === true) {
+        presetListData.value[0].detail = []
+        ElMessage.success('提交成功')
+      }
+      else ElMessage.error('提交失败')
+    }).catch(function (error){
+      if (error.response) {
+        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // 请求已经成功发起，但没有收到响应
+        // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+        // 而在node.js中是 http.ClientRequest 的实例
+        console.log(error.request);
+      } else {
+        // 发送请求时出了点问题
+        console.log('Error', error.message);
+      }
+      console.log(error.config)
+      ElMessage.error('提交失败')
+    })
+  }
+
   // 在刷新页面时重新加载用户数据
   function loadUserData() {
       const savedData = localStorage.getItem('user_data');
@@ -558,6 +697,7 @@
   onMounted(() => {
     loadUserData()
     getPersonalList()
+    getPresetList()
   })
 
   </script>

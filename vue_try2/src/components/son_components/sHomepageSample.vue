@@ -23,6 +23,7 @@
                 </div>
                 <div class="action-buttons">
                     <el-button type="primary" size="small" @click="showDetails(item)">详情</el-button>
+                    <el-button type="success" size="small" @click="finishRequest(item)">完成</el-button>
                     <el-button type="danger" size="small" @click="deleteRequest(item)">删除</el-button>
                 </div>
             </el-card>
@@ -190,41 +191,89 @@
     detailsVisible.value = true
   }
 
+  // 完成样品申请
+  const finishRequest = (request) => {
+    ElMessageBox.confirm(`是否确定完成样品申请 ${request.order_id}?`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      axios.post('http://localhost:8080/change_order_state', {
+          order_id: request.order_id
+      },{
+          headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+          }
+      }).then(function (response){
+        if(response.data.data === true) {
+          request.order_state = 'Finish'
+          ElMessage.success('操作成功')
+        }
+        else ElMessage.error('操作失败')
+      }).catch(function (error){
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('操作失败')
+      })
+    }).catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '已取消操作'
+      })
+    })
+  }
+
+  // 删除样品记录
   const deleteRequest = (request) => {
     ElMessageBox.confirm(`是否确定删除样品记录 ${request.order_id}?`, '警告', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
-      const index = allLists.value.indexOf(request)
-      allLists.value.splice(index, 1)
-      // axios.post('http://localhost:8080/del_sample', {
-      //     sample_id: request.order_id
-      // },{
-      //     headers: {
-      //     'Content-Type': 'application/x-www-form-urlencoded'
-      //     }
-      // }).then(function (response){
-      //   if(response.data.data === true) ElMessage.success('样品记录删除成功')
-      //   else ElMessage.error('样品记录删除失败')
-      // }).catch(function (error){
-      //   if (error.response) {
-      //     // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-      //     console.log(error.response.data);
-      //     console.log(error.response.status);
-      //     console.log(error.response.headers);
-      //   } else if (error.request) {
-      //     // 请求已经成功发起，但没有收到响应
-      //     // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-      //     // 而在node.js中是 http.ClientRequest 的实例
-      //     console.log(error.request);
-      //   } else {
-      //     // 发送请求时出了点问题
-      //     console.log('Error', error.message);
-      //   }
-      //   console.log(error.config)
-      //   ElMessage.error('样品记录删除失败')
-      // })
+      axios.post('http://localhost:8080/del_order', {
+          order_id: request.order_id
+      },{
+          headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+          }
+      }).then(function (response){
+        if(response.data.data === true){
+          const index = allLists.value.indexOf(request)
+          allLists.value.splice(index, 1)
+          ElMessage.success('样品记录删除成功')
+        }
+        else ElMessage.error('样品记录删除失败')
+      }).catch(function (error){
+        if (error.response) {
+          // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // 请求已经成功发起，但没有收到响应
+          // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
+          // 而在node.js中是 http.ClientRequest 的实例
+          console.log(error.request);
+        } else {
+          // 发送请求时出了点问题
+          console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('样品记录删除失败')
+      })
     }).catch(() => {
       ElMessage({
         type: 'info',

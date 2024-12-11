@@ -18,7 +18,7 @@
       <div id="left24">
         <el-button type="primary" @click="openAddApplicationDialog">添加</el-button>
         <el-button type="success" @click="handleExcelUpload">从excel统计表导入</el-button>
-        <el-button type="success" @click="showApplicationsDialog">查看增加申请</el-button>
+        <!-- <el-button type="success" @click="showApplicationsDialog">查看增加申请</el-button> -->
       </div>
     </div>
     <div class="standards-list">

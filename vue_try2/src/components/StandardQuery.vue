@@ -118,7 +118,7 @@ import { ElMessage,ElDialog } from 'element-plus'
 // import * as XLSX from 'xlsx'
 import * as XLSX from 'xlsx'
 import Top from './Top.vue'
-import { user_data,project_id,title,selected_category } from '@/status'
+import { user_data,project_id,title,test_category } from '@/status'
 const router = useRouter()
 const baseurl = inject('baseurl')
 
@@ -199,7 +199,7 @@ axios.get(baseurl + '/all_project')
     if (projects.value.length > 1) {
       // 获取第二个元素，即 projects[1]，并根据category筛选
       let filteredData = projects.value[1].filter(project => 
-        project.categories === selected_category.value
+        project.categories === test_category.value
       );
       projectData.value = filteredData;
       console.log('Filtered projects data:', projectData)

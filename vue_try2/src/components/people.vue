@@ -1,3 +1,4 @@
+@ -1,751 +1,686 @@
 <script lang="ts" setup>
     import { onMounted, ref, inject } from 'vue'
     import headshot from './headshot.vue'
@@ -10,6 +11,7 @@
     import { useRoute } from 'vue-router'
     import { PDFDocument, rgb } from 'pdf-lib'
     import fontkit from '@pdf-lib/fontkit'
+    import { text } from 'pdfkit'
     const router = useRouter()
     const route = useRoute()
     const baseurl=inject("baseurl")
@@ -238,6 +240,20 @@
         }
     }
 
+    function generateRandomSerial() {
+    // 生成一个0到999999的随机数
+    const randomNum = Math.floor(Math.random() * 1000000);
+    // 将随机数转换为字符串，并取前5位
+    const serial = randomNum.toString().slice(0, 5);
+    return serial;
+    }
+    function convertDate(dateString) {
+    // 移除日期字符串中的破折号
+    return dateString.replace(/-/g, '');
+    }
+    // 使用这个函数来获取随机编号
+    const randomSerial = generateRandomSerial();
+
     // 更新localStorage中的视频完成信息
     const videoStorage = ref(new Map())
     function updateLocalVideoStorage(num: number) {
@@ -348,6 +364,8 @@
         is_autho: String,
         auth_time: String
     })
+    const progress_task_1 = ref('')
+    const progress_task_2 = ref('')
     function getTestProgress() {
         axios.post(baseurl + '/task_msg', {
             project_id: project_id.value,
@@ -358,6 +376,8 @@
             }
         }).then(function (response){
             progress.value = response.data.data
+            progress_task_1.value = response.data.data.task_1
+            progress_task_2.value = response.data.data.task_2
         }).catch(function (error){
             if (error.response) {
             // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
@@ -462,68 +482,145 @@
         }
     }
 
-
-    // 下载培训证书模板
-async function downloadpaperPdf() {
-  try {
-    const response = await fetch('http://localhost:5173/src/assets/培训证书模板.pdf');
-    console.log("模板文件路径为：" + decodeURIComponent(response.url));
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // 下载授权证书
+    async function downloadAuthorPdf() {
+        const strtmp1 = progress.value.task_1
+    if(progress_task_1.value !== 'Pass' || progress_task_2.value !== 'Pass') {
+        ElMessage.error('请先完成考核任务')
+        return
     }
+    try {
+        const response = await fetch('src/assets/培训证书模板.pdf');
+        console.log("模板文件路径为：" + decodeURIComponent(response.url));
+        console.log("用户名: " +progress.value.is_autho);
+        if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-    const pdfBytes = await response.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    
-    // 注册 fontkit
-    pdfDoc.registerFontkit(fontkit);
+        const pdfBytes = await response.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+        
+        // 注册 fontkit
+        pdfDoc.registerFontkit(fontkit);
 
-    const firstPage = pdfDoc.getPage(0);
+        const firstPage = pdfDoc.getPage(0);
+        const pageSize = firstPage.getSize(); // 获取页面尺寸
+        // 获取字体文件
+        const fontResponse = await fetch('src/assets/SimSun.ttf');
+        const fontBytes = await fontResponse.arrayBuffer();
+        const font = await pdfDoc.embedFont(fontBytes); // 嵌入字体
 
-    // 获取字体文件
-    const fontResponse = await fetch('http://localhost:5173/src/assets/SimSun.ttf');
-    const fontBytes = await fontResponse.arrayBuffer();
-    const font = await pdfDoc.embedFont(fontBytes); // 嵌入字体
+        // 假设overtime.value是一个日期字符串，格式为yyyy-mm-dd
+        const dateInYMDFormat = progress.value.auth_time.substring(0, 10);
+        const convertedDate = convertDate(dateInYMDFormat);
 
-    // 定义多个文本和它们的位置
-    const texts = [
-      { text: '培 训 证 书', x: 550, y: 600, size: 80 },
-      { text: '证书编号：4000001', x: 700, y: 550, size: 20 },
+        // 定义多个文本和它们的位置
+        const texts = [
+        { text: '授 权 证 书', x: 550, y: 600, size: 80 },
+        { text: `证书编号：${convertedDate+randomSerial}`, x: 700, y: 550, size: 20 },
 
-      { text: '兹证明 傅梦茵 先生/女士：', x: 350, y: 450, size: 35 },
-      {text:'   于2024年12月10日完成医用口罩，GB ',x:350,y:375,size:35},
-      {text:' 190803-2023 4.4，呼吸阻力 项目培训。',x:350,y:300,size:35},
-      {text:'特发此证',x:350,y:200,size:35},
+        { text: `兹证明 ${user_data.value.username} 先生/女士：`, x: 300, y: 450, size: 35 },
+        { text: `于${progress.value.auth_time.substring(0, 10)}完成${title.value.substring(0, 18)}`, x: 350, y: 375, size: 35 },
+        {text:    `${title.value.substring(18)} 项目培训。`,x: 350, y: 300, size: 35},
+        {text:`获得该项目检测授权。`,x:300,y:225,size:35},
+        {text:'特发此证！',x:350,y:150,size:35},
 
-      {text:'签发单位：南京理工大学名茜医疗器械项目部',x:250,y:50,size:20},
-      {text:'日期：2024年12月10日',x:800,y:50,size:20}
+        {text:'签发单位：南京理工大学名茜医疗器械项目部',x:600,y:50,size:20},
+        {text:`日期：${progress.value.auth_time.substring(0, 10)}`,x:700,y:75,size:20}
 
-    ];
+        ];
 
-    // 在不同位置添加文本
-    texts.forEach(textObj => {
-      firstPage.drawText(textObj.text, {
-        x: textObj.x,
-        y: textObj.y,
-        size: textObj.size,
-        color: rgb(0.5, 0.5, 0), // 黑色
-        font: font,
-      });
-    });
+        // 在不同位置添加文本
+        texts.forEach(textObj => {
+        firstPage.drawText(textObj.text, {
+            x: textObj.x,
+            y: textObj.y,
+            size: textObj.size,
+            color: rgb(0.5, 0.5, 0), // 黑色
+            font: font,
+        });
+        });
 
-    const pdfBytesModified = await pdfDoc.save();
-    const blob = new Blob([pdfBytesModified], { type: 'application/pdf' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', '培训证书.pdf');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        const pdfBytesModified = await pdfDoc.save();
+        const blob = new Blob([pdfBytesModified], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', '授权证书.pdf');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-  } catch (error) {
-    console.error('Error fetching PDF:', error);
-  }
-}
+    } catch (error) {
+        console.error('Error fetching PDF:', error);
+    }
+    }  
+
+    // 下载培训证书
+    async function downloadpaperPdf() {
+    if(isover.value !== '已完成') {
+        ElMessage.error('请先完成培训视频学习')
+        return
+    }
+    try {
+        const response = await fetch('src/assets/培训证书模板.pdf');
+        console.log("模板文件路径为：" + decodeURIComponent(response.url));
+        console.log("用户名: " + user_data.value.username);
+        console.log("项目名称: " + title.value);
+
+        if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const pdfBytes = await response.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+        
+        // 注册 fontkit
+        pdfDoc.registerFontkit(fontkit);
+
+        const firstPage = pdfDoc.getPage(0);
+
+        // 获取字体文件，这里使用支持中文的字体，例如宋体
+        const fontResponse = await fetch('src/assets/SimSun.ttf');
+        const fontBytes = await fontResponse.arrayBuffer();
+        const font = await pdfDoc.embedFont(fontBytes); // 嵌入字体
+
+
+        // 假设overtime.value是一个日期字符串，格式为yyyy-mm-dd
+        const dateInYMDFormat = overtime.value.substring(0, 10);
+        const convertedDate = convertDate(dateInYMDFormat);
+        // 定义多个文本和它们的位置
+        const texts = [
+        { text: '培 训 证 书', x: 550, y: 600, size: 80 },
+        { text: `证书编号：${convertedDate+randomSerial}`, x: 700, y: 550, size: 20 },
+        { text: `兹证明 ${user_data.value.username} 先生/女士：`, x: 350, y: 450, size: 35 },
+        { text: `于${overtime.value.substring(0, 10)}完成${title.value.substring(0, 18)}`, x: 350, y: 375, size: 35 },
+        {text:    `${title.value.substring(18)} 项目培训。`,x: 350, y: 300, size: 35},
+        { text: '特发此证', x: 350, y: 200, size: 35 },
+        { text: '签发单位：南京理工大学名茜医疗器械项目部', x:600,y:50,size:20 },
+        { text: `日期：${overtime.value.substring(0, 10)}`,x:700,y:75,size:20 }
+        ];
+        texts.forEach(textObj => {
+        firstPage.drawText(textObj.text, {
+            x: textObj.x,
+            y: textObj.y,
+            size: textObj.size,
+            color: rgb(0.5, 0.5, 0), // 黑色
+            font: font,
+            // maxWidth: textObj.wrap && textObj.wrap.width // 换行设置
+        });
+        });
+        const pdfBytesModified = await pdfDoc.save();
+        const blob = new Blob([pdfBytesModified], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', '培训证书.pdf');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error('Error fetching PDF:', error);
+    }
+    }
 
     onMounted(() => {
     loadData()
@@ -639,6 +736,7 @@ async function downloadpaperPdf() {
             <p>授权情况：{{ progress.is_autho }}</p>
             <p>授权时间：{{ progress.auth_time }}</p>
         </div>
+        <el-button  type="success" size="medium"  @click="downloadAuthorPdf()" plain>下载授权证书</el-button>
     </div>
   </div>
 

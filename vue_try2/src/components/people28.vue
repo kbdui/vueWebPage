@@ -313,9 +313,9 @@
             if(response.data.data === true) {
                 ElMessage.success('操作成功')
                 peopleinfo.value[index].assessmentPaperStatus = 'Pass'
-                if(peopleinfo.value[index].assessmentVideoStatus === 'Pass') {
-                    changeauthstate(id)
-                }
+                // if(peopleinfo.value[index].assessmentVideoStatus === 'Pass') {
+                //     changeauthstate(id)
+                // }
             }
             else ElMessage.error('操作失败')
         }).catch(function (error){
@@ -358,33 +358,13 @@
             if(response.data.data === true) {
                 ElMessage.success('操作成功')
                 peopleinfo.value[index].assessmentVideoStatus = 'Pass'
-                if(peopleinfo.value[index].assessmentPaperStatus === 'Pass') {
-                    changeauthstate(id)
-                }
+                // if(peopleinfo.value[index].assessmentPaperStatus === 'Pass') {
+                //     changeauthstate(id)
+                // }
             }
             else ElMessage.error('操作失败')
         }).catch(function (error){
             console.log(error)
-        })
-    }
-
-    // 改变授权状态
-    function changeauthstate(id: number){
-        axios.post(baseurl + '/change_4_msg', {
-            project_id: project_id.value,
-            user_id: id
-        },{
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        }).then(function (response){
-            if(response.data.data === true) {
-                ElMessage.success('该人员已完成授权')
-            }
-            else ElMessage.error('授权失败')
-        }).catch(function (error){
-            console.log(error)
-            ElMessage.error('授权失败')
         })
     }
 
@@ -593,7 +573,7 @@
     <div v-else-if="test" id="content3">
         <div id="testPaper">
             <h2>考核试卷</h2>
-            <el-button type="primary" @click="downloadPdf()" plain>下载试卷</el-button>
+            <!-- <el-button type="primary" @click="downloadPdf()" plain>下载试卷</el-button> -->
             <el-upload
                 id="upload_paper"
                 class="upload-demo"

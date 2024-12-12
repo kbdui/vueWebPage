@@ -30,7 +30,7 @@
           </div>
 
           <!-- 审核提醒 -->
-          <div v-if="r1" id="personReview1" class="standards-list">
+          <!-- <div v-if="r1" id="personReview1" class="standards-list">
             <el-input class="searchInput" v-model="input1" style="width: 240px" placeholder="输入项目ID查询" />
             <el-button class="searchButton" type="success" plain>查询</el-button>
             <div v-for="(standard, index) in standards" :key="index" class="standard-item mb-3 flex justify-between items-center">
@@ -48,29 +48,55 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- 授权清单 -->
-          <div v-else-if="r2" id="personReview1">
+          <div v-if="r2" id="personReview1">
             <el-input class="searchInput" v-model="input2" style="width: 240px" placeholder="输入项目ID查询" />
             <el-button class="searchButton" @click="getAuthList" type="success" plain>查询</el-button>
             <el-button 
               type="success" 
               class="export-btn"
-              @click="exportauthorPDF()"
+              @click="exportauthorPDF(allAuthList)"
             >
               导出授权人员清单
             </el-button>
             <el-table :data="allAuthList" style="width: 100%;font-size: 16px">
               <el-table-column 
                 prop="user_id" 
-                label="被授权人"
+                label="被授权人ID"
                 width="180"
               />
               <el-table-column 
-                prop="examination_state" 
-                label="授权状态"
+                prop="name" 
+                label="姓名"
+                width="180"
               />
+              <el-table-column 
+                prop="assessmentPaperStatus" 
+                label="笔试考核"
+                width="180"
+              />
+              <el-table-column 
+                prop="assessmentVideoStatus" 
+                label="操作视频考核"
+                width="180"
+              />
+              <el-table-column 
+                prop="examination" 
+                label="授权状态"
+                width="180"
+              />
+              <el-table-column prop="" label="操作">
+                <template #default="scope">
+                  <el-button 
+                    v-if="scope.row.examination === 'Ongoing'"
+                    class="auth_btn"
+                    type="success"
+                    @click="changeauthstate(input2, scope.row)"
+                  plain>授权</el-button>
+                </template>
+              </el-table-column>
             </el-table>
           </div>
 
@@ -135,8 +161,8 @@ import { jsPDF } from 'jspdf';
 const activeSecondaryTab = ref('personnel')
 const activeTertiaryTab = ref('授权清单')
 const baseurl = inject('baseurl')
-const r1 = ref(true)
-const r2 = ref(false)
+const r1 = ref(false)
+const r2 = ref(true)
 const r3 = ref(false)
 const input1 = ref()
 const input2 = ref()
@@ -173,7 +199,7 @@ const handleSelect1 = (key, keyPath) => {
   // // 获取授权清单
   const allAuthList = ref([])
   function getAuthList() {
-    axios.post(baseurl + '/authorize_msg', {
+    axios.post(baseurl + '/observe_progress', {
         project_id: input2.value
     },{
         headers: {
@@ -221,8 +247,29 @@ const handleSelect1 = (key, keyPath) => {
 //   })
 // }
 
+// 改变授权状态
+    function changeauthstate(projectid, row){
+      axios.post(baseurl + '/change_4_msg', {
+          project_id: projectid,
+          user_id: row.user_id
+      },{
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+          }
+      }).then(function (response){
+          if(response.data.data === true) {
+            row.examination_state = 'Finish'
+              ElMessage.success('该人员已完成授权')
+          }
+          else ElMessage.error('授权失败')
+      }).catch(function (error){
+          console.log(error)
+          ElMessage.error('授权失败')
+      })
+  }
+
 // 导出授权人员清单为PDF
-function exportauthorPDF() {
+function exportauthorPDF(AuthorData) {
   // 确保数据已加载
   if (allAuthList.value.length === 0) {
     ElMessage.warning('请先获取授权清单数据');
@@ -230,26 +277,46 @@ function exportauthorPDF() {
   }
 
   // 创建一个新的jsPDF实例
-  const pdf = new jsPDF.default('p', 'pt', 'a4');
+  const pdf = new jsPDF('p', 'pt', 'a4');
 
-  // 添加标题
+  // 确保字体文件路径正确
+  pdf.addFont('src/assets/simsun.ttf', 'SimSun', 'normal');
+  pdf.setFont('SimSun', 'normal');
+
   pdf.setFontSize(20);
-  pdf.text('授权人员清单', 40, 30);
+  const title = '授权清单';
+  const titleWidth = pdf.getStringUnitWidth(title) + 80; // 计算标题宽度
+  const titleX = (pdf.internal.pageSize.getWidth() - titleWidth) / 2; // 计算标题X坐标使其居中
+  pdf.text(title, titleX, 20); // 标题居中
 
-  // 添加子标题和表格头
   pdf.setFontSize(16);
-  pdf.text('项目ID: ' + input2.value, 40, 60);
-  pdf.setFontSize(12);
-  pdf.text('被授权人 | 授权状态', 40, 80);
+  const subTitles = ['被授权人ID', '姓名', '笔试考核', '操作视频考核', '授权状态'];
+  const dataStartY = 80; // 数据开始的Y坐标
+  const lineHeight = 20; // 每行数据的高度
+  const columnWidths = [130, 80, 100, 120, 100]; // 定义每列的宽度
+  const startX = 40; // 表格开始的X坐标
 
-  // 添加数据行
-  allAuthList.value.forEach((item, index) => {
+  // 打印表头（子标题）
+  let currentX = startX;
+  subTitles.forEach((subTitle, index) => {
+    pdf.text(subTitle, currentX, dataStartY - lineHeight); // 子标题的Y坐标调整
+    currentX += columnWidths[index];
+  });
+
+  // 打印数据
+  AuthorData.forEach((item, index) => {
     pdf.setFontSize(12);
-    pdf.text(item.user_id + ' | ' + item.examination_state, 40, 100 + index * 20);
+    const yPosition = dataStartY + index * lineHeight; // 数据的Y坐标
+    currentX = startX;
+    // 将数据按照列宽依次打印
+    [item.user_id, item.name, item.assessmentPaperStatus, item.assessmentPaperStatus, item.examination].forEach((data, idx) => {
+      pdf.text(String(data), currentX, yPosition);
+      currentX += columnWidths[idx];
+    });
   });
 
   // 保存PDF文件
-  pdf.save('授权人员清单.pdf');
+  pdf.save('授权清单.pdf');
 }
 
 

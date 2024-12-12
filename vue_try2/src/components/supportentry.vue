@@ -1,4 +1,3 @@
-
 <template>
     <Top></Top>
   
@@ -24,7 +23,7 @@
         <div class="standards-list">
           <div v-if="paginatedProjects.length === 0">没有项目数据</div>
           <div v-for="category in uniqueCategories" :key="category">
-            <router-link to="/supportStandardQuery" class="action-button"><p>{{ category }}</p></router-link>
+            <router-link to="/supportStandardQuery" @click=saveCategory(category) class="action-button"><p>{{ category }}</p></router-link>
           </div>
         </div>
       </div>
@@ -46,7 +45,7 @@
     import { ElMessage } from 'element-plus'
     import { useRouter } from 'vue-router'
     import { useRoute } from 'vue-router'
-    import { user_data } from '../status.js'
+    import { user_data, selected_category } from '../status.js'
     import axios from 'axios'
     import Top from './Top.vue'
     
@@ -139,7 +138,13 @@
       currentPage.value = page
       ElMessage.success('切换到页码: ' + page)
     }
-     onMounted(() => {
+    
+    const saveCategory = (category) => {
+      selected_category.value = category
+      console.log('Saved category:', category)
+    }
+    
+    onMounted(() => {
       search()
       })
     </script>

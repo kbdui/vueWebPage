@@ -27,10 +27,10 @@
       </el-menu>
   
       <!-- Action Buttons -->
-      <div class="action-buttons">
+      <!-- <div class="action-buttons">
         <el-button type="success" class="export-btn">导出培训清单</el-button>
         <el-button type="success" class="export-btn">导出授权清单</el-button>
-      </div>
+      </div> -->
   
       <!-- Project List -->
       <div class="project-list">
@@ -163,6 +163,7 @@
   .project-list {
     display: flex;
     flex-direction: column;
+    margin-top: 1rem;
     gap: 15px;
   }
   

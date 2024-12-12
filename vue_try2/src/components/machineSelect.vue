@@ -122,21 +122,7 @@
                       />
                     </div>
                     
-                    <div class="button-group">
-                      <el-button
-                        type="primary"
-                        @click="addToPreset(item)"
-                      >
-                        加入到预置清单
-                      </el-button>
-                      <el-button
-                        type="primary"
-                        plain
-                        @click="handleEdit(item)"
-                      >
-                        编辑
-                      </el-button>
-                    </div>
+                
                   </div>
                 </div>
               </div>

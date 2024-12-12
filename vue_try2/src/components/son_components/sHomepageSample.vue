@@ -1,9 +1,6 @@
 <template>
     <el-tab-pane label="物料" name="materials">
-        <!-- Export Button -->
-        <div class="button-container">
-            <el-button type="success" @click="exportToPDF">导出样品需求清单</el-button>
-        </div>
+        <el-button id="exportSamplePdf" type="success" @click="exportToPDF">导出样品需求清单</el-button>
 
         <!-- Request List -->
         <div class="request-list">
@@ -324,6 +321,10 @@
 </script>
 
 <style scoped>
+#exportSamplePdf {
+  margin-bottom: 1rem;
+}
+
 .page-container {
   min-height: 100vh;
   background-color: #f5f7fa;

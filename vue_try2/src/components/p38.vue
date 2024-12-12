@@ -247,13 +247,19 @@
       type_name: form.value.type_name,
       name: form.value.name,
       model: form.value.model,
-      source: form.value.source
+      source: form.value.source,
+      project_id: project_id.value
     },{
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     }).then(function (response){
-      if(response.data.data == true) ElMessage.success('添加样品成功')
+      if(response.data.data == true) {
+        ElMessage.success('添加样品成功')
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      }
       else ElMessage.error('添加样品失败')
     }).catch(function (error){
       if (error.response) {

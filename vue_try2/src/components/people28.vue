@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { onMounted, ref } from 'vue'
+    import { onMounted, ref, inject } from 'vue'
     import outWindow from './outWindow.vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
@@ -9,6 +9,7 @@
     import { project_id, user_data,title } from '@/status'
 
     const router = useRouter()
+    const baseurl = inject('baseurl')
 
     // menu 菜单
     const activeIndex1 = ref('1')
@@ -69,7 +70,7 @@
     // 上传培训视频
     function customRequest(options) {
       const { file, onProgress, onSuccess, onError } = options
-      axios.post('http://localhost:8080/upload_c_msg', {
+      axios.post(baseurl + '/upload_c_msg', {
           project_id: project_id.value,
           file: file
         },{
@@ -98,7 +99,7 @@
     // 获取试卷下载地址
     const dawnLoadURL = ref('')
     function getDownloadUrl() {
-        axios.post('http://localhost:8080/get_task_1_msg', {
+        axios.post(baseurl + '/get_task_1_msg', {
           project_id: project_id.value
         },{
           headers: {
@@ -129,7 +130,7 @@
     // 获取视频地址
     const videoUrls = ref([])
     function getVideoUrl() {
-        axios.post('http://localhost:8080/download_c_msg', {
+        axios.post(baseurl + '/download_c_msg', {
           project_id: project_id.value
         },{
           headers: {
@@ -165,7 +166,7 @@
         try {
             const fullFileName =  decodeURIComponent(Path);
             const response = await axios({
-            url: `http://localhost:8080/download`,
+            url: baseurl + `/download`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -220,7 +221,7 @@
 
             console.log("用来下载的文件地址为fullFileName:" + fullFileName);
             const response = await axios({
-            url: `http://localhost:8080/download`,
+            url: baseurl + `/download`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -249,7 +250,7 @@
     // 上传试卷
     function uploadPdf(options) {
         const { file, onProgress, onSuccess, onError } = options
-      axios.post('http://localhost:8080/upload_t_msg', {
+      axios.post(baseurl + '/upload_t_msg', {
           project_id: project_id.value,
           file: file
         },{
@@ -279,7 +280,7 @@
     // 改变考核状态
     function changeteststate2(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_2_msg', {
+        axios.post(baseurl + '/change_2_msg', {
             project_id: project_id.value,
             user_id: id,
             state: 2
@@ -300,7 +301,7 @@
 
     function changeteststate3(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_2_msg', {
+        axios.post(baseurl + '/change_2_msg', {
             project_id: project_id.value,
             user_id: id,
             state : 3
@@ -324,7 +325,7 @@
 
     function changevideostate2(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_3_msg', {
+        axios.post(baseurl + '/change_3_msg', {
             project_id: project_id.value,
             user_id: id,
             state: 2
@@ -345,7 +346,7 @@
 
     function changevideostate3(id: number, index: number)
     {
-        axios.post('http://localhost:8080/change_3_msg', {
+        axios.post(baseurl + '/change_3_msg', {
             project_id: project_id.value,
             user_id: id,
             state: 3
@@ -369,7 +370,7 @@
 
     // 改变授权状态
     function changeauthstate(id: number){
-        axios.post('http://localhost:8080/change_4_msg', {
+        axios.post(baseurl + '/change_4_msg', {
             project_id: project_id.value,
             user_id: id
         },{
@@ -390,7 +391,7 @@
     // 获取检测人员试卷下载地址
     const download_test_url = ref('')
     function download_test_paper(id: number) {
-        axios.post('http://localhost:8080/get_write_msg', {
+        axios.post(baseurl + '/get_write_msg', {
             project_id: project_id.value,
             user_id : id
         },{
@@ -408,7 +409,7 @@
     // 获取检测人员操作视频下载地址
     const download_video_url = ref('')
     function download_video(id: number) {
-        axios.post('http://localhost:8080/get_video_msg', {
+        axios.post(baseurl + '/get_video_msg', {
             project_id: project_id.value,
             user_id : id
         },{
@@ -433,7 +434,7 @@
 
             console.log("用来下载的文件地址为fullFileName:" + fullFileName);
             const response = await axios({
-            url: `http://localhost:8080/download`,
+            url: baseurl + `/download`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -477,7 +478,7 @@
     // 获取检测人员考核相关信息
     const peopleinfo = ref([])
     function getpeople_info(){
-        axios.post('http://localhost:8080/observe_progress', {
+        axios.post(baseurl + '/observe_progress', {
             project_id: project_id.value,
             //user_id : user_data.value.accountid
         },{

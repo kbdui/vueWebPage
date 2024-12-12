@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, onMounted, computed } from 'vue'
+    import { ref, onMounted, computed, inject } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
     import { user_data } from '@/status'
@@ -7,7 +7,9 @@
     import axios from 'axios'
     import html2canvas from 'html2canvas'
     import jsPDF from 'jspdf'
+
     const router = useRouter()
+    const baseurl = inject('baseurl')
 
     // page header 页头
     const goBack = () => {
@@ -95,7 +97,7 @@ const exportToPDF = async () => {
 }
 const preformedEquipmentList = ref([])
 function fetchpreformedEquipmentOrders() {
-  axios.post('http://localhost:8080/get_personal_equip_order', {
+  axios.post(baseurl + '/get_personal_equip_order', {
     uid: user_data.value.accountid,
     type: 'Preformed'
   },
@@ -118,7 +120,7 @@ function fetchpreformedEquipmentOrders() {
   })
 }
 function fetchEquipmentOrders() {
-  axios.post('http://localhost:8080/get_personal_equip_order', {
+  axios.post(baseurl + '/get_personal_equip_order', {
     uid: user_data.value.accountid
   },
     {
@@ -170,7 +172,7 @@ const exportAndClearPreformedList = async () => {
   }
 }
 function changeStatus(item){
-  axios.post('http://localhost:8080/change_preformed_order_state', {
+  axios.post(baseurl + '/change_preformed_order_state', {
     order_id: item.order_id,
   }, {
     headers: {
@@ -200,7 +202,7 @@ function deleteList(item){
     }
   )
   .then(() => {
-    axios.post('http://localhost:8080/del_order', {
+    axios.post(baseurl + '/del_order', {
       order_id: item.order_id,
   }, {
     headers: {
@@ -219,7 +221,7 @@ function deleteList(item){
 })
 }
 function changefinish(item){
-  axios.post('http://localhost:8080/change_order_state', {
+  axios.post(baseurl + '/change_order_state', {
     order_id: item.order_id,
   }, {
     headers: {

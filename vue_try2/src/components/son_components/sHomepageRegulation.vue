@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-  import { ref,onMounted } from 'vue'
+  import { ref,onMounted, inject } from 'vue'
   import { ElMessage } from 'element-plus'
   import { useRouter } from 'vue-router'
   import ProjectDetailsModal from '../ProjectDetailsModal.vue'
@@ -55,6 +55,7 @@
   import axios from 'axios'
 
   const router = useRouter()
+  const baseurl = inject('baseurl')
 
   const tableData = ref([
     {
@@ -92,7 +93,7 @@
 
   const completeProject = (row) => {
     row.projectTest.state = 'Finish'
-    axios.post('http://localhost:8080/finish_test', {
+    axios.post(baseurl + '/finish_test', {
       project_id: row.projectTest.testid
     },{
       headers: {
@@ -160,7 +161,7 @@
   // 获取所有对比实验
   const allProjects = ref([])
   function getAllProjects() {
-    axios.get('http://localhost:8080/show_all_test')
+    axios.get(baseurl + '/show_all_test')
     .then(function (response) {
       allProjects.value = response.data.data
     })

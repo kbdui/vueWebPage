@@ -209,7 +209,7 @@
 
 <script lang="ts" setup>
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -219,6 +219,7 @@ const procedures = ref([]);
 const comparisonFiles = ref([]);
 const tmp = ref([]);
 const tmp_com = ref([]);
+const baseurl = inject('baseurl')
 
     const router = useRouter()
 
@@ -239,7 +240,7 @@ function loadProjectId() {
 //获取后端操作规程文件
 async function fetchProcedures() {
   try {
-    const response = await axios.post('http://localhost:8080/download_operation_procedure', {
+    const response = await axios.post(baseurl + '/download_operation_procedure', {
       project_id: project_id.value
     }, {
       headers: {
@@ -255,7 +256,7 @@ async function fetchProcedures() {
         const filename = file.split('#').pop(); // 提取文件名
         return {
           filename: filename,
-          url: `http://localhost:8080/files/${encodeURIComponent(filename)}` // 构造URL时只使用文件名，并进行编码
+          url: baseurl + `/files/${encodeURIComponent(filename)}` // 构造URL时只使用文件名，并进行编码
         };
       });
     } else {
@@ -271,7 +272,7 @@ async function fetchProcedures() {
 //获取后端对比文件的函数
 async function fetchComparison() {
   try {
-    const response = await axios.post('http://localhost:8080/download_compare_plan', 
+    const response = await axios.post(baseurl + '/download_compare_plan', 
       `project_id=${project_id.value}`, 
       {
         headers: {
@@ -311,7 +312,7 @@ async function downloadPdf(index) {
 
     console.log("用来下载的文件地址为fullFileName：" + fullFileName);
     const response = await axios({
-      url: `http://localhost:8080/download`,
+      url: baseurl + `/download`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'

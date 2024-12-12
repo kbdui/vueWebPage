@@ -184,7 +184,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { equipment_id, project_id,user_data} from '@/status'
 import axios from 'axios'
@@ -195,6 +195,7 @@ import topMessage from './son_components/topMessage.vue'
 
 const inputDialogRef = ref(null)
 const router = useRouter()
+const baseurl = inject('baseurl')
 const activeTab = ref('equipment')
 const detailsVisible = ref(false)
 const selectedEquipment = ref(null)
@@ -246,7 +247,7 @@ const uploadEquipmentPicture = async (scheme_id: number, file: File) => {
   formData.append('file', file)
 
   try {
-    const response = await axios.post('http://localhost:8080/add_equip_pic', formData, {
+    const response = await axios.post(baseurl + '/add_equip_pic', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -299,7 +300,7 @@ const handleUploadPicture = (item) => {
 }
  function getallmachine()
  {
-    axios.post('http://localhost:8080/equipments_by_project',{
+    axios.post(baseurl + '/equipments_by_project',{
       project_id : project_id.value
             },
             {
@@ -315,7 +316,7 @@ const handleUploadPicture = (item) => {
  }
  function getallequipments()
  {
-    axios.post('http://localhost:8080/schemes_by_equipment',{
+    axios.post(baseurl + '/schemes_by_equipment',{
       equipment_id : equipment_id.value
  },
  {
@@ -331,7 +332,7 @@ const handleUploadPicture = (item) => {
  })
 }
  function addnewmachine(){
-    axios.post('http://localhost:8080/add_equip',{
+    axios.post(baseurl + '/add_equip',{
       project_id : project_id.value,
       equipment_name : newmachinename.value
     },
@@ -356,7 +357,7 @@ const handleUploadPicture = (item) => {
  })
 }
 function addnewscheme(){
-    axios.post('http://localhost:8080/add_equip_scheme',{
+    axios.post(baseurl + '/add_equip_scheme',{
       equipment_id : equipment_id.value,
       name: newname.value,
       source: newsource.value
@@ -426,7 +427,7 @@ const uploadEquipmentPdf = async (scheme_id: number, file: File) => {
   formData.append('file', file)
 
   try {
-    const response = await axios.post('http://localhost:8080/add_equip_pdf', formData, {
+    const response = await axios.post(baseurl + '/add_equip_pdf', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -461,7 +462,7 @@ const viewPdf = (item) => {
 }
 const addToPreset = async (item) => {
   try {
-    const response = await axios.post('http://localhost:8080/add_equip_order', {
+    const response = await axios.post(baseurl + '/add_equip_order', {
       account_id: user_data.value.accountid,
       goods_id: item.scheme_id,
       goods_amount: item.quantity

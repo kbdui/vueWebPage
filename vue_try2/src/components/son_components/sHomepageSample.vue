@@ -130,15 +130,17 @@
 </template>
 
 <script setup>
-  import { ref,onMounted } from 'vue'
+  import { ref, onMounted, inject } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import html2pdf from 'html2pdf.js'
   import axios from 'axios'
+
   const detailsVisible = ref(false)
   const editQuantityVisible = ref(false)
   const selectedRequest = ref(null)
   const editingItem = ref(null)
   const editingIndex = ref(-1)
+  const baseurl = inject('baseurl')
 
   // const sampleRequests = ref([
   //   {
@@ -260,7 +262,7 @@
   // 获取所有所有人清单
   const allLists = ref([])
   function getAllLists() {
-    axios.get('http://localhost:8080/get_all_sample_order')
+    axios.get(baseurl + '/get_all_sample_order')
     .then(function (response) {
       allLists.value = response.data.data
     })

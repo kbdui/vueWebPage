@@ -25,11 +25,11 @@
       <!-- 人模块的留言 -->
       <el-tab-pane label="人员" name="Offiers">
         <!-- Action Buttons -->
-        <div class="action-buttons">
+        <!-- <div class="action-buttons">
           <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
           </el-button>
-        </div>
+        </div> -->
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -70,11 +70,11 @@
       <!-- 机模块的留言 -->
       <el-tab-pane label="设备" name="equipment">
         <!-- Action Buttons -->
-        <div class="action-buttons">
+        <!-- <div class="action-buttons">
           <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
           </el-button>
-        </div>
+        </div> -->
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -115,11 +115,11 @@
       <!-- 法模块的留言 -->
       <el-tab-pane label="规程" name="Stander">
         <!-- Action Buttons -->
-        <div class="action-buttons">
+        <!-- <div class="action-buttons">
           <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
           </el-button>
-        </div>
+        </div> -->
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -160,11 +160,11 @@
       <!-- 料模块的留言 -->
       <el-tab-pane label="物料" name="Sample">
         <!-- Action Buttons -->
-        <div class="action-buttons">
+        <!-- <div class="action-buttons">
           <el-button type="success" @click="exportToPDF">
             导出增加内容提醒清单
           </el-button>
-        </div>
+        </div> -->
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -221,7 +221,7 @@
 </template>
   
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import Top from './Top.vue';
@@ -246,9 +246,10 @@ const selectedMessage = ref<MessageList | null>(null);
 const activeTab = ref('Offiers');
 const activeIndex1 = ref('1');
 const router = useRouter();
+const baseurl = inject('baseurl')
 
 function fetchMessages(messageType: string) {
-  axios.post('http://localhost:8080/get_message', {
+  axios.post(baseurl + '/get_message', {
     message_type: messageType
   }, {
     headers: {
@@ -283,7 +284,7 @@ fetchMessages(newVal);
 
 // 确认留言的方法
 const markResolved = (messageId) => {
-  axios.post('http://localhost:8080/finish_message', {
+  axios.post(baseurl + '/finish_message', {
     message_id: messageId
   }, {
     headers: {

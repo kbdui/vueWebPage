@@ -12,7 +12,7 @@
         </el-input>
         <el-button type="primary" @click="handleSearch" >搜索</el-button>
         <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button>
-        <el-button type="primary" @click="handleExcelUpload">导入Excel</el-button>
+        <!-- <el-button type="primary" @click="handleExcelUpload">导入Excel</el-button> -->
       </div>
       <div class="standards-list">
         <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
@@ -109,7 +109,7 @@
   </template>
   
   <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import {reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
@@ -120,6 +120,7 @@ import * as XLSX from 'xlsx'
 import Top from './Top.vue'
 import { user_data,project_id,title } from '@/status'
 const router = useRouter()
+const baseurl = inject('baseurl')
 
 const userInfo = ref({
   name: '张三',
@@ -159,7 +160,7 @@ const handleExcelUpload = async (event) => {
   formData.append('file', file)
 
   try {
-    const response = await axios.post('http://localhost:8080/gen_project_by_excel', formData, {
+    const response = await axios.post(baseurl + '/gen_project_by_excel', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -187,7 +188,7 @@ const handleExcelUpload = async (event) => {
   const projectData = ref([])
   
   function search() {
-  axios.get('http://localhost:8080/all_project')
+  axios.get(baseurl + '/all_project')
   .then(function (response) {
     // 确保响应数据是一个对象
     if (typeof response.data === 'object' && response.data !== null) {

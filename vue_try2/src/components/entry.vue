@@ -41,7 +41,7 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted, reactive } from 'vue'
+  import { ref, computed, onMounted, reactive, inject } from 'vue'
   import { ElMessage } from 'element-plus'
   import { RouterLink, useRouter } from 'vue-router'
   import { useRoute } from 'vue-router'
@@ -57,6 +57,7 @@
   const projects = ref([])
   const projectData = ref([])
   const displayedCategories = reactive(new Set())
+  const baseurl = inject('baseurl')
 
 // // 一个用于从localStorage加载user_data的函数
 // function loadUserData() {
@@ -67,7 +68,7 @@
 // }
 
 function search() {
-axios.get('http://localhost:8080/all_project')
+axios.get(baseurl + '/all_project')
 .then(function (response) {
   // 确保响应数据是一个对象
   if (typeof response.data === 'object' && response.data !== null) {

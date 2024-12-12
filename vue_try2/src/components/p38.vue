@@ -127,7 +127,7 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref,onMounted } from 'vue'
+  import { ref,onMounted, inject } from 'vue'
   import { useRouter } from 'vue-router'
   import TopMessage from './son_components/topMessage.vue'
   import axios from 'axios'
@@ -135,6 +135,7 @@
   import { project_id } from '@/status'
 
   const router = useRouter()
+  const baseurl = inject('baseurl')
 
   // menu 菜单
   const activeIndex1 = ref('4')
@@ -241,7 +242,7 @@
       }
     }
 
-    axios.post('http://localhost:8080/add_sample', {
+    axios.post(baseurl + '/add_sample', {
       number: form.value.number,
       type_name: form.value.type_name,
       name: form.value.name,
@@ -278,7 +279,7 @@
   // 删除样品
   function deleteSample(sample_id : string, index : number) {
     sampleList.value.splice(index, 1)
-    axios.post('http://localhost:8080/del_sample', {
+    axios.post(baseurl + '/del_sample', {
       sample_id: sample_id
     },{
       headers: {
@@ -310,7 +311,7 @@
   // 通过项目ID获取样品列表
   const sampleList = ref([])
   function getSampleList() {
-    axios.post('http://localhost:8080/get_sample_by_id', {
+    axios.post(baseurl + '/get_sample_by_id', {
       project_id: project_id.value
     },{
       headers: {

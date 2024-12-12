@@ -77,13 +77,14 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref,onMounted } from 'vue'
+  import { ref, onMounted, inject } from 'vue'
   import { useRouter } from 'vue-router'
   import headshot from './headshot.vue'
   import axios from 'axios'
   import { project_id, title } from '@/status'
 
   const router = useRouter()
+  const baseurl = inject('baseurl')
 
     // menu 菜单
     const activeIndex1 = ref('1')
@@ -97,7 +98,7 @@
     // 获取所有项目
     const projectData = ref([])
     function search() {
-      axios.get('http://localhost:8080/all_project')
+      axios.get(baseurl + '/all_project')
       .then(function (response) {
           projectData.value = response.data.data
       })

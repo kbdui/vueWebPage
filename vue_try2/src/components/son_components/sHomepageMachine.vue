@@ -147,9 +147,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, inject } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import html2pdf from 'html2pdf.js';
+import axios from 'axios'
+import { computed } from 'vue'
 const activeTab = ref('lists')
 const subTab = ref('equipment')
 const detailsVisible = ref(false)
@@ -157,8 +159,8 @@ const equipmentDetailsVisible = ref(false)
 const allEquipmentOrders = ref([])
 const selectedList = ref(null)
 const selectedEquipment = ref(null)
-import axios from 'axios'
-import { computed } from 'vue'
+const baseurl = inject('baseurl')
+
 // Mock data
 // Mark list as complete
 const markAsComplete = (list) => {
@@ -181,7 +183,7 @@ const markAsComplete = (list) => {
     .catch(() => {})
 }
 function getAllEquipmentOrders() {
-  axios.get('http://localhost:8080/get_all_equip_order')
+  axios.get(baseurl + '/get_all_equip_order')
     .then(function (response) {
      allEquipmentOrders.value = response.data.data
      console.log("所拥有的数据为",response.data.data)
@@ -222,7 +224,7 @@ function deleteList(item){
     }
   )
   .then(() => {
-    axios.post('http://localhost:8080/del_order', {
+    axios.post(baseurl + '/del_order', {
       order_id: item.order_id,
   }, {
     headers: {

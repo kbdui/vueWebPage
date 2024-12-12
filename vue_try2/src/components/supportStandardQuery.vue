@@ -118,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
 import axios from 'axios'
@@ -173,13 +173,16 @@ return userInfo.value.name.slice(0, 2)
 //   reader.readAsArrayBuffer(file);
 // }
 // };
+
 const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(5)
 const projects = ref([])
 const projectData = ref([])
+  const baseurl = inject('baseurl')
+
 function search() {
-axios.get('http://localhost:8080/all_project')
+axios.get(baseurl + '/all_project')
 .then(function (response) {
   // 确保响应数据是一个对象
   if (typeof response.data === 'object' && response.data !== null) {
@@ -348,7 +351,7 @@ const handleExcelUpload = async () => {
       formData.append('file', file);
 
       // 使用FormData对象上传文件
-      const response = await axios.post('http://localhost:8080/gen_project_by_excel', formData, {
+      const response = await axios.post(baseurl + '/gen_project_by_excel', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

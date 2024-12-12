@@ -207,7 +207,6 @@ axios.get(baseurl + '/all_project')
   console.error('Error:', error);
 });
 }
-
 const paginatedProjects = computed(() => {
 // 首先，如果存在搜索查询，则过滤项目
 let filteredProjects = searchQuery.value && projectData.value

@@ -186,7 +186,7 @@ const handleExcelUpload = async (event) => {
   const pageSize = ref(5)
   const projects = ref([])
   const projectData = ref([])
-  
+  console.log("test_category为",test_category.value)
   function search() {
 axios.get(baseurl + '/all_project')
 .then(function (response) {

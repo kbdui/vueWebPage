@@ -234,10 +234,54 @@
   }
 
   const exportToPDF = () => {
-    const element = document.querySelector('.request-list')
-    html2pdf()
-      .from(element)
-      .save('样品需求清单.pdf')
+    // Create a temporary div for PDF content
+    const tempDiv = document.createElement('div')
+    tempDiv.className = 'pdf-content'
+    
+    allLists.value.forEach(list => {
+      const listDiv = document.createElement('div')
+      listDiv.innerHTML = `
+        <h2>样品需求清单</h2>
+        <div class="list-info">
+          <p>清单编号：${list.order_id}</p>
+          <p>申请人：${list.user.name}</p>
+          <p>记录时间：${list.order_time}</p>
+          <p>状态：${list.order_state}</p>
+        </div>
+        <div class="sample-details">
+          <h3>样品信息：</h3>
+          ${list.detail.map(item => `
+            <div class="sample-item">
+              <p>标准ID：${item.sampleid}</p>
+              <p>样品名称：${item.samplename}</p>
+              <p>编号：${item.samplenumber}</p>
+              <p>种类名称：${item.typename}</p>
+              <p>来源：${item.source}</p>·
+            </div>
+          `).join('')}
+        </div>
+        <hr>
+      `
+      tempDiv.appendChild(listDiv)
+    })
+
+    document.body.appendChild(tempDiv)
+
+    const opt = {
+      margin: 1,
+      filename: '样品需求清单.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }
+
+    html2pdf().set(opt).from(tempDiv).save().then(() => {
+      document.body.removeChild(tempDiv)
+      ElMessage({
+        type: 'success',
+        message: 'PDF导出成功',
+      })
+    })
   }
 
   const editActualQuantity = (index, row) => {

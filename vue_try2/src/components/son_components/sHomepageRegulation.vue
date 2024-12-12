@@ -56,29 +56,6 @@
 
   const router = useRouter()
 
-  const tableData = ref([
-    {
-      id: '1932403245',
-      project: 'GB 19083-2003 4.1 医用防护口罩> 基本要求',
-      status: '计划',
-      link: '/project/GB19083-2003-4.1-basic',
-      applicants: [
-        { name: '荣成', institution: '107研究所', contact: '400-3123' },
-        { name: '常玉平', institution: '113研究所', contact: '400-2462' }
-      ]
-    },
-    {
-      id: '1932403246',
-      project: 'GB 19083-2003 4.2 医用防护口罩> 口罩带连接强度',
-      status: '完成',
-      link: '/project/GB19083-2003-4.2-strength',
-      applicants: [
-        { name: '李四', institution: '108研究所', contact: '400-1234' },
-        { name: '王五', institution: '114研究所', contact: '400-5678' }
-      ]
-    },
-  ])
-
   const showDetailsModal = ref(false)
   const selectedProject = ref(null)
 
@@ -115,25 +92,23 @@
     showDetailsModal.value = false
     selectedProject.value = null
   }
-
   const exportList = () => {
     const tempDiv = document.createElement('div')
     tempDiv.className = 'pdf-content'
 
-    tableData.value.forEach(item => {
-      const applicantsInfo = item.applicants.map(applicant => `
-        <p>申请人：${applicant.name}，单位：${applicant.institution}，联系方式：${applicant.contact}</p>
-      `).join('')
-
+    allProjects.value.forEach(item => {
       const listDiv = document.createElement('div')
       listDiv.innerHTML = `
         <h2>对比测试清单</h2>
         <div class="list-info">
-          <p>项目编号：${item.id}</p>
-          <p>项目名称：${item.project}</p>
-          <p>进行状态：${item.status}</p>
-          ${applicantsInfo}
+          <h3>项目基本信息：</h3>
+          <p>项目编号：${item.projectTest.testid}</p>
+          <p>项目类别：${item.project.categories}</p>
+          <p>项目类型：${item.project.projecttype}</p>
+          <p>项目名称：${item.project.projectname}</p>
+          <p>项目状态：${item.projectTest.state}</p>
         </div>
+        <hr>
       `
       tempDiv.appendChild(listDiv)
     })

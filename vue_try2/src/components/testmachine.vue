@@ -71,23 +71,79 @@ const generatePresetList = () => {
 }
 const exportToPDF = async () => {
   ElMessage.info('正在生成PDF，请稍候...')
-  
-  const element = document.getElementById('content-to-export')
-  if (!element) {
-    ElMessage.error('无法找到要导出的内容')
-    return
-  }
 
   try {
-    const canvas = await html2canvas(element)
-    const imgData = canvas.toDataURL('image/png')
-    const pdf = new jsPDF('p', 'mm', 'a4')
-    const imgProps = pdf.getImageProperties(imgData)
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-    pdf.save('equipment_management.pdf')
-    ElMessage.success('PDF已成功导出')
+    const element = document.getElementById('content-to-export')
+    if (!element) {
+      ElMessage.error('无法找到要导出的内容')
+      return
+    }
+
+    // Create PDF
+    const pdf = new jsPDF({
+      orientation: 'p',
+      unit: 'mm', 
+      format: 'a4'
+    })
+
+    // 设置默认字体,不需要额外加载字体文件
+    pdf.addFont('src/assets/simsun.ttf', 'SimSun', 'normal');
+    pdf.setFont('SimSun', 'normal');
+    pdf.setFontSize(10)
+
+    // 获取数据
+    const lists = list.value ? equipmentList.value : preformedEquipmentList.value
+    let y = 20
+    const leftMargin = 20
+    const lineHeight = 7
+
+    // 使用UTF-8编码确保中文正确显示
+    lists.forEach(item => {
+      // 订单头部信息
+      const header = [
+        `用户名: ${item.user.name}`,
+        `订单ID: ${item.order_id}`,
+        `订单时间: ${item.order_time}`,
+        `订单状态: ${item.order_state}`
+      ]
+
+      header.forEach(line => {
+        pdf.text(line, leftMargin, y)
+        y += lineHeight
+      })
+      
+      // 设备详情
+      pdf.text('设备信息:', leftMargin, y)
+      y += lineHeight
+
+      item.detail.forEach(equipment => {
+        const details = [
+          `- ${equipment.scheme_name} x${equipment.num}`,
+          `  设备ID: ${equipment.scheme_id}`,
+          `  来源: ${equipment.source}`,
+          `  方案编号: ${equipment.scheme_number}`
+        ]
+
+        details.forEach(line => {
+          pdf.text(line, leftMargin + 5, y)
+          y += lineHeight
+        })
+      })
+
+      // 添加间距
+      y += lineHeight
+
+      // 检查是否需要新页面
+      if (y > 270) {
+        pdf.addPage()
+        y = 20
+      }
+    })
+
+    // 保存PDF
+    pdf.save('equipment_list.pdf')
+    ElMessage.success('PDF导出成功')
+
   } catch (error) {
     console.error('PDF导出失败:', error)
     ElMessage.error('PDF导出失败，请重试')
@@ -283,7 +339,7 @@ onMounted(() => {
 <br>
 <div v-if="list" id="list">
   <!-- 导出清单按钮 -->
-  <el-button type="success" id="export" size="mini">导出清单</el-button>
+  <el-button type="success" id="export" size="mini" @click="exportToPDF">导出清单</el-button>
   <!-- //list-->
   <div class="lists-container">
     <el-card v-for="list in equipmentList" :key="list.order_id" class="list-card">

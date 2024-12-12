@@ -241,43 +241,36 @@ function deleteList(item){
 })
 }
 // Export to PDF
+const  procurementLists=ref([])
+procurementLists.value=allEquipmentOrders.value
+console.log("procurementLists.value",procurementLists.value)
 const exportToPDF = () => {
   // Create a temporary div for PDF content
   const tempDiv = document.createElement('div')
   tempDiv.className = 'pdf-content'
   
-  procurementLists.value.forEach(list => {
+  allEquipmentOrders.value.forEach(list => {
     const listDiv = document.createElement('div')
     listDiv.innerHTML = `
       <h2>采购清单</h2>
       <div class="list-info">
-        <p>清单编号：${list.id}</p>
-        <p>记录时间：${list.recordTime}</p>
-        <p>计划采购人：${list.purchaser}</p>
-        <p>状态：${list.status}</p>
+        <p>用户名：${list.user.name}</p>
+        <p>订单ID：${list.order_id}</p>
+        <p>订单时间：${list.order_time}</p>
+        <p>订单状态：${list.order_state}</p>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>标准编号及条款号</th>
-            <th>器械品类</th>
-            <th>设备名称</th>
-            <th>生产厂家</th>
-            <th>购买数量</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list.equipment.map(item => `
-            <tr>
-              <td>${item.standardCode}</td>
-              <td>${item.category}</td>
-              <td>${item.name}</td>
-              <td>${item.manufacturer}</td>
-              <td>${item.quantity}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+      <div class="equipment-details">
+        <h3>设备信息：</h3>
+        ${list.detail.map(item => `
+          <div class="equipment-item">
+            <p>设备名称：${item.scheme_name} x${item.num}</p>
+            <p>设备ID：${item.scheme_id}</p>
+            <p>来源：${item.source}</p>
+            <p>方案编号：${item.scheme_number}</p>
+          </div>
+        `).join('')}
+      </div>
+      <hr>
     `
     tempDiv.appendChild(listDiv)
   })
@@ -289,7 +282,11 @@ const exportToPDF = () => {
     filename: '设备采购清单.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    jsPDF: { 
+      unit: 'in', 
+      format: 'a4', 
+      orientation: 'portrait'
+    }
   }
 
   html2pdf().set(opt).from(tempDiv).save().then(() => {

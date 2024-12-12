@@ -60,38 +60,32 @@
   const baseurl = inject('baseurl')
   
   function search() {
-  axios.get(baseurl + '/all_project')
-  .then(function (response) {
-    // 确保响应数据是一个对象
-    if (typeof response.data === 'object' && response.data !== null) {
-      // 提取对象的所有值到数组中
-      projects.value = Object.values(response.data);
-      console.log('projects data:', projects.value);
-      // 检查数组中是否有至少两个元素
-      if (projects.value.length > 1) {
-        // 获取第二个元素，即 projects[1]
-       projectData.value = projects.value[1];
-        console.log('projects[1] data:', projectData);
-        // 在这里处理 projects[1] 的数据
-      } else {
-        console.error('Expected at least two elements in the array, but got:', projects.value);
-      }
+axios.get(baseurl + '/all_project')
+.then(function (response) {
+  // 确保响应数据是一个对象
+  if (typeof response.data === 'object' && response.data !== null) {
+    // 提取对象的所有值到数组中
+    projects.value = Object.values(response.data)
+    console.log('projects data:', projects.value)
+    // 检查数组中是否有至少两个元素
+    if (projects.value.length > 1) {
+      // 获取第二个元素，即 projects[1]，并根据category筛选
+      let filteredData = projects.value[1].filter(project => 
+        project.categories === selected_category.value
+      );
+      projectData.value = filteredData;
+      console.log('Filtered projects data:', projectData)
     } else {
-      console.error('Expected an object, but got:', response.data);
+      console.error('Expected at least two elements in the array, but got:', projects.value);
     }
-  })
-  .catch(function (error) {
-    console.error('Error:', error);
-  });
+  } else {
+    console.error('Expected an object, but got:', response.data);
   }
-  // 计算属性，检查类别是否唯一
-  const uniqueCategories = computed(() => {
-    const categoriesSet = new Set();
-    paginatedProjects.value.forEach(project => {
-      categoriesSet.add(project.categories);
-    });
-    return Array.from(categoriesSet);
-  });
+})
+.catch(function (error) {
+  console.error('Error:', error);
+});
+}
   const paginatedProjects = computed(() => {
   // 首先，如果存在搜索查询，则过滤项目
   let filteredProjects = searchQuery.value

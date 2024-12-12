@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref,onMounted } from 'vue'
+  import { ref,onMounted, inject } from 'vue'
   import { useRouter } from 'vue-router'
   import headshot from './headshot.vue'
   import { user_data } from '@/status'
@@ -64,6 +64,7 @@
   import { ElMessage } from 'element-plus'
 
   const router = useRouter()
+  const baseurl = inject('baseurl')
 
   // page header 页头
   const goBack = () => {
@@ -83,7 +84,7 @@
   // 获取对比实验申请记录
   const records = ref([])
   function getRecords() {
-    axios.post('http://localhost:8080/show_my_compare_plan',{
+    axios.post(baseurl + '/show_my_compare_plan',{
         account_id : user_data.value.accountid
     },{
     headers: {

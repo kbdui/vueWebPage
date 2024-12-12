@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, inject } from 'vue'
     import { useRouter } from 'vue-router'
     import headshot from './headshot.vue'
     import { project_id,user_data } from '@/status'
@@ -9,6 +9,7 @@
 
     const router = useRouter()
     const input1 = ref([])
+    const baseurl = inject('baseurl')
 
     // menu 菜单
     const activeIndex1 = ref('4')
@@ -36,7 +37,7 @@
   // 通过项目ID获取样品列表
   const sampleList = ref([])
   function getSampleList() {
-    axios.post('http://localhost:8080/get_sample_by_id', {
+    axios.post(baseurl + '/get_sample_by_id', {
       project_id: project_id.value
     },{
       headers: {
@@ -70,7 +71,7 @@
       ElMessage.error('请输入申请数量')
       return
     }
-    axios.post('http://localhost:8080/add_sample_order', {
+    axios.post(baseurl + '/add_sample_order', {
       account_id: user_data.value.accountid,
       goods_id: goods_id,
       goods_amount: num

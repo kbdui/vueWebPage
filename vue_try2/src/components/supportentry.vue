@@ -42,12 +42,12 @@
     </template>
     
     <script setup>
-    import { ref, computed, onMounted ,reactive} from 'vue'
+    import { ref, computed, onMounted ,reactive, inject} from 'vue'
     import { ElMessage } from 'element-plus'
     import { useRouter } from 'vue-router'
     import { useRoute } from 'vue-router'
     import { user_data } from '../status.js'
-   import axios from 'axios'
+    import axios from 'axios'
     import Top from './Top.vue'
     
     const searchQuery = ref('')
@@ -58,9 +58,10 @@
     const projects = ref([])
     const projectData = ref([])
     const displayedCategories = reactive(new Set());
+  const baseurl = inject('baseurl')
   
   function search() {
-  axios.get('http://localhost:8080/all_project')
+  axios.get(baseurl + '/all_project')
   .then(function (response) {
     // 确保响应数据是一个对象
     if (typeof response.data === 'object' && response.data !== null) {

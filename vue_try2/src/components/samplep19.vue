@@ -262,15 +262,16 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref, computed,onMounted } from 'vue'
+  import { ref, computed,onMounted, inject } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { useRouter } from 'vue-router'
   import headshot from './headshot.vue'
   import axios from 'axios'
   import { user_data } from '@/status'
-import { de } from 'element-plus/es/locale'
+  import { de } from 'element-plus/es/locale'
 
     const router = useRouter()
+    const baseurl = inject('baseurl')
 
     // page header 页头
     const goBack = () => {
@@ -473,7 +474,7 @@ import { de } from 'element-plus/es/locale'
         type: 'warning',
       }
     ).then(() => {
-      axios.post('http://localhost:8080/delete_one_good', {
+      axios.post(baseurl + '/delete_one_good', {
         order_id: presetListData.value[0].order_id,
         good_id: presetListData.value[0].detail[index].sampleid
       },{
@@ -539,7 +540,7 @@ import { de } from 'element-plus/es/locale'
         type: 'warning',
       }
     ).then(() => {
-      axios.post('http://localhost:8080/del_order', {
+      axios.post(baseurl + '/del_order', {
         order_id: presetListData.value[0].order_id
       },{
         headers: {
@@ -584,7 +585,7 @@ import { de } from 'element-plus/es/locale'
   // 获取个人清单
   const listItems2 = ref([])
   function getPersonalList() {
-    axios.post('http://localhost:8080/show_my_order', {
+    axios.post(baseurl + '/show_my_order', {
         account_id: user_data.value.accountid
     },{
         headers: {
@@ -621,7 +622,7 @@ import { de } from 'element-plus/es/locale'
     }
   ])
   function getPresetList() {
-    axios.post('http://localhost:8080/show_my_order', {
+    axios.post(baseurl + '/show_my_order', {
         account_id: user_data.value.accountid,
         type: 'Preformed'
 
@@ -653,7 +654,7 @@ import { de } from 'element-plus/es/locale'
 
   // 提交预置清单
   function submitPresetList() {
-    axios.post('http://localhost:8080/change_preformed_order_state', {
+    axios.post(baseurl + '/change_preformed_order_state', {
         order_id: presetListData.value[0].order_id,
     },{
         headers: {

@@ -113,7 +113,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, inject } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import headshot from './headshot.vue'
@@ -126,6 +126,7 @@ const activeTab = ref('equipment')
 const detailsVisible = ref(false)
 const selectedEquipment = ref(null)
 const router = useRouter()
+const baseurl = inject('baseurl')
 
     const activeIndex1 = ref('2')
     const handleSelect1 = (key: string, keyPath: string[]) => {
@@ -145,7 +146,7 @@ const router = useRouter()
  const equipmentDetails = ref([]);
  function getallmachine()
  {
-    axios.post('http://localhost:8080/equipments_by_project',{
+    axios.post('/equipments_by_project',{
       project_id : project_id.value
             },
             {
@@ -160,7 +161,7 @@ const router = useRouter()
  }
  function getallequipments()
  {
-    axios.post('http://localhost:8080/schemes_by_equipment',{
+    axios.post(baseurl + '/schemes_by_equipment',{
       equipment_id : equipment_id.value
  },
  {
@@ -184,7 +185,7 @@ const router = useRouter()
 }
 const addToPreset = async (item) => {
   try {
-    const response = await axios.post('http://localhost:8080/add_equip_order', {
+    const response = await axios.post(baseurl + '/add_equip_order', {
       account_id: user_data.value.accountid,
       goods_id: item.scheme_id,
       goods_amount: item.quantity

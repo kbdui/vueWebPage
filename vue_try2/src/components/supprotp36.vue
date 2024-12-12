@@ -124,7 +124,7 @@
     </div>
   </template>
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -135,6 +135,7 @@ const procedures = ref([]);
 const comparisonFiles = ref([]);
 const tmp = ref([]);
 const tmp_com = ref([]);
+const baseurl = inject('baseurl')
 //pdf文件应该都放在相对应的projectid文件夹下的子文件夹才能正确访问到，并且projectid文件夹下应该包含两个文件夹，
 // 分别存放操作规程和对比实验文件
 
@@ -159,7 +160,7 @@ const userAccountList = ref([]); // 用于存储申请人员表的数据
 // 获取对比实验管理数据
 async function fetchOngoingTest() {
   try {
-    const response = await axios.post('http://localhost:8080/show_project_test_ongoing', 
+    const response = await axios.post(baseurl + '/show_project_test_ongoing', 
       `project_id=${project_id.value}`, 
       {
         headers: {
@@ -200,7 +201,7 @@ const handleClose = (done) => {
 // 标记对比实验为已完成
 async function markTestAsComplete() {
   try {
-    const response = await axios.post('http://localhost:8080/finish_test', 
+    const response = await axios.post(baseurl + '/finish_test', 
       `project_id=${project_id.value}`, 
       {
         headers: {
@@ -223,7 +224,7 @@ async function markTestAsComplete() {
 //获取后端对比文件的函数
 async function fetchComparison() {
   try {
-    const response = await axios.post('http://localhost:8080/download_compare_plan', 
+    const response = await axios.post(baseurl + '/download_compare_plan', 
       `project_id=${project_id.value}`, 
       {
         headers: {
@@ -255,7 +256,7 @@ async function fetchComparison() {
 //获取后端操作规程文件
 async function fetchProcedures() {
   try {
-    const response = await axios.post('http://localhost:8080/download_operation_procedure', {
+    const response = await axios.post(baseurl + '/download_operation_procedure', {
       project_id: project_id.value
     }, {
       headers: {
@@ -271,7 +272,7 @@ async function fetchProcedures() {
         const filename = file.split('#').pop(); // 提取文件名
         return {
           filename: filename,
-          url: `http://localhost:8080/files/${encodeURIComponent(filename)}` // 构造URL时只使用文件名，并进行编码
+          url: baseurl + `/files/${encodeURIComponent(filename)}` // 构造URL时只使用文件名，并进行编码
         };
       });
     } else {
@@ -309,7 +310,7 @@ async function downloadPdf(index) {
 
     console.log("用来下载的文件地址为fullFileName：" + fullFileName);
     const response = await axios({
-      url: `http://localhost:8080/download`,
+      url: baseurl + `/download`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -349,7 +350,7 @@ async function downloadComparison() {
   try {
     // 假设 tmp_com.value 包含的是文件位置（例如：pic/1.jpg）
     const response = await axios({
-      url: 'http://localhost:8080/download', // 接口URL
+      url: baseurl + '/download', // 接口URL
       method: 'POST', // 请求方法为POST
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded' // 设置请求头
@@ -383,7 +384,7 @@ function customRequest(options) {
 
       axios({
         method: 'post',
-        url: 'http://localhost:8080/upload_operation_procedure',
+        url: baseurl + '/upload_operation_procedure',
          // 后端接口URL
         data: formData,
         headers: {
@@ -426,7 +427,7 @@ function deletePdf(index) {
   params.append('file_address', filePath); // 使用找到的完整路径作为参数
 
   // 发送删除请求
-  axios.post('http://localhost:8080/delete_operation_procedure_and_compare_plan', params, {
+  axios.post(baseurl + '/delete_operation_procedure_and_compare_plan', params, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
@@ -466,7 +467,7 @@ function deleteComparison() {
 
   // 从 URL 中提取文件路径并删除url前缀
   const filepath_ = decodeURIComponent(filename);
-  const tmp = "http://localhost:8080/files/";
+  const tmp = baseurl + "/files/";
   const filepathWithoutPrefix = filepath_.replace(tmp, "");
 
   // // 在文件名前加上 # 号，形成 /#文件名 的格式
@@ -487,7 +488,7 @@ function deleteComparison() {
     // 发送删除请求
     axios({
       method: 'POST',
-      url: 'http://localhost:8080/delete_operation_procedure_and_compare_plan',
+      url: baseurl + '/delete_operation_procedure_and_compare_plan',
       data: `file_address=${encodeURIComponent(filepath_)}`,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'

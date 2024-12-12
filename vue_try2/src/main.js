@@ -101,6 +101,8 @@ const router = createRouter({
 
 const app = createApp(App)
 
+app.provide("baseurl", "http://localhost:8080")
+
 // 引入图标库
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)

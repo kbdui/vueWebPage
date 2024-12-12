@@ -201,7 +201,7 @@ const handleClose = (done) => {
 // 标记对比实验为已完成
 async function markTestAsComplete() {
   try {
-    const response = await axios.post(baseurl + '/finish_test', 
+    const response = await axios.post(baseurl + '/finish_test_by_project_id', 
       `project_id=${project_id.value}`, 
       {
         headers: {

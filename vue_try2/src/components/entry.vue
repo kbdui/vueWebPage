@@ -23,7 +23,7 @@
       <div class="standards-list">
         <div v-if="paginatedProjects.length === 0">没有项目数据</div>
         <div v-for="category in uniqueCategories" :key="category">
-          <router-link to="/standard" class="action-button"><p>{{ category }}</p></router-link>
+          <router-link to="/standard" class="action-button" @click=saveCategory(category)><p>{{ category }}</p></router-link>
         </div>
       </div>
     </div>
@@ -126,7 +126,11 @@ return filteredProjects.slice(start, end);
   const handleViewApplications = () => {
     ElMessage.success('查看增加申请')
   }
-
+  const saveCategory = (category) => {
+      test_category.value = category
+      console.log('Saved category:', category)
+    }
+    
   // const user_data = ref({
   //   name : decodeURIComponent(route.params.name),
   //   username : decodeURIComponent(route.params.username),

@@ -123,7 +123,7 @@ import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
 import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
-import { project_id, title } from '@/status';
+import { project_id, title ,selected_category} from '@/status';
 import * as XLSX from 'xlsx';
 // import * as XLSX from 'xlsx'
 import Top from './Top.vue'
@@ -173,14 +173,13 @@ return userInfo.value.name.slice(0, 2)
 //   reader.readAsArrayBuffer(file);
 // }
 // };
-
+console.log("category为",selected_category.value)
 const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(5)
 const projects = ref([])
 const projectData = ref([])
   const baseurl = inject('baseurl')
-
 function search() {
 axios.get(baseurl + '/all_project')
 .then(function (response) {
@@ -191,10 +190,12 @@ axios.get(baseurl + '/all_project')
     console.log('projects data:', projects.value)
     // 检查数组中是否有至少两个元素
     if (projects.value.length > 1) {
-      // 获取第二个元素，即 projects[1]
-     projectData.value = projects.value[1];
-      console.log('projects[1] data:', projectData)
-      // 在这里处理 projects[1] 的数据
+      // 获取第二个元素，即 projects[1]，并根据category筛选
+      let filteredData = projects.value[1].filter(project => 
+        project.categories === selected_category.value
+      );
+      projectData.value = filteredData;
+      console.log('Filtered projects data:', projectData)
     } else {
       console.error('Expected at least two elements in the array, but got:', projects.value);
     }
@@ -206,16 +207,17 @@ axios.get(baseurl + '/all_project')
   console.error('Error:', error);
 });
 }
+
 const paginatedProjects = computed(() => {
 // 首先，如果存在搜索查询，则过滤项目
-let filteredProjects = searchQuery.value
+let filteredProjects = searchQuery.value && projectData.value
   ? projectData.value.filter(project => project.projectname.toLowerCase().includes(searchQuery.value.toLowerCase()))
   : projectData.value;
 
 // 然后，进行分页
 const start = (currentPage.value - 1) * pageSize.value;
 const end = start + pageSize.value;
-return filteredProjects.slice(start, end);
+return filteredProjects ? filteredProjects.slice(start, end) : [];
 });
 // 假设的申请信息数组
 const applications = ref([

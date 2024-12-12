@@ -11,3 +11,5 @@ export const user_data = ref({
 export const project_id = ref()
 export const equipment_id = ref()
 export const title = ref()
+export const selected_category = ref()
+export const test_category = ref('')

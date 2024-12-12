@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { onMounted, ref, inject } from 'vue'
+    import { onMounted, ref } from 'vue'
     import headshot from './headshot.vue'
     import { useRouter } from 'vue-router'
     import axios from 'axios'
@@ -8,11 +8,11 @@
     import { ElMessage } from 'element-plus'
     import topMessage from './son_components/topMessage.vue'
     import { useRoute } from 'vue-router'
-    import { PDFDocument, rgb } from 'pdf-lib'
-    import fontkit from '@pdf-lib/fontkit'
+    import { PDFDocument, rgb } from 'pdf-lib';
+    import fontkit from '@pdf-lib/fontkit';
+import { text } from 'pdfkit'
     const router = useRouter()
     const route = useRoute()
-    const baseurl=inject("baseurl")
 
 
     // menu 菜单
@@ -39,11 +39,8 @@
     // 打开/关闭小窗口
     const showModal = ref(false)
     const showModal2 = ref(false)
-    function openModal(i: number, url: string){
-        if(i==1) {
-            getFullVideoUrl(url)
-            showModal.value = true
-        }
+    function openModal(i: number){
+        if(i==1) showModal.value = true
         else if(i==2) showModal2.value = true
     }
     function closeModal(i: number) {
@@ -75,21 +72,20 @@
     // 上传试卷
     function customRequest(options) {
       const { file, onProgress, onSuccess, onError } = options
-      axios.post(baseurl + '/people_task_1_msg', {
-            project_id: project_id.value,
-            file: file,
-            user_id: user_data.value.accountid
+      axios.post('http://localhost:8080/people_task_1_msg', {
+          project_id: project_id.value,
+          file: file,
+          user_id: user_data.value.accountid
         },{
-            headers: {
+          headers: {
             'Content-Type': 'multipart/form-data'
             // 'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            onUploadProgress: progressEvent => {
+          },
+          onUploadProgress: progressEvent => {
             onProgress(progressEvent);
-            }
+          }
         }).then(function (response){
             onSuccess(response)
-            changeStatusToAuditing()
             ElMessage.success('试卷上传成功')
         }).catch(function (error){
             onError(error)
@@ -97,33 +93,10 @@
         })
     }
 
-    // 修改考核状态为Auditing
-    function changeStatusToAuditing() {
-        axios.post(baseurl + '/change_2_msg', {
-            project_id: project_id.value,
-            user_id: user_data.value.accountid,
-            state: 1
-        },{
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        }).then(function (response){
-            if(response.data.data === true) {
-                ElMessage.success('状态修改成功')
-                setTimeout(function() {
-                    window.location.reload();
-                }, 1000);
-            }
-            else ElMessage.error('状态修改失败')
-        }).catch(function (error){
-            ElMessage.error('状态修改失败')
-        })
-    }
-
     // 上传考核视频
     function customRequest2(options) {
       const { file, onProgress, onSuccess, onError } = options
-      axios.post(baseurl + '/people_task_2_msg', {
+      axios.post('http://localhost:8080/people_task_2_msg', {
           project_id: project_id.value,
           file: file,
           user_id: user_data.value.accountid
@@ -138,7 +111,6 @@
         }).then(function (response){
             onSuccess(response)
             if(response.data.data === true){
-                changeVideoStatusToAuditing()
                 ElMessage.success('试卷上传成功')
             }
             else ElMessage.error('试卷上传失败')
@@ -148,33 +120,10 @@
         })
     }
 
-    // 修改视频考核状态为Auditing
-    function changeVideoStatusToAuditing() {
-        axios.post(baseurl + '/change_3_msg', {
-            project_id: project_id.value,
-            user_id: user_data.value.accountid,
-            state: 1
-        },{
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        }).then(function (response){
-            if(response.data.data === true) {
-                ElMessage.success('状态修改成功')
-                setTimeout(function() {
-                    window.location.reload();
-                }, 1000);
-            }
-            else ElMessage.error('状态修改失败')
-        }).catch(function (error){
-            ElMessage.error('状态修改失败')
-        })
-    }
-
     // 获取试卷下载地址
     const dawnLoadURL = ref('')
     function getDownloadUrl() {
-        axios.post(baseurl + '/get_task_1_msg', {
+        axios.post('http://localhost:8080/get_task_1_msg', {
           project_id: project_id.value
         },{
           headers: {
@@ -213,7 +162,7 @@
 
             console.log("用来下载的文件地址为fullFileName:" + fullFileName);
             const response = await axios({
-            url: baseurl + `/download`,
+            url: `http://localhost:8080/download`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -237,73 +186,27 @@
             ElMessage.error('下载试卷失败');
         }
     }
+    function generateRandomSerial() {
+  // 生成一个0到999999的随机数
+  const randomNum = Math.floor(Math.random() * 1000000);
+  // 将随机数转换为字符串，并取前5位
+  const serial = randomNum.toString().slice(0, 5);
+  return serial;
+}
+function convertDate(dateString) {
+  // 移除日期字符串中的破折号
+  return dateString.replace(/-/g, '');
+}
+// 使用这个函数来获取随机编号
+const randomSerial = generateRandomSerial();
 
-    // 更新localStorage中的视频完成信息
-    const videoStorage = ref(new Map())
-    function updateLocalVideoStorage(num: number) {
-        const str = 'video_storage' + user_data.value.accountid
-        const tmp = localStorage.getItem(str)
-        if (tmp === null || tmp === '{}') {
-            videoStorage.value = new Map()
-        }
-        else {
-            videoStorage.value = JSON.parse(tmp)
-        }
-
-        if (videoStorage.value.has(project_id.value)) {
-            var tmp2 = videoStorage.value.get(project_id.value) + 1
-            videoStorage.value.set(project_id.value, tmp2)
-        }
-        else {
-            videoStorage.value.set(project_id.value, 1)
-        }
-
-        localStorage.setItem(str, JSON.stringify(videoStorage.value))
-
-        if(num === videoStorage.value.get(project_id.value)) {
-            axios.post(baseurl + '/change_msg', {
-                project_id: project_id.value,
-                user_id: user_data.value.accountid
-            },{
-                headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }).then(function (response){
-                if(response.data.data === true) {
-                    ElMessage.success('视频学习完成')
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
-                }
-                else ElMessage.error('视频学习完成失败')
-            }).catch(function (error){
-                if (error.response) {
-                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-                } else if (error.request) {
-                // 请求已经成功发起，但没有收到响应
-                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-                // 而在node.js中是 http.ClientRequest 的实例
-                console.log(error.request);
-                } else {
-                // 发送请求时出了点问题
-                console.log('Error', error.message);
-                }
-                console.log(error.config)
-                ElMessage.error('获取学习状态失败')
-            })
-            ElMessage.success('已完成培训视频学习')
-        }
-    }
 
     // 获取学习状态
     const isok = ref()
     const isover = ref()
     const overtime = ref()
     function getTrainStatus() {
-        axios.post(baseurl + '/people_msg', {
+        axios.post('http://localhost:8080/people_msg', {
             project_id: project_id.value,
             user_id: user_data.value.accountid
         },{
@@ -349,7 +252,7 @@
         auth_time: String
     })
     function getTestProgress() {
-        axios.post(baseurl + '/task_msg', {
+        axios.post('http://localhost:8080/task_msg', {
             project_id: project_id.value,
             user_id: user_data.value.accountid
         },{
@@ -378,65 +281,6 @@
         })
     }
 
-    // 获取视频地址
-    const videoUrls = ref([])
-    function getVideoUrl() {
-        axios.post(baseurl + '/download_c_msg', {
-          project_id: project_id.value
-        },{
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }).then(function (response){
-            videoUrls.value = response.data.data
-        }).catch(function (error){
-            if (error.response) {
-                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-            } else if (error.request) {
-                // 请求已经成功发起，但没有收到响应
-                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-                // 而在node.js中是 http.ClientRequest 的实例
-                console.log(error.request);
-            } else {
-                // 发送请求时出了点问题
-                console.log('Error', error.message);
-            }
-            console.log(error.config)
-            ElMessage.error('获取视频地址失败')
-        })
-    }
-
-    // 获取完整视频路径
-    const fullVideoUrl = ref('')
-    async function getFullVideoUrl(url: string) {
-        const strtmp="D:/files/";
-        const Path=url.toString().replace(strtmp, "");
-        try {
-            const fullFileName =  decodeURIComponent(Path);
-            const response = await axios({
-            url: baseurl + `/download`,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            data: `fileName=${fullFileName}`, // 传递完整的文件名
-            responseType: 'blob' // 指定响应类型为blob
-            });
-            fullVideoUrl.value = window.URL.createObjectURL(new Blob([response.data]));
-        } catch (error) {
-            ElMessage.error('获取视频路径失败');
-        }
-    }
-
-    // 视频播放完成后更新localStorage
-    // const videoNum = videoUrls.value.length
-    function handleEnded() {
-        updateLocalVideoStorage(1)
-    }
-
     // 一个用于从localStorage加载信息的函数
     function loadData() {
         const savedData = localStorage.getItem('user_data');
@@ -447,9 +291,9 @@
         if (savedProjectId) {
             project_id.value = JSON.parse(savedProjectId);
         }
-        const savedData2 = localStorage.getItem('title');
-        if (savedData2) {
-            title.value = JSON.parse(savedData2);
+        const savedTitle = localStorage.getItem('title');
+        if (savedTitle) {
+            title.value = JSON.parse(savedTitle);
         }
     }
 
@@ -463,11 +307,13 @@
     }
 
 
-    // 下载培训证书模板
-async function downloadpaperPdf() {
+
+// 下载授权证书
+async function downloadAuthorPdf() {
   try {
-    const response = await fetch('http://localhost:5173/src/assets/培训证书模板.pdf');
+    const response = await fetch('src/assets/培训证书模板.pdf');
     console.log("模板文件路径为：" + decodeURIComponent(response.url));
+    console.log("用户名: " +progress.value.is_autho);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -479,24 +325,29 @@ async function downloadpaperPdf() {
     pdfDoc.registerFontkit(fontkit);
 
     const firstPage = pdfDoc.getPage(0);
-
+    const pageSize = firstPage.getSize(); // 获取页面尺寸
     // 获取字体文件
-    const fontResponse = await fetch('http://localhost:5173/src/assets/SimSun.ttf');
+    const fontResponse = await fetch('src/assets/SimSun.ttf');
     const fontBytes = await fontResponse.arrayBuffer();
     const font = await pdfDoc.embedFont(fontBytes); // 嵌入字体
 
+    // 假设overtime.value是一个日期字符串，格式为yyyy-mm-dd
+    const dateInYMDFormat = progress.value.auth_time.substring(0, 10);
+    const convertedDate = convertDate(dateInYMDFormat);
+
     // 定义多个文本和它们的位置
     const texts = [
-      { text: '培 训 证 书', x: 550, y: 600, size: 80 },
-      { text: '证书编号：4000001', x: 700, y: 550, size: 20 },
+    { text: '授 权 证 书', x: 550, y: 600, size: 80 },
+      { text: `证书编号：${convertedDate+randomSerial}`, x: 700, y: 550, size: 20 },
 
-      { text: '兹证明 傅梦茵 先生/女士：', x: 350, y: 450, size: 35 },
-      {text:'   于2024年12月10日完成医用口罩，GB ',x:350,y:375,size:35},
-      {text:' 190803-2023 4.4，呼吸阻力 项目培训。',x:350,y:300,size:35},
-      {text:'特发此证',x:350,y:200,size:35},
+      { text: `兹证明 ${user_data.value.username} 先生/女士：`, x: 300, y: 450, size: 35 },
+      { text: `于${progress.value.auth_time.substring(0, 10)}完成${title.value.substring(0, 18)}`, x: 350, y: 375, size: 35 },
+      {text:    `${title.value.substring(18)} 项目培训。`,x: 350, y: 300, size: 35},
+      {text:`获得该项目检测授权。`,x:300,y:225,size:35},
+      {text:'特发此证！',x:350,y:150,size:35},
 
-      {text:'签发单位：南京理工大学名茜医疗器械项目部',x:250,y:50,size:20},
-      {text:'日期：2024年12月10日',x:800,y:50,size:20}
+      {text:'签发单位：南京理工大学名茜医疗器械项目部',x:600,y:50,size:20},
+      {text:`日期：${progress.value.auth_time.substring(0, 10)}`,x:700,y:75,size:20}
 
     ];
 
@@ -515,7 +366,7 @@ async function downloadpaperPdf() {
     const blob = new Blob([pdfBytesModified], { type: 'application/pdf' });
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', '培训证书.pdf');
+    link.setAttribute('download', '授权证书.pdf');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -523,13 +374,74 @@ async function downloadpaperPdf() {
   } catch (error) {
     console.error('Error fetching PDF:', error);
   }
-}
+}  
 
+// 下载培训证书
+async function downloadpaperPdf() {
+  try {
+    const response = await fetch('src/assets/培训证书模板.pdf');
+    console.log("模板文件路径为：" + decodeURIComponent(response.url));
+    console.log("用户名: " + user_data.value.username);
+    console.log("项目名称: " + title.value);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const pdfBytes = await response.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    
+    // 注册 fontkit
+    pdfDoc.registerFontkit(fontkit);
+
+    const firstPage = pdfDoc.getPage(0);
+
+    // 获取字体文件，这里使用支持中文的字体，例如宋体
+    const fontResponse = await fetch('src/assets/SimSun.ttf');
+    const fontBytes = await fontResponse.arrayBuffer();
+    const font = await pdfDoc.embedFont(fontBytes); // 嵌入字体
+
+
+    // 假设overtime.value是一个日期字符串，格式为yyyy-mm-dd
+    const dateInYMDFormat = overtime.value.substring(0, 10);
+    const convertedDate = convertDate(dateInYMDFormat);
+    // 定义多个文本和它们的位置
+    const texts = [
+      { text: '培 训 证 书', x: 550, y: 600, size: 80 },
+      { text: `证书编号：${convertedDate+randomSerial}`, x: 700, y: 550, size: 20 },
+      { text: `兹证明 ${user_data.value.username} 先生/女士：`, x: 350, y: 450, size: 35 },
+      { text: `于${overtime.value.substring(0, 10)}完成${title.value.substring(0, 18)}`, x: 350, y: 375, size: 35 },
+      {text:    `${title.value.substring(18)} 项目培训。`,x: 350, y: 300, size: 35},
+      { text: '特发此证', x: 350, y: 200, size: 35 },
+      { text: '签发单位：南京理工大学名茜医疗器械项目部', x:600,y:50,size:20 },
+      { text: `日期：${overtime.value.substring(0, 10)}`,x:700,y:75,size:20 }
+    ];
+    texts.forEach(textObj => {
+      firstPage.drawText(textObj.text, {
+        x: textObj.x,
+        y: textObj.y,
+        size: textObj.size,
+        color: rgb(0.5, 0.5, 0), // 黑色
+        font: font,
+        // maxWidth: textObj.wrap && textObj.wrap.width // 换行设置
+      });
+    });
+    const pdfBytesModified = await pdfDoc.save();
+    const blob = new Blob([pdfBytesModified], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', '培训证书.pdf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error('Error fetching PDF:', error);
+  }
+}
     onMounted(() => {
     loadData()
     getTrainStatus()
     getDownloadUrl()
-    getVideoUrl()
     getTestProgress()
     getRouterInfo()
     });
@@ -576,8 +488,7 @@ async function downloadpaperPdf() {
 
         <!-- 按钮 -->
         <div id="p_button1">
-            <el-button id="p_leave" @click="openModal(2, '')" type="primary" plain>留言</el-button>
-            <!-- <el-button id="add" type="success" plain > 加入记录</el-button> -->
+            <el-button id="p_leave" @click="openModal(2)" type="primary" plain>留言</el-button>
         </div>
     </div>
 
@@ -595,10 +506,21 @@ async function downloadpaperPdf() {
                 :style="{
                 boxShadow: `var(${getCssVarName('light')})`,
                 }"
-                v-for="(item, index) in videoUrls"
             >
-                <p>{{ title }} 培训视频{{ index+1 }}</P>
-                <el-button class="paly_button" type="success" @click="openModal(1, item)" round>播放</el-button>
+                <p>这里放视频的标题或者内容的简要描述1</P>
+                <el-button class="paly_button" type="success" @click="openModal(1)" round>播放</el-button>
+            </div>
+            <div
+                class="inline-flex line1"
+                h="30"
+                w="30"
+                m="2"
+                :style="{
+                boxShadow: `var(${getCssVarName('light')})`,
+                }"
+            >
+                <p>这里放视频的标题或者内容的简要描述2</P>
+                <el-button class="paly_button" type="success" @click="openModal(1)" round>播放</el-button>
             </div>
         </div>
     </div>
@@ -639,6 +561,7 @@ async function downloadpaperPdf() {
             <p>授权情况：{{ progress.is_autho }}</p>
             <p>授权时间：{{ progress.auth_time }}</p>
         </div>
+        <el-button  type="success" size="medium"  @click="downloadAuthorPdf()" plain>下载授权证书</el-button>
     </div>
   </div>
 
@@ -649,10 +572,22 @@ async function downloadpaperPdf() {
     :outWindowType = false
     @closeModal = "closeModal(1)"
    >
-        <video class="video1" :src=fullVideoUrl @ended="handleEnded" poster="./images/photo1.png" controls>
+        <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
             Your browser does not support the video element.
         </video>
-   </outWindow>
+   </outWindow> -->
+    <outWindow 
+        :isVisible="showModal"
+        :messageType="'Offiers'"
+        :outWindowType=false
+        @closeModal="closeModal(1)"
+    >
+        <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
+            Your browser does not support the video element.
+        </video>
+        <progress id="videoProgress" value="0" max="100"></progress>
+        <div id="progressMarker">播放中...</div>
+    </outWindow>
 
    <!-- 留言窗口 -->
     <outWindow 

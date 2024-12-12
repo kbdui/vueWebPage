@@ -146,7 +146,7 @@ const baseurl = inject('baseurl')
  const equipmentDetails = ref([]);
  function getallmachine()
  {
-    axios.post('/equipments_by_project',{
+    axios.post(baseurl + '/equipments_by_project',{
       project_id : project_id.value
             },
             {

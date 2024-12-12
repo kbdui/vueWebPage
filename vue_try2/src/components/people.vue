@@ -519,7 +519,7 @@
         { text: '授 权 证 书', x: 550, y: 600, size: 80 },
         { text: `证书编号：${convertedDate+randomSerial}`, x: 700, y: 550, size: 20 },
 
-        { text: `兹证明 ${user_data.value.username} 先生/女士：`, x: 300, y: 450, size: 35 },
+        { text: `兹证明 ${user_data.value.name} 先生/女士：`, x: 300, y: 450, size: 35 },
         { text: `于${progress.value.auth_time.substring(0, 10)}完成${title.value.substring(0, 18)}`, x: 350, y: 375, size: 35 },
         {text:    `${title.value.substring(18)} 项目培训。`,x: 350, y: 300, size: 35},
         {text:`获得该项目检测授权。`,x:300,y:225,size:35},
@@ -592,7 +592,7 @@
         const texts = [
         { text: '培 训 证 书', x: 550, y: 600, size: 80 },
         { text: `证书编号：${convertedDate+randomSerial}`, x: 700, y: 550, size: 20 },
-        { text: `兹证明 ${user_data.value.username} 先生/女士：`, x: 350, y: 450, size: 35 },
+        { text: `兹证明 ${user_data.value.name} 先生/女士：`, x: 350, y: 450, size: 35 },
         { text: `于${overtime.value.substring(0, 10)}完成${title.value.substring(0, 18)}`, x: 350, y: 375, size: 35 },
         {text:    `${title.value.substring(18)} 项目培训。`,x: 350, y: 300, size: 35},
         { text: '特发此证', x: 350, y: 200, size: 35 },

@@ -127,8 +127,8 @@ return filteredProjects.slice(start, end);
     ElMessage.success('查看增加申请')
   }
   const saveCategory = (category) => {
-      test_category.value = category
-      console.log('Saved category:', category)
+      localStorage.setItem('test_category', category)
+      console.log('Saved category:',category)
     }
     
   // const user_data = ref({

@@ -15,7 +15,7 @@
         <!-- <el-button type="primary" @click="handleExcelUpload">导入Excel</el-button> -->
       </div>
       <div class="standards-list">
-        <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
+        <div v-for="project in paginatedProjects " :key="project.projectid" class="standard-item">
           <div v-if="projects.length === 0">没有项目数据</div>
             <router-link to="/details/" class="action-button"
              @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.projectname)"
@@ -144,6 +144,7 @@ function handleClick(projectId, standardNumber, projecttype, projectname) {
     function saveData() {
         localStorage.setItem('project_id', JSON.stringify(project_id.value))
         localStorage.setItem('title', JSON.stringify(title.value))
+      
     }
 
 const fileInput = ref(null)
@@ -180,13 +181,19 @@ const handleExcelUpload = async (event) => {
   // Clear the file input
   event.target.value = ''
 }
-
+console.log('test_category:',test_category.value)
+function onload(){
+  const savedData = localStorage.getItem('test_category');
+    if (savedData) {
+       test_category.value = savedData;
+}
+}
   const searchQuery = ref('')
   const currentPage = ref(1)
   const pageSize = ref(5)
   const projects = ref([])
   const projectData = ref([])
-  
+  console.log('test_category:',test_category.value)
   function search() {
 axios.get(baseurl + '/all_project')
 .then(function (response) {
@@ -316,8 +323,9 @@ const handlePageChange = (newPage) => {
   // 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
  onMounted(() => {
-  search()
- 
+  search();
+  onload();
+
 })
 </script>
 <style scoped>

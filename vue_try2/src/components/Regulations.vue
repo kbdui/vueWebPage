@@ -1,137 +1,3 @@
-<!-- <script lang="ts" setup>
-    import { ref,onMounted } from 'vue'
-    import { useRouter } from 'vue-router'
-    import headshot from './headshot.vue'
-    import outWindow from './outWindow.vue'
-    import { project_id } from '@/status'
-    import axios from 'axios'
-    import topMessage from './son_components/topMessage.vue'
-    import { ElMessage } from 'element-plus'
-
-    const router = useRouter()
-
-    // menu 菜单
-    const activeIndex1 = ref('3')
-    const handleSelect1 = (key: string, keyPath: string[]) => {
-        if(key.match('1')) router.push('/details/')
-        if(key.match('2')) router.push('/machinefirst')
-        if(key.match('4')) router.push('/sample')
-        console.log(key, keyPath)
-    }
-
-    // 打开/关闭小窗口
-    const showModal2 = ref(false)
-    function openModal(){
-        showModal2.value = true
-    }
-    function closeModal() {
-        showModal2.value = false
-    }
-
-    //给边框使用
-    const getCssVarName = (type: string) => {
-        return `--el-box-shadow${type ? '-' : ''}${type}`
-    }
-
-    // 留言-文本框设置
-    const textarea = ref('')
-
-    // 调整窗口的CSS
-    const styleProps2 = ref({
-        height: '35rem'
-    });
-
-    // 加载project_id
-    function loadprojectid() {
-        const savedData = localStorage.getItem('project_id');
-        if (savedData) {
-            project_id.value = JSON.parse(savedData);
-            console.log(project_id.value)
-        }
-    }
-
-    // 获取所有的操作规程
-    const operationList = ref([])
-    function getAllOperations(){
-        axios.post('http://localhost:8080/download_operation_procedure',{
-            project_id : project_id.value
-        },{
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        }).then(function(response){
-            operationList.value=response.data.data
-            for(var i=0;i<operationList.value.length;i++){
-                operationList.value[i] = (String)(operationList.value[i]).split('/').pop()
-            }
-        }).catch(function(error){
-            console.log(error)
-            ElMessage.error('获取操作规程失败')
-        })
-    }
-
-    // 获取所有的对比实验
-    const compareList = ref()
-    function getAllcompare(){
-        axios.post('http://localhost:8080/download_compare_plan',{
-            project_id : project_id.value
-        },{
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        }).then(function(response){
-            compareList.value=response.data.data
-            compareList.value = (String)(compareList.value).split('/').pop()
-        }).catch(function(error){
-            console.log(error)
-            ElMessage.error('获取对比实验失败')
-        })
-    }
-
-    // 根据输入地址下载目标文件
-    function downloadFile(url: string) {
-        axios.post('http://localhost:8080/download', {
-          fileName: url
-        },{
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }).then(function (response){
-            const link = document.createElement('a');
-            link.href = response.data.url; // 假设服务器返回文件的实际URL
-            link.setAttribute('download', url); // 设置下载的文件名
-            document.body.appendChild(link);
-            link.click(); // 触发下载
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(link.href); // 释放URL对象 
-        }).catch(function (error){
-            if (error.response) {
-                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-            } else if (error.request) {
-                // 请求已经成功发起，但没有收到响应
-                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-                // 而在node.js中是 http.ClientRequest 的实例
-                console.log(error.request);
-            } else {
-                // 发送请求时出了点问题
-                console.log('Error', error.message);
-            }
-            console.log(error.config)
-            ElMessage.error('下载失败')
-        })
-    }
-
-    // 组件挂载时执行的事件
-    onMounted(() => {
-        loadprojectid()
-        getAllOperations()
-        getAllcompare()
-    })
-</script> -->
-
 <template>
     <div id="top">
     <div id="top1">
@@ -160,14 +26,6 @@
     <el-button id="r_leave" @click="openModal()" type="primary" plain>留言</el-button>
   </div>
   
-  <!-- 操作规程 -->
-   <!-- <div id="r_content1">
-        <h2>操作规程</h2>
-        <div v-for="operation in operationList" class="content_pdf">
-            <p>{{ operation }}</p>
-            <el-button type="success" @click="downloadFile(operation)" plain>下载</el-button>
-        </div>
-   </div> -->
    <div class="procedures-list">
       <div v-for="(procedure, index) in procedures" :key="index" class="procedure-item">
         <span class="filename">{{ procedure.filename }}</span>
@@ -177,24 +35,73 @@
             size="small"
             @click="downloadPdf(index)"
           >
-            下载
+            下载aaaadddd
           </el-button>
         </div>
       </div>
     </div>
 
-   <!-- 对比实验 -->
-    <!-- <div id="r_content2">
-        <h2>对比实验</h2>
-        <div v-if="compareList != 'null'" class="content_compare">
-            <p>{{ compareList }}</p>
-            <el-button type="success" @click="downloadFile(compareList)" plain>下载</el-button>
-        </div>
-        <div v-if="compareList != 'null'" class="content_status">
-            <el-button type="primary" plain>申请对比实验</el-button>
-        </div>
-      </div> -->
 
+
+    <!-- 申请对比实验 -->
+
+    <div class="status-wrapper">
+      申请状态: 
+      <span :class="statusClass">{{ statusText }}</span>
+      
+       <!-- 申请对比实验的按钮 -->
+  <el-button 
+    type="success" 
+    @click="showDialog"
+    :disabled="status === 'planned'"
+    class="apply-button"
+  >
+    申请对比实验
+  </el-button>
+
+
+      <el-tooltip
+        v-if="status === 'planned'"
+        effect="dark"
+        content="该项目正在申请中"
+        placement="right"
+      >
+        <span class="info-icon">
+          <InfoIcon class="h-5 w-5" />
+        </span>
+      </el-tooltip>
+    </div>
+
+
+    <el-dialog
+  v-model="dialogVisible"
+  title="申请对比实验"
+  width="30%"
+  :close-on-click-modal="false"
+>
+  <el-form
+    ref="formRef"
+    label-width="120px"
+    
+  >
+    <el-form-item label="Project ID" prop="project_id">
+      <el-input v-model="projectId"  placeholder="请输入项目ID" />
+    </el-form-item>
+    <el-form-item label="Account ID" prop="account_id">
+      <el-input v-model="accountId" placeholder="请输入账户ID" />
+    </el-form-item>
+  </el-form>
+
+
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="submitApplication" :loading="loading">
+        确认
+      </el-button>
+    </span>
+  </template>
+</el-dialog>
    <!-- 留言窗口 -->
     <outWindow 
     :isVisible = "showModal2"
@@ -213,16 +120,23 @@ import { ref, onMounted, inject } from 'vue';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { project_id } from '@/status';
+import { project_id,user_data } from '@/status';
 
 const procedures = ref([]);
 const comparisonFiles = ref([]);
 const tmp = ref([]);
 const tmp_com = ref([]);
 const baseurl = inject('baseurl')
+// 控制按钮加载状态
+const loading = ref(false);
+// 项目ID和账户ID,申请对比试验用
+const projectId = ref('');
+const accountId = ref('');
+const router = useRouter()
 
-    const router = useRouter()
 
+// 弹窗的可见性
+const dialogVisible = ref(false);
     // page header 页头
     const goBack = () => {
         router.push('/standard')
@@ -235,7 +149,16 @@ function loadProjectId() {
       project_id.value = JSON.parse(savedData);
       // console.log(project_id.value);
   }
+  const saveuser = localStorage.getItem('user_data');
+  if (saveuser) {
+    user_data.value = JSON.parse(saveuser);
+    
+  }
 }
+// 显示弹窗的方法
+const showDialog = () => {
+  dialogVisible.value = true;
+};
 
 //获取后端操作规程文件
 async function fetchProcedures() {
@@ -336,6 +259,67 @@ async function downloadPdf(index) {
     ElMessage.error('下载PDF文件失败，请重试');
   }
 }
+
+
+// 假设 user_data.value.accountid 是一个字符串类型的数字
+// const accountId = parseInt(user_data.value, 10);
+
+
+// 提交申请对比实验的函数
+const submitApplication = async () => {
+  
+  try {
+    // 发送POST请求到后端接口
+    const response = await axios.post(baseurl + '/create_compare_plan', {
+      project_id: project_id.value,
+      account_id: parseInt(user_data.value.accountid, 10)
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+    });
+
+    // 检查响应状态
+    if (response.status === 200) {
+      // 提交成功，可以在这里添加一些逻辑，比如关闭对话框，显示成功消息等
+      ElMessage.success('对比实验申请成功');
+      dialogVisible.value = false; // 关闭对话框
+    } else {
+      // 提交失败，显示错误消息
+      ElMessage.error('对比实验申请失败，请重试');
+    }
+  } catch (error) {
+    // 捕获并处理错误
+    console.error('申请对比实验失败：', error);
+    ElMessage.error('申请对比实验失败，请重试');
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 onMounted(() => {
   loadProjectId();
   fetchProcedures();
@@ -358,20 +342,14 @@ onMounted(() => {
     function closeModal() {
         showModal2.value = false
     }
-
-    //给边框使用
-    const getCssVarName = (type: string) => {
-        return `--el-box-shadow${type ? '-' : ''}${type}`
-    }
-
-    // 留言-文本框设置
-    const textarea = ref('')
-
     //调整窗口的CSS
     const styleProps2 = ref({
         height: '35rem'
     });
-</script> -->
+    
+
+
+</script> 
 
 <style>
      #top1{
@@ -492,4 +470,47 @@ onMounted(() => {
   :deep(.el-upload) {
     display: inline-block;
   }
+  .experiment-container {
+  padding: 20px;
+}
+
+.status-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-text {
+  font-weight: bold;
+}
+
+.status-not-applied {
+  color: #e6a23c;
+}
+
+.status-planned {
+  color: #409eff;
+}
+
+.status-completed {
+  color: #67c23a;
+}
+
+.apply-button {
+  margin-left: 16px;
+}
+
+.info-icon {
+  color: #909399;
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
 </style>

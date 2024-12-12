@@ -26,9 +26,9 @@
       <!-- Content Section -->
       <div class="content-section">
         <div class="section-header">
-          <h4>检测</h4>
+          <!-- <h4>检测</h4>
           <h3 class="green-text">GB 19083-2003 医用防护口罩</h3>
-          <p>可能需要以下样品</p>
+          <p>可能需要以下样品</p> -->
           <el-button type="success" style="font-size: 16px;"  @click="openDialog()">添加</el-button>
         </div>
   

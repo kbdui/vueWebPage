@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-  import { ref,onMounted } from 'vue'
+  import { ref,onMounted, inject } from 'vue'
   import { Close } from '@element-plus/icons-vue'
   import axios from 'axios'
   import { user_data,project_id } from '@/status'
   import { ElMessage } from 'element-plus'
 
   const progressStatus = ref('播放中');
+  const baseurl=inject("baseurl")
   // 传入的props
   const props = defineProps({
       isVisible: Boolean,
@@ -31,7 +32,7 @@
   const allMessages = ref([])
   const partMessages = ref([])
   function getMessages() {
-    axios.post('http://localhost:8080/get_message', {
+    axios.post(baseurl + '/get_message', {
       message_type: props.messageType
     },{
       headers: {
@@ -70,7 +71,7 @@
         ElMessage.error('留言内容不能为空')
         return
     }
-    axios.post('http://localhost:8080/create_message', {
+    axios.post(baseurl + '/create_message', {
       account_id: user_data.value.accountid,
       project_id: project_id.value,
       message_type: props.messageType,

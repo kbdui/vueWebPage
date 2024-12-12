@@ -575,7 +575,7 @@ async function downloadpaperPdf() {
         <video class="video1" src="./videos/what.mp4" poster="./images/photo1.png" controls>
             Your browser does not support the video element.
         </video>
-   </outWindow> -->
+   </outWindow>
     <outWindow 
         :isVisible="showModal"
         :messageType="'Offiers'"

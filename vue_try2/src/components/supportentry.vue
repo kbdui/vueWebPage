@@ -18,7 +18,8 @@
             </template>
           </el-input>
         </div>
-    
+        <el-button type="primary" @click="openAddApplicationDialog">添加</el-button>
+        <el-button type="success" @click="handleExcelUpload">从excel统计表导入</el-button>
         <!-- Standards List -->
         <div class="standards-list">
           <div v-if="paginatedProjects.length === 0">没有项目数据</div>
@@ -38,6 +39,36 @@
             @current-change="handlePageChange"
           />
         </div>
+        <el-dialog
+        v-model="addApplicationDialogVisible"
+        title="增加申请"
+        width="50%"
+        :before-close="handleCloseDialog"
+      >
+        <el-form :model="applicationForm" label-width="120px">
+          <el-form-item label="大类">
+            <el-input v-model="applicationForm.categories" />
+          </el-form-item>
+          <el-form-item label="类别">
+            <el-input v-model="applicationForm.subCategory" />
+          </el-form-item>
+          <el-form-item label="标准名称">
+            <el-input v-model="applicationForm.standardName" />
+          </el-form-item>
+          <el-form-item label="标准编号">
+            <el-input v-model="applicationForm.standardNumber" />
+          </el-form-item>
+          <el-form-item label="项目名称">
+            <el-input v-model="applicationForm.projectName" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="handleCloseDialog">取消</el-button>
+            <el-button type="primary" @click="handleAddApplication">确认添加</el-button>
+          </span>
+        </template>
+      </el-dialog>
     </template>
     
     <script setup>
@@ -58,7 +89,14 @@
     const projectData = ref([])
     const displayedCategories = reactive(new Set());
   const baseurl = inject('baseurl')
-  
+  const addApplicationDialogVisible = ref(false)
+const applicationForm = ref({
+categories: '',//大类
+subCategory: '',//类别
+standardName: '',//标准名称
+standardNumber: '',//标准编号
+projectName: ''//项目名称
+})
   function search() {
   axios.get(baseurl + '/all_project')
   .then(function (response) {
@@ -85,13 +123,18 @@
   });
   }
   // 计算属性，检查类别是否唯一
-  const uniqueCategories = computed(() => {
+  const  uniqueCategories = computed(() => {
     const categoriesSet = new Set();
     paginatedProjects.value.forEach(project => {
+      if (project.categories) {
       categoriesSet.add(project.categories);
+      }
     });
+    console.log("projectData",projectData.value)
+    console.log("categoriesSet",categoriesSet)
     return Array.from(categoriesSet);
   });
+
   const paginatedProjects = computed(() => {
   // 首先，如果存在搜索查询，则过滤项目
   let filteredProjects = searchQuery.value
@@ -101,24 +144,67 @@
   // 然后，进行分页
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
-  return filteredProjects.slice(start, end);
+  return filteredProjects ? filteredProjects.slice(start, end) : [];
   });
     const handleSearch = () => {
       ElMessage.success('执行搜索: ' + searchQuery.value)
     }
     
-    const handleAdd = () => {
-      ElMessage.success('打开添加标准对话框')
-    }
-    
-    const handleImportExcel = () => {
-      ElMessage.success('打开Excel导入对话框')
-    }
-    
-    const handleViewApplications = () => {
-      ElMessage.success('查看增加申请')
-    }
+ 
   
+const handleExcelUpload = async () => {
+  // 创建文件选择器
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+
+  input.click();
+  input.onchange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      ElMessage.error('未选择文件');
+      document.body.removeChild(input);
+      return;
+    }
+
+    // 检查文件类型
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      ElMessage.error('请上传Excel文件(.xlsx或.xls格式)');
+      document.body.removeChild(input);
+      return;
+    }
+
+    try {
+      // 创建FormData对象
+      const formData = new FormData();
+      
+      // 直接将文件添加到FormData中
+      formData.append('file', file);
+
+      // 使用FormData对象上传文件
+      const response = await axios.post(baseurl + '/gen_project_by_excel', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.data === true) {
+        ElMessage.success('Excel导入成功');
+        search(); // 刷新数据
+      } else {
+        ElMessage.error('Excel导入失败: ' + response.data.message);
+        console.log(response.data);
+      }
+    } catch (uploadError) {
+      console.error('Excel上传错误:', uploadError);
+      ElMessage.error('Excel上传失败: ' + uploadError.message);
+    } finally {
+      document.body.removeChild(input);
+    }
+  };
+}
     // const user_data = ref({
     //   name : decodeURIComponent(route.params.name),
     //   username : decodeURIComponent(route.params.username),
@@ -140,10 +226,47 @@
     }
     
     const saveCategory = (category) => {
-      selected_category.value = category
-      console.log('Saved category:', category)
+      localStorage.setItem('selected_category', category)
+      selected_category.value = category // 更新全局变量
+      console.log('Saved category:', selected_category.value)
     }
-    
+const  openAddApplicationDialog = () => {
+addApplicationDialogVisible.value = true
+}
+const  handleCloseDialog = () => {
+addApplicationDialogVisible.value = false
+}
+
+const handleAddApplication = () => {
+const formData = new FormData();
+formData.append('categories', applicationForm.value.subCategory);
+formData.append('project_type', applicationForm.value.categories);
+// formData.append('standardName', applicationForm.value.standardName);
+formData.append('standard_number', applicationForm.value.standardNumber);
+formData.append('project_name', applicationForm.value.projectName);
+console.log("formDasdsdsdta",applicationForm.value.standardNumber)
+axios.post(baseurl + '/get_new_project', formData, {
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  }
+})
+.then(response => {
+  if (response.data.data) {
+    ElMessage.success('申请已成功提交');
+    search()
+  } else {
+    ElMessage.error('申请提交失败: ' + response.data.message);
+  }
+})
+.catch(error => {
+  console.error('申请提交错误:', error);
+  ElMessage.error('申请提交过程中发生错误');
+});
+console.log('Application data:', applicationForm.value)
+// For demonstration, we'll just show a success message
+ElMessage.success('申请已添加')
+handleCloseDialog()
+}
     onMounted(() => {
       search()
       })

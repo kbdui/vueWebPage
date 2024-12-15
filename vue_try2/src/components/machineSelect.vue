@@ -58,7 +58,7 @@
       <div class="equipment-container">
         <!-- 顶部操作栏 -->
         <div class="top-bar">
-          <h2 class="dialog-title">天平(2/4)</h2>
+      
           <el-button type="success" @click="handleAdd">添加</el-button>
         </div>
     
@@ -109,9 +109,15 @@
                       class="pdf-link"
                       @click="viewPdf(item)"
                     >
-                      设备详情(点击后查看设备详情.pdf)
+                      PDF添加(点击后添加pdf)
                     </el-link>
-                    
+                    <el-link
+                      type="primary"
+                      class="pdf-link"
+                      @click="viewPdf(item)"
+                    >
+                     查看pdf(点击后查看pdf)
+                    </el-link>
                     <div class="quantity-section">
                       <span class="quantity-label">需求数量</span>
                       <el-input-number
@@ -222,9 +228,9 @@ const handleEquipmentSubmit = (newEquipment) => {
 }
 
 const uploadEquipmentPicture = async (scheme_id: number, file: File) => {
-  // 检查文件类型是否为PDF
-  if (file.type !== 'application/pdf') {
-    ElMessage.error('请上传PDF格式的文件')
+  // 检查文件类型是否为图片
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('请上传图片格式的文件')
     return
   }
 
@@ -239,45 +245,39 @@ const uploadEquipmentPicture = async (scheme_id: number, file: File) => {
       }
     })
 
-    // 修改判断逻辑 - 当response.data.data为true时表示上传成功
-    if (response.data.data === true) { // 修改判断条件
-      ElMessage.success('PDF上传成功')
-      // 刷新设备列表以显示新上传的PDF
+    if (response.data.data === true) {
+      ElMessage.success('图片上传成功')
       await getallequipments()
-      
-      // 强制重新渲染图片组件
+
+      // 更新设备详情列表中的图片URL
       const index = equipmentDetails.value.findIndex(item => item.scheme_id === scheme_id)
       if (index !== -1) {
         const updatedItem = {...equipmentDetails.value[index]}
-        updatedItem.picture_url = updatedItem.picture_url  // 添加时间戳避免缓存
+        updatedItem.picture_url = response.data.url; // 假设返回的URL在response.data.url中
         equipmentDetails.value[index] = updatedItem
       }
     } else {
-      // 添加更详细的错误信息
-      console.error('上传响应:', response.data)
-      ElMessage.error('PDF上传失败，请检查文件大小是否超限或格式是否正确')
+      console.error('上传失败:', response.data)
+      ElMessage.error('图片上传失败')
     }
   } catch (error) {
     console.error('上传错误:', error)
-    ElMessage.error('PDF上传过程中发生错误')
+    ElMessage.error('图片上传失败')
   }
 }
 
 const handleUploadPicture = (item) => {
-  console.log('Selected item:', item)
   const input = document.createElement('input')
   input.type = 'file'
-  input.accept = '.pdf' // 只接受 PDF 文件
+  input.accept = 'image/*'
   
   input.onchange = (e) => {
     const file = e.target.files?.[0]
     if (file) {
-      // 验证文件类型
-      if (file.type !== 'application/pdf') {
-        ElMessage.error('请上传 PDF 格式的文件')
+      if (!file.type.startsWith('image/')) {
+        ElMessage.error('请上传图片格式的文件')
         return
       }
-      console.log('Selected file:', file)
       uploadEquipmentPicture(item.scheme_id, file)
     }
   }
@@ -316,6 +316,27 @@ const handleUploadPicture = (item) => {
  }).catch(function(error){
   console.log(error)
  })
+}
+const pdfUrl = ref(''); // Add a ref to store the PDF URL
+
+async function getPdfUrl(item) { // New function to get the PDF URL
+    const strtmp = "D:/files/";
+    const Path = item.pdfPath.toString().replace(strtmp, ""); // Assuming item has pdfPath
+    try {
+        const fullFileName = decodeURIComponent(Path);
+        const response = await axios({
+            url: baseurl + `/download`, // Adjust the endpoint if necessary
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: `fileName=${fullFileName}`,
+            responseType: 'blob'
+        });
+        pdfUrl.value = window.URL.createObjectURL(new Blob([response.data])); // Store the PDF URL
+    } catch (error) {
+        ElMessage.error('获取PDF路径失败');
+    }
 }
  function addnewmachine(){
     axios.post(baseurl + '/add_equip',{
@@ -421,6 +442,7 @@ const uploadEquipmentPdf = async (scheme_id: number, file: File) => {
 
     if (response.data.data ===true) {
       ElMessage.success('PDF上传成功')
+      console.log(response.data.data)
       await getallequipments() // Refresh equipment list
     } else {
       ElMessage.error('PDF上传失败')

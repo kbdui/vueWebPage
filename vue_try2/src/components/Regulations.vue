@@ -1,137 +1,3 @@
-<!-- <script lang="ts" setup>
-    import { ref,onMounted } from 'vue'
-    import { useRouter } from 'vue-router'
-    import headshot from './headshot.vue'
-    import outWindow from './outWindow.vue'
-    import { project_id } from '@/status'
-    import axios from 'axios'
-    import topMessage from './son_components/topMessage.vue'
-    import { ElMessage } from 'element-plus'
-
-    const router = useRouter()
-
-    // menu 菜单
-    const activeIndex1 = ref('3')
-    const handleSelect1 = (key: string, keyPath: string[]) => {
-        if(key.match('1')) router.push('/details/')
-        if(key.match('2')) router.push('/machinefirst')
-        if(key.match('4')) router.push('/sample')
-        console.log(key, keyPath)
-    }
-
-    // 打开/关闭小窗口
-    const showModal2 = ref(false)
-    function openModal(){
-        showModal2.value = true
-    }
-    function closeModal() {
-        showModal2.value = false
-    }
-
-    //给边框使用
-    const getCssVarName = (type: string) => {
-        return `--el-box-shadow${type ? '-' : ''}${type}`
-    }
-
-    // 留言-文本框设置
-    const textarea = ref('')
-
-    // 调整窗口的CSS
-    const styleProps2 = ref({
-        height: '35rem'
-    });
-
-    // 加载project_id
-    function loadprojectid() {
-        const savedData = localStorage.getItem('project_id');
-        if (savedData) {
-            project_id.value = JSON.parse(savedData);
-            console.log(project_id.value)
-        }
-    }
-
-    // 获取所有的操作规程
-    const operationList = ref([])
-    function getAllOperations(){
-        axios.post('http://localhost:8080/download_operation_procedure',{
-            project_id : project_id.value
-        },{
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        }).then(function(response){
-            operationList.value=response.data.data
-            for(var i=0;i<operationList.value.length;i++){
-                operationList.value[i] = (String)(operationList.value[i]).split('/').pop()
-            }
-        }).catch(function(error){
-            console.log(error)
-            ElMessage.error('获取操作规程失败')
-        })
-    }
-
-    // 获取所有的对比实验
-    const compareList = ref()
-    function getAllcompare(){
-        axios.post('http://localhost:8080/download_compare_plan',{
-            project_id : project_id.value
-        },{
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        }).then(function(response){
-            compareList.value=response.data.data
-            compareList.value = (String)(compareList.value).split('/').pop()
-        }).catch(function(error){
-            console.log(error)
-            ElMessage.error('获取对比实验失败')
-        })
-    }
-
-    // 根据输入地址下载目标文件
-    function downloadFile(url: string) {
-        axios.post('http://localhost:8080/download', {
-          fileName: url
-        },{
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }).then(function (response){
-            const link = document.createElement('a');
-            link.href = response.data.url; // 假设服务器返回文件的实际URL
-            link.setAttribute('download', url); // 设置下载的文件名
-            document.body.appendChild(link);
-            link.click(); // 触发下载
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(link.href); // 释放URL对象 
-        }).catch(function (error){
-            if (error.response) {
-                // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-            } else if (error.request) {
-                // 请求已经成功发起，但没有收到响应
-                // `error.request` 在浏览器中是 XMLHttpRequest 的实例，
-                // 而在node.js中是 http.ClientRequest 的实例
-                console.log(error.request);
-            } else {
-                // 发送请求时出了点问题
-                console.log('Error', error.message);
-            }
-            console.log(error.config)
-            ElMessage.error('下载失败')
-        })
-    }
-
-    // 组件挂载时执行的事件
-    onMounted(() => {
-        loadprojectid()
-        getAllOperations()
-        getAllcompare()
-    })
-</script> -->
-
 <template>
     <div id="top">
     <div id="top1">
@@ -159,15 +25,6 @@
   <div id="leave_btn">
     <el-button id="r_leave" @click="openModal()" type="primary" plain>留言</el-button>
   </div>
-  
-  <!-- 操作规程 -->
-   <!-- <div id="r_content1">
-        <h2>操作规程</h2>
-        <div v-for="operation in operationList" class="content_pdf">
-            <p>{{ operation }}</p>
-            <el-button type="success" @click="downloadFile(operation)" plain>下载</el-button>
-        </div>
-   </div> -->
    <div class="procedures-list">
       <div v-for="(procedure, index) in procedures" :key="index" class="procedure-item">
         <span class="filename">{{ procedure.filename }}</span>
@@ -183,19 +40,64 @@
       </div>
     </div>
 
-   <!-- 对比实验 -->
-    <!-- <div id="r_content2">
-        <h2>对比实验</h2>
-        <div v-if="compareList != 'null'" class="content_compare">
-            <p>{{ compareList }}</p>
-            <el-button type="success" @click="downloadFile(compareList)" plain>下载</el-button>
-        </div>
-        <div v-if="compareList != 'null'" class="content_status">
-            <el-button type="primary" plain>申请对比实验</el-button>
-        </div>
-      </div> -->
+    
+    <el-divider />
+    <div class="status-wrapper">
 
-   <!-- 留言窗口 -->
+      <el-space align="right">
+        <el-check-tag success>对比实验申请状态：<el-tag type="success" size="default" class="status-tag">{{ statusText }}</el-tag></el-check-tag>
+        <el-button 
+          type="success" 
+          @click="showDialog"
+          :disabled="status === 'planned'"
+          class="apply-button"
+          >申请对比实验</el-button>
+        </el-space>
+    
+    <!-- 申请对比实验的按钮功能 -->
+      <el-tooltip
+        v-if="status === 'planned'"
+        effect="dark"
+        content="该项目正在申请中"
+        placement="right"
+      >
+        <span class="info-icon">
+          <InfoIcon class="h-5 w-5" />
+        </span>
+      </el-tooltip>
+    </div>
+    <el-dialog
+  v-model="dialogVisible"
+  title="申请对比实验"
+  width="30%"
+  :close-on-click-modal="false"
+>
+  <el-form
+    ref="formRef"
+    label-width="120px"
+    
+  >
+    <el-form-item label="Project ID" prop="project_id">
+      <el-input v-model="projectId"  placeholder="{{ project_id }}" />
+    </el-form-item>
+    <el-form-item label="Account ID" prop="account_id">
+      <el-input v-model="accountId"  placeholder="{{account_id}}" />
+    </el-form-item>
+  </el-form>
+
+
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="submitApplication" :loading="loading">
+        确认
+      </el-button>
+    </span>
+  </template>
+</el-dialog>
+
+
+  <!-- 留言窗口 -->
     <outWindow 
     :isVisible = "showModal2"
     :styleProps = "styleProps2"
@@ -213,29 +115,128 @@ import { ref, onMounted, inject } from 'vue';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { project_id } from '@/status';
+import { project_id ,user_data } from '@/status';
 
 const procedures = ref([]);
 const comparisonFiles = ref([]);
 const tmp = ref([]);
 const tmp_com = ref([]);
 const baseurl = inject('baseurl')
+// 控制按钮加载状态
+const loading = ref(false);
+// 项目ID和账户ID,申请对比试验用
+const projectId = ref('');
+const accountId = ref('');
+const router = useRouter();
+const comparisonPlans = ref([]); // 用于存储对比试验数据
+const status = ref(''); // 用于存储对比试验状态
+const statusText = ref(''); // 用于存储对比试验状态文本
+const statusClass = ref(''); // 用于存储对比试验状态样式类
 
-    const router = useRouter()
-
-    // page header 页头
-    const goBack = () => {
-        router.push('/standard')
-        console.log('go back')
-    }
-// 加载项目ID
+// page header 页头
+const goBack = () => {
+    router.push('/standard')
+    console.log('go back')
+}
+// 加载数据
 function loadProjectId() {
   const savedData = localStorage.getItem('project_id');
   if (savedData) {
       project_id.value = JSON.parse(savedData);
-      // console.log(project_id.value);
+  }
+  const saveuser = localStorage.getItem('user_data');
+  if (saveuser) {
+    user_data.value = JSON.parse(saveuser);
+    
+  }
+
+}
+// 弹窗的可见性
+const dialogVisible = ref(false);
+
+// 显示弹窗的方法
+const showDialog = () => {
+  dialogVisible.value = true;
+};
+
+// 提交申请对比实验的函数
+const submitApplication = async () => {
+  console.log('项目ID为：' + project_id.value + "\n" + "账户ID为：" + user_data.value.accountid);
+  try {
+    const response = await axios.post(baseurl + '/create_compare_plan', {
+      project_id: project_id.value,
+      account_id: user_data.value.accountid,
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+    });
+    // 检查响应状态
+    if (response.status === 200) {
+      ElMessage.success('对比实验申请成功');
+      dialogVisible.value = false; // 关闭对话框
+    } else {
+      ElMessage.error('对比实验申请失败，请重试');
+    }
+  } catch (error) {
+    console.error('申请对比实验失败：', error);
+    ElMessage.error('申请对比实验失败，请重试');
+  }
+};
+
+// 加载对比试验数据
+async function loadComparisonPlans() {
+  try {
+    const response = await axios.post(baseurl + '/show_my_compare_plan', {
+      account_id: user_data.value.accountid,
+    },{
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+    });
+    if (response.data && response.data.data) {
+      comparisonPlans.value = response.data.data;
+      comparisonPlans.value.forEach(plan => {
+        // 假设我们只关心第一个项目的申请状态
+        status.value = plan.projectTest.state;
+        statusText.value = getStatusText(plan.projectTest.state); // 根据状态码转换为对应的文本描述
+        statusClass.value = getStatusClass(plan.projectTest.state); // 根据状态设置不同的样式类
+      });
+    } else {
+      console.error('数据结构不符合预期:', response.data);
+      ElMessage.error('数据结构不符合预期，请检查后端返回的数据');
+    }
+  } catch (error) {
+    console.error('获取对比试验数据失败：', error);
+    ElMessage.error('获取对比试验数据失败，请重试');
   }
 }
+// 根据状态返回不同的样式类
+// 根据状态返回不同的文本描述
+function getStatusText(status) {
+  switch (status) {
+    case 'Finish':
+      return '已完成'; // 完成状态的文本描述
+    case 'Ongoing':
+      return '正在进行'; // 进行中状态的文本描述
+    default:
+      return '未知状态'; // 默认文本描述
+  }
+}
+
+// 根据状态返回不同的样式类
+function getStatusClass(status) {
+  switch (status) {
+    case 'Finish':
+      return 'status-finish'; // 完成状态的样式类
+    case 'Ongoing':
+      return 'status-ongoing'; // 进行中状态的样式类
+    default:
+      return 'status-default'; // 默认样式类
+  }
+}
+
+
 
 //获取后端操作规程文件
 async function fetchProcedures() {
@@ -339,7 +340,18 @@ async function downloadPdf(index) {
 onMounted(() => {
   loadProjectId();
   fetchProcedures();
-//   fetchComparison();
+  loadComparisonPlans();
+  // fetchComparison();
+const savedProjectId = localStorage.getItem('project_id');
+  if (savedProjectId) {
+    projectId.value = savedProjectId;
+  }
+
+  const savedUserData = localStorage.getItem('user_data');
+  if (savedUserData) {
+    user_data.value = JSON.parse(savedUserData);
+    accountId.value = user_data.value.accountid;
+  }
 });
     // menu 菜单
     const activeIndex1 = ref('3')
@@ -492,4 +504,24 @@ onMounted(() => {
   :deep(.el-upload) {
     display: inline-block;
   }
+  .status-wrapper {
+    margin-top: 20px;
+  }
+
+  .status-finish {
+    color: green;
+  }
+
+  .status-ongoing {
+    color: blue;
+  }
+
+  .status-planned {
+    color: orange;
+  }
+
+  .status-default {
+    color: grey;
+  }
+
 </style>

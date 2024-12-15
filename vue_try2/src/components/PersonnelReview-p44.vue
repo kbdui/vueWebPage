@@ -57,9 +57,9 @@
             <el-button 
               type="success" 
               class="export-btn"
-              @click="exportauthorPDF(allAuthList)"
+              @click="exportStudysheet"
             >
-              导出授权人员清单
+              导出学习情况清单
             </el-button>
             <el-table :data="allAuthList" style="width: 100%;font-size: 16px">
               <el-table-column 
@@ -107,9 +107,9 @@
             <el-button 
               type="success" 
               class="export-button"
-              @click="exportTrainPDF(allTrainList)"
+              @click="exportStudysheet"
             >
-              导出培训清单
+              导出学习情况清单
             </el-button>
         
             <!-- Training List Table -->
@@ -269,55 +269,55 @@ const handleSelect1 = (key, keyPath) => {
   }
 
 // 导出授权人员清单为PDF
-function exportauthorPDF(AuthorData) {
-  // 确保数据已加载
-  if (allAuthList.value.length === 0) {
-    ElMessage.warning('请先获取授权清单数据');
-    return;
-  }
+// function exportauthorPDF(AuthorData) {
+//   // 确保数据已加载
+//   if (allAuthList.value.length === 0) {
+//     ElMessage.warning('请先获取授权清单数据');
+//     return;
+//   }
 
-  // 创建一个新的jsPDF实例
-  const pdf = new jsPDF('p', 'pt', 'a4');
+//   // 创建一个新的jsPDF实例
+//   const pdf = new jsPDF('p', 'pt', 'a4');
 
-  // 确保字体文件路径正确
-  pdf.addFont('src/assets/simsun.ttf', 'SimSun', 'normal');
-  pdf.setFont('SimSun', 'normal');
+//   // 确保字体文件路径正确
+//   pdf.addFont('src/assets/simsun.ttf', 'SimSun', 'normal');
+//   pdf.setFont('SimSun', 'normal');
 
-  pdf.setFontSize(20);
-  const title = '授权清单';
-  const titleWidth = pdf.getStringUnitWidth(title) + 80; // 计算标题宽度
-  const titleX = (pdf.internal.pageSize.getWidth() - titleWidth) / 2; // 计算标题X坐标使其居中
-  pdf.text(title, titleX, 20); // 标题居中
+//   pdf.setFontSize(20);
+//   const title = '授权清单';
+//   const titleWidth = pdf.getStringUnitWidth(title) + 80; // 计算标题宽度
+//   const titleX = (pdf.internal.pageSize.getWidth() - titleWidth) / 2; // 计算标题X坐标使其居中
+//   pdf.text(title, titleX, 20); // 标题居中
 
-  pdf.setFontSize(16);
-  const subTitles = ['被授权人ID', '姓名', '笔试考核', '操作视频考核', '授权状态'];
-  const dataStartY = 80; // 数据开始的Y坐标
-  const lineHeight = 20; // 每行数据的高度
-  const columnWidths = [130, 80, 100, 120, 100]; // 定义每列的宽度
-  const startX = 40; // 表格开始的X坐标
+//   pdf.setFontSize(16);
+//   const subTitles = ['被授权人ID', '姓名', '笔试考核', '操作视频考核', '授权状态'];
+//   const dataStartY = 80; // 数据开始的Y坐标
+//   const lineHeight = 20; // 每行数据的高度
+//   const columnWidths = [130, 80, 100, 120, 100]; // 定义每列的宽度
+//   const startX = 40; // 表格开始的X坐标
 
-  // 打印表头（子标题）
-  let currentX = startX;
-  subTitles.forEach((subTitle, index) => {
-    pdf.text(subTitle, currentX, dataStartY - lineHeight); // 子标题的Y坐标调整
-    currentX += columnWidths[index];
-  });
+//   // 打印表头（子标题）
+//   let currentX = startX;
+//   subTitles.forEach((subTitle, index) => {
+//     pdf.text(subTitle, currentX, dataStartY - lineHeight); // 子标题的Y坐标调整
+//     currentX += columnWidths[index];
+//   });
 
-  // 打印数据
-  AuthorData.forEach((item, index) => {
-    pdf.setFontSize(12);
-    const yPosition = dataStartY + index * lineHeight; // 数据的Y坐标
-    currentX = startX;
-    // 将数据按照列宽依次打印
-    [item.user_id, item.name, item.assessmentPaperStatus, item.assessmentPaperStatus, item.examination].forEach((data, idx) => {
-      pdf.text(String(data), currentX, yPosition);
-      currentX += columnWidths[idx];
-    });
-  });
+//   // 打印数据
+//   AuthorData.forEach((item, index) => {
+//     pdf.setFontSize(12);
+//     const yPosition = dataStartY + index * lineHeight; // 数据的Y坐标
+//     currentX = startX;
+//     // 将数据按照列宽依次打印
+//     [item.user_id, item.name, item.assessmentPaperStatus, item.assessmentPaperStatus, item.examination].forEach((data, idx) => {
+//       pdf.text(String(data), currentX, yPosition);
+//       currentX += columnWidths[idx];
+//     });
+//   });
 
-  // 保存PDF文件
-  pdf.save('授权清单.pdf');
-}
+//   // 保存PDF文件
+//   pdf.save('授权清单.pdf');
+// }
 
 
   // 获取培训清单
@@ -349,50 +349,79 @@ function exportauthorPDF(AuthorData) {
 
 
 // 导出培训清单为PDF
-function exportTrainPDF(allTrainListData) {
-  console.log('allTrainListData中的数据为：' + JSON.stringify(allTrainListData));
+// function exportTrainPDF(allTrainListData) {
+//   console.log('allTrainListData中的数据为：' + JSON.stringify(allTrainListData));
 
-  const pdf = new jsPDF('p', 'pt', 'a4');
+//   const pdf = new jsPDF('p', 'pt', 'a4');
 
-  // 确保字体文件路径正确
-  pdf.addFont('src/assets/simsun.ttf', 'SimSun', 'normal');
-  pdf.setFont('SimSun', 'normal');
+//   // 确保字体文件路径正确
+//   pdf.addFont('src/assets/simsun.ttf', 'SimSun', 'normal');
+//   pdf.setFont('SimSun', 'normal');
 
-  pdf.setFontSize(20);
-  const title = '培训清单';
-  const titleWidth = pdf.getStringUnitWidth(title) + 80; // 计算标题宽度
-  const titleX = (pdf.internal.pageSize.getWidth() - titleWidth) / 2; // 计算标题X坐标使其居中
-  pdf.text(title, titleX, 20); // 标题居中
+//   pdf.setFontSize(20);
+//   const title = '培训清单';
+//   const titleWidth = pdf.getStringUnitWidth(title) + 80; // 计算标题宽度
+//   const titleX = (pdf.internal.pageSize.getWidth() - titleWidth) / 2; // 计算标题X坐标使其居中
+//   pdf.text(title, titleX, 20); // 标题居中
 
-  pdf.setFontSize(16);
-  const subTitles = ['人员ID', '人员真实姓名', '人员联系方式', '培训情况', '考核状态', '授权状态'];
-  const dataStartY = 80; // 数据开始的Y坐标
-  const lineHeight = 20; // 每行数据的高度
-  const columnWidths = [60, 100, 120, 100, 100, 100]; // 定义每列的宽度
-  const startX = 40; // 表格开始的X坐标
+//   pdf.setFontSize(16);
+//   const subTitles = ['人员ID', '人员真实姓名', '人员联系方式', '培训情况', '考核状态', '授权状态'];
+//   const dataStartY = 80; // 数据开始的Y坐标
+//   const lineHeight = 20; // 每行数据的高度
+//   const columnWidths = [60, 100, 120, 100, 100, 100]; // 定义每列的宽度
+//   const startX = 40; // 表格开始的X坐标
 
-  // 打印表头（子标题）
-  let currentX = startX;
-  subTitles.forEach((subTitle, index) => {
-    pdf.text(subTitle, currentX, dataStartY - lineHeight); // 子标题的Y坐标调整
-    currentX += columnWidths[index];
-  });
+//   // 打印表头（子标题）
+//   let currentX = startX;
+//   subTitles.forEach((subTitle, index) => {
+//     pdf.text(subTitle, currentX, dataStartY - lineHeight); // 子标题的Y坐标调整
+//     currentX += columnWidths[index];
+//   });
 
-  // 打印数据
-  allTrainListData.forEach((item, index) => {
-    pdf.setFontSize(12);
-    const yPosition = dataStartY + index * lineHeight; // 数据的Y坐标
-    currentX = startX;
-    // 将数据按照列宽依次打印
-    [item.user_id, item.name, item.contact, item.training, item.examination, item.authorize].forEach((data, idx) => {
-      pdf.text(String(data), currentX, yPosition);
-      currentX += columnWidths[idx];
-    });
-  });
+//   // 打印数据
+//   allTrainListData.forEach((item, index) => {
+//     pdf.setFontSize(12);
+//     const yPosition = dataStartY + index * lineHeight; // 数据的Y坐标
+//     currentX = startX;
+//     // 将数据按照列宽依次打印
+//     [item.user_id, item.name, item.contact, item.training, item.examination, item.authorize].forEach((data, idx) => {
+//       pdf.text(String(data), currentX, yPosition);
+//       currentX += columnWidths[idx];
+//     });
+//   });
 
-  // 保存PDF文件
-  pdf.save('培训清单.pdf');
-}
+//   // 保存PDF文件
+//   pdf.save('培训清单.pdf');
+// }
+
+  // 导出学习情况清单
+  async function exportStudysheet(AuthorData) {
+    try {
+        const response = await axios({
+        url: baseurl + `/export_people_excel`,
+        method: 'get',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        responseType: 'blob' // 指定响应类型为blob
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        console.log("下载地址为：" + url);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', "学习情况清单.xlsx"); // 设置下载的文件名
+        document.body.appendChild(link);
+        link.click(); // 触发下载
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url); // 释放URL对象
+    } catch (error) {
+        console.error('导出Excel失败:', error);
+        ElMessage.error('导出Excel失败');
+    }
+  }
+
 </script>
 
 <style scoped>

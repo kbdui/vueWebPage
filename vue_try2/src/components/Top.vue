@@ -45,8 +45,11 @@ function loadUserData() {
 
 onMounted(loadUserData)
 
-const back = user_data.value.accountType === "Experimenters" ? ref('/entry') : ref('/supportentry')
-
+// 使用ref创建back并在mounted钩子中设置其值，确保其在刷新后不会改变
+const back = ref(''); // 初始化为一个空字符串
+onMounted(() => {
+    back.value = user_data.value.accountType === "Experimenters" ? '/entry' : '/supportentry';
+});
 const userAvatar = ref('https://example.com/avatar.jpg')
 
 const userInitials = computed(() => {

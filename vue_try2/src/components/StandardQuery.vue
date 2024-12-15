@@ -118,22 +118,14 @@ import { ElMessage,ElDialog } from 'element-plus'
 // import * as XLSX from 'xlsx'
 import * as XLSX from 'xlsx'
 import Top from './Top.vue'
-import { user_data,project_id,title,test_category } from '@/status'
+import {project_id,title,test_category,user_data } from '@/status'
 const router = useRouter()
 const baseurl = inject('baseurl')
 
-const userInfo = ref({
-  name: '张三',
-  username: 'zhangsan',
-  organization: 'ABC公司',
-  contact: 'zhangsan@example.com'
-})
 
 const userAvatar = ref('https://example.com/avatar.jpg')
-const userInitials = computed(() => {
-  return userInfo.value.name.slice(0, 2)
-})
-  
+
+ 
 function handleClick(projectId, standardNumber, projecttype, projectname) {
       project_id.value = projectId
       title.value = standardNumber +'  '+ projecttype +'  '+ projectname
@@ -147,11 +139,6 @@ function handleClick(projectId, standardNumber, projecttype, projectname) {
     }
 
 const fileInput = ref(null)
-
-const triggerFileUpload = () => {
-  fileInput.value.click()
-}
-
 const handleExcelUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
@@ -336,7 +323,7 @@ function onload(){
   const savedCategory = localStorage.getItem('test_category');
   if (savedCategory) {
     test_category.value = savedCategory; // Restore the selected category from localStorage
-    console.log("data", test_category.value);
+    console.log("data", savedCategory);
   }
 }
  onMounted(() => {

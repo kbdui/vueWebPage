@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-    import { ref, reactive } from 'vue'
+    import { ref, reactive,inject } from 'vue'
     import { useRouter } from 'vue-router'
     import { RouterLink } from 'vue-router'
     import { user_data } from '../status.js'
@@ -71,7 +71,7 @@
     // Vue.prototype.$axios = axios
 
     const isLogin = ref(true)
-
+    const baseurl = inject('baseurl')
     const router = useRouter()
     
     const loginForm = reactive({
@@ -94,7 +94,7 @@
 
     function handleSubmit2() {
       if (isLogin.value) {
-        axios.post('http://localhost:8080/login_msg', {
+        axios.post(baseurl + '/login_msg', {
           username: loginForm.username,
           password: loginForm.password
         },{
@@ -145,7 +145,7 @@
       } else {
         if(registerForm.account_type === '1') registerForm.account_type = "Experimenters"
         else registerForm.account_type = "Supportstaff"
-        axios.post('http://localhost:8080/sign_msg', {
+        axios.post(baseurl + '/sign_msg', {
           username: registerForm.username,
           password: registerForm.password,
           name : registerForm.realName,
@@ -190,7 +190,7 @@
       try {
         if (isLogin.value) {
           // 登录逻辑
-          const response = await axios.post("http://localhost:8080/login_msg",{
+          const response = await axios.post(baseurl + "/login_msg",{
               username : loginForm.username,
               password : loginForm.password
             },{

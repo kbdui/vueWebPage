@@ -106,7 +106,7 @@
             </div>
           </div>
         </div>
-      <el-button type="warning" size="medium" @click="fetchOngoingTest">对比试验管理</el-button>
+      <el-button style="margin-top: 1rem;" type="warning" size="medium" @click="fetchOngoingTest">对比试验管理</el-button>
       <el-dialog
         v-model="dialogVisible"
         title="对比实验管理"
@@ -382,6 +382,7 @@ async function downloadComparison() {
     ElMessage.error('下载文件失败，请重试');
   }
 }
+
 //上传操作规程方法
 function customRequest(options) {
       const { file, onProgress, onSuccess, onError } = options;

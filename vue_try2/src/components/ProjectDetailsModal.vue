@@ -43,8 +43,10 @@
   </template>
   
   <script setup>
-  import { ref, watch,onMounted } from 'vue'
+  import { ref, watch, onMounted, inject } from 'vue'
   import axios from 'axios'
+
+  const baseUrl = inject('baseUrl')
   
   const props = defineProps({
     project: {
@@ -69,7 +71,7 @@
   // 获取该项目正在进行的对比实验人员信息
   const allpeoples = ref([])
   function getPeoples() {
-    axios.post('http://localhost:8080/show_project_test_ongoing',{
+    axios.post(baseUrl + '/show_project_test_ongoing',{
         project_id : props.project.project.projectid
     },{
     headers: {

@@ -59,13 +59,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 
 const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(5)
+const baseurl = inject('baseurl')
 
 // Sample data - replace with actual API call results
 const searchResults = ref({
@@ -75,7 +76,7 @@ const searchstate = ref(true)
 function search() {
   if (searchstate.value) {
     // 如果后端接口支持GET请求带参数，使用params传递
-    axios.get('http://localhost:8080/all_project', {
+    axios.get(baseurl + '/all_project', {
       params: searchResults.data
     })
     .then(function (response) {

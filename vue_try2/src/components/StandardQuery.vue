@@ -323,7 +323,7 @@ function onload(){
   const savedCategory = localStorage.getItem('test_category');
   if (savedCategory) {
     test_category.value = savedCategory; // Restore the selected category from localStorage
-    console.log("data", savedCategory);
+    console.log("data", test_category.value);
   }
 }
  onMounted(() => {

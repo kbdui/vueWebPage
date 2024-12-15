@@ -127,29 +127,24 @@ projectName: ''//项目名称
   });
   }
   // 计算属性，检查类别是否唯一
-  const  uniqueCategories = computed(() => {
-    const categoriesSet = new Set();
-    projectData.value.forEach(project => {
-      if (project.categories) {
-      categoriesSet.add(project.categories);
-      }
-    });
-    console.log("projectData",projectData.value)
-    console.log("categoriesSet",categoriesSet)
-    return Array.from(categoriesSet);
+  const uniqueCategories = computed(() => {
+  const categoriesSet = new Set();
+  paginatedProjects.value.forEach(project => {
+    categoriesSet.add(project.categories);
   });
+  return Array.from(categoriesSet);
+});
+const paginatedProjects = computed(() => {
+// 首先，如果存在搜索查询，则过滤项目
+let filteredProjects = searchQuery.value
+  ? projectData.value.filter(project => project.projectname.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  : projectData.value;
 
-  const paginatedProjects = computed(() => {
-  // 首先，如果存在搜索查询，则过滤项目
-  let filteredProjects = searchQuery.value
-    ? projectData.value.filter(project => project.projectname.toLowerCase().includes(searchQuery.value.toLowerCase()))
-    : projectData.value;
-  
-  // 然后，进行分页
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredProjects ? filteredProjects.slice(start, end) : [];
-  });
+// 然后，进行分页
+const start = (currentPage.value - 1) * pageSize.value;
+const end = start + pageSize.value;
+return filteredProjects.slice(start, end);
+});
     const handleSearch = () => {
       ElMessage.success('执行搜索: ' + searchQuery.value)
     }

@@ -1,4 +1,3 @@
-
 <template>
   <div class="standards-container">
     <Top></Top>
@@ -12,29 +11,21 @@
       >
       </el-input>
       <el-button type="primary" @click="handleSearch" >搜索</el-button>
-      <!-- <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button> -->
-    </div>
-    <div id="buttonGroup24">
-      <div id="left24">
-        <el-button type="primary" @click="openAddApplicationDialog">添加</el-button>
-        <el-button type="success" @click="handleExcelUpload">从excel统计表导入</el-button>
-        <!-- <el-button type="success" @click="showApplicationsDialog">查看增加申请</el-button> -->
-      </div>
+      <el-button type="primary" @click="openAddApplicationDialog">增加申请</el-button>
+      <!-- <el-button type="primary" @click="handleExcelUpload">导入Excel</el-button> -->
     </div>
     <div class="standards-list">
       <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
         <div v-if="projects.length === 0">没有项目数据</div>
-    
-        <router-link to="/supportDetails/" class="action-button" 
-          @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.projectname)" 
-        >
-          <strong>项目名称：</strong> {{ project.projectname }}
-        </router-link>
+          <router-link to="/details/" class="action-button"
+           @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.projectname)"
+          >
+            <strong>项目名称：</strong> {{ project.projectname }}
+          </router-link>
           <p><strong>项目ID：</strong>{{ project.projectid }}</p>
           <p><strong>类别：</strong>{{ project.categories }}</p>
           <p><strong>项目时间：</strong>{{ project.projecttime }}</p>
           <p><strong>项目类型：</strong>{{ project.projecttype }}</p> 
-
       </div>
     </div>
   </div>
@@ -119,104 +110,107 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
+import {reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
 import axios from 'axios'
 import { ElMessage,ElDialog } from 'element-plus'
-import { project_id, title ,selected_category} from '@/status';
-import * as XLSX from 'xlsx';
 // import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx'
 import Top from './Top.vue'
+import {project_id,title,test_category,user_data } from '@/status'
 const router = useRouter()
+const baseurl = inject('baseurl')
 
-const userInfo = ref({
-name: '张三',
-username: 'zhangsan',
-organization: 'ABC公司',
-contact: 'zhangsan@example.com'
-})
 
 const userAvatar = ref('https://example.com/avatar.jpg')
-const userInitials = computed(() => {
-return userInfo.value.name.slice(0, 2)
-})
-// function handleClick(projectId, standardNumber, projecttype, projectname) {
-//       project_id.value = projectId
-//       title.value = standardNumber +'  '+ projecttype +'  '+ projectname
-//       saveData()
-//       console.log("project_id:",project_id.value)
-//     }
-// const handleExcelUpload = (event) => {
-// const file = event.target.files[0];
-// if (file) {
-//   const reader = new FileReader();
-//   reader.onload = (e) => {
-//     const data = new Uint8Array(e.target.result);
-//     const workbook = XLSX.read(data, { type: 'array' });
-//     const firstSheetName = workbook.SheetNames[0];
-//     const worksheet = workbook.Sheets[firstSheetName];
-//     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-//     // 移除标题行
-//     const importedData = jsonData.slice(1);
 
-//     // 将导入的数据添加到allStandards数组中
-//     allStandards.value = [...allStandards.value, ...importedData.map((item) => ({
-//       id: item[4], // 假设项目名称是ID
-//       title: `${item[0]} ${item[2]}`, // 大类 + 标准名称
-//       note: item[4], // 项目名称作为备注
-//       link: `/details/${item[4]}` // 链接格式
-//     }))];
+function handleClick(projectId, standardNumber, projecttype, projectname) {
+    project_id.value = projectId
+    title.value = standardNumber +'  '+ projecttype +'  '+ projectname
+    saveData()
+    console.log("project_id:",project_id.value)
+  }
 
-//     ElMessage.success('Excel文件导入成功');
-//   };
-//   reader.readAsArrayBuffer(file);
-// }
-// };
-console.log("category为",selected_category.value)
+  function saveData() {
+      localStorage.setItem('project_id', JSON.stringify(project_id.value))
+      localStorage.setItem('title', JSON.stringify(title.value))
+  }
+
+const fileInput = ref(null)
+const handleExcelUpload = async (event) => {
+const file = event.target.files[0]
+if (!file) return
+
+const formData = new FormData()
+formData.append('file', file)
+
+try {
+  const response = await axios.post(baseurl + '/gen_project_by_excel', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+  if (response.data.data === true) {
+    ElMessage.success('Excel导入成功')
+    // Refresh the project list
+    search()
+  } else {
+    ElMessage.error('Excel导入失败')
+  }
+} catch (error) {
+  console.error('Excel上传错误:', error)
+  ElMessage.error('Excel上传失败')
+}
+
+// Clear the file input
+event.target.value = ''
+}
+
 const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(5)
 const projects = ref([])
 const projectData = ref([])
-  const baseurl = inject('baseurl')
+console.log("test_category为",test_category.value)
 function search() {
 axios.get(baseurl + '/all_project')
 .then(function (response) {
-  // 确保响应数据是一个对象
-  if (typeof response.data === 'object' && response.data !== null) {
-    // 提取对象的所有值到数组中
-    projects.value = Object.values(response.data)
-    console.log('projects data:', projects.value)
-    // 检查数组中是否有至少两个元素
-    if (projects.value.length > 1) {
-      // 获取第二个元素，即 projects[1]，并根据category筛选
-      let filteredData = projects.value[1].filter(project => 
-        project.categories === selected_category.value
-      );
-      projectData.value = filteredData;
-      console.log('Filtered projects data:', projectData)
-    } else {
-      console.error('Expected at least two elements in the array, but got:', projects.value);
-    }
+// 确保响应数据是一个对象
+if (typeof response.data === 'object' && response.data !== null) {
+  // 提取对象的所有值到数组中
+  projects.value = Object.values(response.data)
+  console.log('projects data:', projects.value)
+  // 检查数组中是否有至少两个元素
+  if (projects.value.length > 1) {
+    // 获取第二个元素，即 projects[1]，并根据category筛选
+    let filteredData = projects.value[1].filter(project => 
+      project.categories === test_category.value
+    );
+    projectData.value = filteredData;
+    console.log('Filtered projects data:', projectData)
   } else {
-    console.error('Expected an object, but got:', response.data);
+    console.error('Expected at least two elements in the array, but got:', projects.value);
   }
+} else {
+  console.error('Expected an object, but got:', response.data);
+}
 })
 .catch(function (error) {
-  console.error('Error:', error);
+console.error('Error:', error);
 });
 }
 const paginatedProjects = computed(() => {
 // 首先，如果存在搜索查询，则过滤项目
-let filteredProjects = searchQuery.value && projectData.value
+let filteredProjects = searchQuery.value
   ? projectData.value.filter(project => project.projectname.toLowerCase().includes(searchQuery.value.toLowerCase()))
   : projectData.value;
 
 // 然后，进行分页
 const start = (currentPage.value - 1) * pageSize.value;
 const end = start + pageSize.value;
-return filteredProjects ? filteredProjects.slice(start, end) : [];
+return filteredProjects.slice(start, end);
 });
 // 假设的申请信息数组
 const applications = ref([
@@ -245,6 +239,7 @@ ElMessage.success('申请已同意')
 // 将申请信息添加到标准列表中
 // ...
 }
+
 // 处理不同意申请的方法
 const handleRejectApplication = (application) => {
 application.status = '已拒绝'
@@ -258,18 +253,15 @@ applicationDialogVisible.value = true
 }
 const addApplicationDialogVisible = ref(false)
 const applicationForm = ref({
-categories: '',//大类
-subCategory: '',//类别
-standardName: '',//标准名称
-standardNumber: '',//标准编号
-projectName: ''//项目名称
+category: '',
+subCategory: '',
+standardName: '',
+standardNumber: '',
+projectName: ''
 })
 const handleCommand = (command) => {
 if (command === 'logout') {
-  // Implement logout logic here
   ElMessage.success('退出登录成功')
-  // You would typically clear user session and redirect to login page
-  // router.push('/login')
 }
 else if(command === 'jumpToHomepage2'){
     router.push('/MessageofPersonP40')
@@ -280,28 +272,28 @@ else if(command === 'jumpToHomepage2'){
 
 const handleAddApplication = () => {
 const formData = new FormData();
-formData.append('categories', applicationForm.value.subCategory);
-formData.append('project_type', applicationForm.value.categories);
+formData.append('categories', applicationForm.value.categories);
+formData.append('project_type', applicationForm.value.subCategory);
 // formData.append('standardName', applicationForm.value.standardName);
 formData.append('standard_number', applicationForm.value.standardNumber);
 formData.append('project_name', applicationForm.value.projectName);
 console.log("formDasdsdsdta",applicationForm.value.standardNumber)
 axios.post(baseurl + '/get_new_project', formData, {
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  }
+headers: {
+  'Content-Type': 'application/x-www-form-urlencoded'
+}
 })
 .then(response => {
-  if (response.data.data) {
-    ElMessage.success('申请已成功提交');
-    search()
-  } else {
-    ElMessage.error('申请提交失败: ' + response.data.message);
-  }
+if (response.data.data) {
+  ElMessage.success('申请已成功提交');
+  search()
+} else {
+  ElMessage.error('申请提交失败: ' + response.data.message);
+}
 })
 .catch(error => {
-  console.error('申请提交错误:', error);
-  ElMessage.error('申请提交过程中发生错误');
+console.error('申请提交错误:', error);
+ElMessage.error('申请提交过程中发生错误');
 });
 console.log('Application data:', applicationForm.value)
 // For demonstration, we'll just show a success message
@@ -311,106 +303,33 @@ handleCloseDialog()
 
 const  openAddApplicationDialog = () => {
 addApplicationDialogVisible.value = true
-
 }
 
 const handleCloseDialog = () => {
 addApplicationDialogVisible.value = false
+
 }
 
-  
-function handleClick(projectId, standardNumber, projecttype, projectname) {
-      project_id.value = projectId
-      title.value = standardNumber +'  '+ projecttype +'  '+ projectname
-      saveData()
-      console.log("project_id:",project_id.value)
-    }
-
-    function saveData() {
-        localStorage.setItem('project_id', JSON.stringify(project_id.value))
-        localStorage.setItem('title', JSON.stringify(title.value))
-    }
-
-const fileInput = ref(null)
-
-const triggerFileUpload = () => {
-  fileInput.value.click()
-}
-
-const handleExcelUpload = async () => {
-  // 创建文件选择器
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.xlsx,.xls';
-  input.style.display = 'none';
-  document.body.appendChild(input);
-
-  input.click();
-  input.onchange = async (event) => {
-    const file = event.target.files[0];
-    if (!file) {
-      ElMessage.error('未选择文件');
-      document.body.removeChild(input);
-      return;
-    }
-
-    // 检查文件类型
-    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      ElMessage.error('请上传Excel文件(.xlsx或.xls格式)');
-      document.body.removeChild(input);
-      return;
-    }
-
-    try {
-      // 创建FormData对象
-      const formData = new FormData();
-      
-      // 直接将文件添加到FormData中
-      formData.append('file', file);
-
-      // 使用FormData对象上传文件
-      const response = await axios.post(baseurl + '/gen_project_by_excel', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data.data === true) {
-        ElMessage.success('Excel导入成功');
-        search(); // 刷新数据
-      } else {
-        ElMessage.error('Excel导入失败: ' + response.data.message);
-        console.log(response.data);
-      }
-    } catch (uploadError) {
-      console.error('Excel上传错误:', uploadError);
-      ElMessage.error('Excel上传失败: ' + uploadError.message);
-    } finally {
-      document.body.removeChild(input);
-    }
-  };
-}
 const handleSearch = () => {
-  // Implement search logic here
-  console.log('Searching for:', searchQuery.value);
+// Implement search logic here
+console.log('Searching for:', searchQuery.value);
 };
 
 const handlePageChange = (newPage) => {
-  currentPage.value = newPage;
-  // 可以在这里添加逻辑，比如重新获取数据或者更新视图
+currentPage.value = newPage;
+// 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
-
 function onload(){
-  const savedCategory = localStorage.getItem('selected_category');
-  if (savedCategory) {
-    selected_category.value = savedCategory; // Restore the selected category from localStorage
-    console.log("data", selected_category.value);
-  }
+const savedCategory = localStorage.getItem('test_category');
+if (savedCategory) {
+  test_category.value = savedCategory; // Restore the selected category from localStorage
+  console.log("data", savedCategory);
 }
-// const handleRowClick = (row) => {
+}
 onMounted(() => {
 search()
 onload()
+
 })
 </script>
 <style scoped>
@@ -441,5 +360,4 @@ display: flex;
 justify-content: center;
 margin-top: 20px;
 }
-
 </style>

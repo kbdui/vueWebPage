@@ -25,11 +25,11 @@
       <!-- 人模块的留言 -->
       <el-tab-pane label="人员" name="Offiers">
         <!-- Action Buttons -->
-        <!-- <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+        <div class="action-buttons40">
+          <el-button type="success" @click="exportToExcel">
             导出增加内容提醒清单
           </el-button>
-        </div> -->
+        </div>
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -70,11 +70,11 @@
       <!-- 机模块的留言 -->
       <el-tab-pane label="设备" name="equipment">
         <!-- Action Buttons -->
-        <!-- <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+        <div class="action-buttons40">
+          <el-button type="success" @click="exportToExcel">
             导出增加内容提醒清单
           </el-button>
-        </div> -->
+        </div>
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -115,11 +115,11 @@
       <!-- 法模块的留言 -->
       <el-tab-pane label="规程" name="Stander">
         <!-- Action Buttons -->
-        <!-- <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+        <div class="action-buttons40">
+          <el-button type="success" @click="exportToExcel">
             导出增加内容提醒清单
           </el-button>
-        </div> -->
+        </div>
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -160,11 +160,11 @@
       <!-- 料模块的留言 -->
       <el-tab-pane label="物料" name="Sample">
         <!-- Action Buttons -->
-        <!-- <div class="action-buttons">
-          <el-button type="success" @click="exportToPDF">
+        <div class="action-buttons40">
+          <el-button type="success" @click="exportToExcel">
             导出增加内容提醒清单
           </el-button>
-        </div> -->
+        </div>
         <!-- Message List -->
         <div class="message-list">
           <el-card
@@ -326,53 +326,81 @@ const handleSelect1 = (key) => {
 };
 
 // pdf导出代码(乱码)
-const exportToPDF = () => {
+// const exportToPDF = () => {
+//   try {
+//     const doc = new jsPDF();
+
+//     const fontName = "宋体";
+
+//     doc.setFont(fontName, 'bold');
+//     doc.setFontSize(16);
+//     doc.text('对比测试清单', 20, 20);
+//     doc.setFont(fontName, 'normal');
+//     doc.setFontSize(12);
+
+//     let yPosition = 25; // 从25开始，为标题留出空间
+//     messages.value.forEach((message, index) => {
+//       doc.text(`留言编号：${message.messageid}`, 20, yPosition);
+//       yPosition += 10; // 移动到下一行
+
+//       doc.text(`留言时间：${message.messagetime}`, 20, yPosition);
+//       yPosition += 10; // 移动到下一行
+
+//       doc.text(`留言人：${message.accountid}`, 20, yPosition);
+//       yPosition += 10; // 移动到下一行
+
+//       doc.text(`留言项目：${message.projectid}`, 20, yPosition);
+//       yPosition += 10; // 移动到下一行
+
+//       doc.text(`留言内容：${message.message}`, 20, yPosition);
+//       yPosition += 10; // 移动到下一行，为下一条留言留出空间
+//     });
+
+//     // 保存 PDF
+//     doc.save('对比测试清单.pdf');
+
+//     // 显示成功消息
+//     ElMessage({
+//       message: 'PDF导出成功！',
+//       type: 'success'
+//     });
+//   } catch (error) {
+//     // 显示错误消息
+//     ElMessage({
+//       message: '导出失败，请重试',
+//       type: 'error'
+//     });
+//     console.error('PDF export error:', error);
+//   }
+// };
+
+// 导出添加内容提醒清单
+async function exportToExcel() {
   try {
-    const doc = new jsPDF();
+      const response = await axios({
+      url: baseurl + `/export_message_excel`,
+      method: 'get',
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      responseType: 'blob' // 指定响应类型为blob
+      });
 
-    const fontName = "宋体";
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      console.log("下载地址为：" + url);
 
-    doc.setFont(fontName, 'bold');
-    doc.setFontSize(16);
-    doc.text('对比测试清单', 20, 20);
-    doc.setFont(fontName, 'normal');
-    doc.setFontSize(12);
-
-    let yPosition = 25; // 从25开始，为标题留出空间
-    messages.value.forEach((message, index) => {
-      doc.text(`留言编号：${message.messageid}`, 20, yPosition);
-      yPosition += 10; // 移动到下一行
-
-      doc.text(`留言时间：${message.messagetime}`, 20, yPosition);
-      yPosition += 10; // 移动到下一行
-
-      doc.text(`留言人：${message.accountid}`, 20, yPosition);
-      yPosition += 10; // 移动到下一行
-
-      doc.text(`留言项目：${message.projectid}`, 20, yPosition);
-      yPosition += 10; // 移动到下一行
-
-      doc.text(`留言内容：${message.message}`, 20, yPosition);
-      yPosition += 10; // 移动到下一行，为下一条留言留出空间
-    });
-
-    // 保存 PDF
-    doc.save('对比测试清单.pdf');
-
-    // 显示成功消息
-    ElMessage({
-      message: 'PDF导出成功！',
-      type: 'success'
-    });
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', "添加内容提醒清单.xlsx"); // 设置下载的文件名
+      document.body.appendChild(link);
+      link.click(); // 触发下载
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // 释放URL对象
   } catch (error) {
-    // 显示错误消息
-    ElMessage({
-      message: '导出失败，请重试',
-      type: 'error'
-    });
-    console.error('PDF export error:', error);
+      console.error('导出Excel失败:', error);
+      ElMessage.error('导出Excel失败');
   }
-};
+}
 </script>  
 
 <style scoped>
@@ -402,10 +430,10 @@ const exportToPDF = () => {
   }
   
 
-  .action-buttons {
+  .action-buttons40 {
     font-size: 18px;
     margin-bottom: 15px;
-
+    margin-left: 1.5rem;
   }
   
   .message-tabs {

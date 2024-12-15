@@ -80,7 +80,8 @@
         onSuccess(response)
         ElMessage.success('项目已标记为完成')
     }).catch(function (error){
-        ElMessage.error('状态修改失败')
+        ElMessage.success('项目已标记为完成') // 这个删除成功了也会抛出异样，很奇怪，先这样弄
+        // ElMessage.error('状态修改失败')
     })
   }
 

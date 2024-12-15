@@ -28,8 +28,7 @@
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div class="bg-white p-6 rounded-lg shadow">
         <div class="flex justify-between items-center mb-4">
-          <p class="text-gray-600">(6/10) 若要检测本项目，可能用到以下设备</p>
-          <el-button type="primary" @click="dialogVisible = true">
+          <el-button id="add_equipment" type="primary" @click="dialogVisible = true">
             添加记录
           </el-button>
         </div>
@@ -74,7 +73,7 @@
               <div class="equipment-content">
                 <div class="equipment-image" @click="handleUploadPicture(item)">
                   <el-image
-                    :src="item.picture_url"
+                    :src=item.picture_url
                     fit="cover"
                     :fallback="'/placeholder.svg?height=200&width=200'"
                   >
@@ -85,7 +84,7 @@
                       </div>
                     </template>
                   </el-image>
-                  <el-tag size="small" type="success" class="image-tag">专入照片</el-tag>
+                  <el-tag size="small" type="success" class="image-tag">传入照片</el-tag>
                 </div>
                 
                 <div class="equipment-info">
@@ -111,13 +110,13 @@
                     >
                       PDF添加(点击后添加pdf)
                     </el-link>
-                    <el-link
+                    <!-- <el-link
                       type="primary"
                       class="pdf-link"
                       @click="viewPdf(item)"
                     >
                      查看pdf(点击后查看pdf)
-                    </el-link>
+                    </el-link> -->
                     <div class="quantity-section">
                       <span class="quantity-label">需求数量</span>
                       <el-input-number
@@ -300,23 +299,44 @@ const handleUploadPicture = (item) => {
                 console.log(error)
             })
  }
- function getallequipments()
- {
+ function getallequipments() {
     axios.post(baseurl + '/schemes_by_equipment',{
-      equipment_id : equipment_id.value
- },
- {
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  }
- }).then(function(response){
-   equipmentDetails.value=response.data.data
-  // console.log(response.data.data)
-  // console.log(equipmentDetails.value)
- }).catch(function(error){
-  console.log(error)
- })
+          equipment_id : equipment_id.value
+    },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(function(response){
+      equipmentDetails.value=response.data.data
+      // console.log(response.data.data)
+      // console.log(equipmentDetails.value)
+    }).catch(function(error){
+      console.log(error)
+    })
 }
+
+async function convertImgUrl() {
+  for(let i = 0; i < equipmentDetails.value.length; i++) {
+    try {
+        const fullFileName =  decodeURIComponent(equipmentDetails.value[i].picture_url);
+        const response = await axios({
+        url: baseurl + `/download`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data: `fileName=${fullFileName}`, // 传递完整的文件名
+        responseType: 'blob' // 指定响应类型为blob
+        });
+        equipmentDetails.value[i].picture_url = window.URL.createObjectURL(new Blob([response.data]));
+        console.log("图片地址转换成功：" + equipmentDetails.value[i].picture_url);
+    } catch (error) {
+        // ElMessage.error('获取图片失败');
+    }
+  }
+}
+
 const pdfUrl = ref(''); // Add a ref to store the PDF URL
 
 async function getPdfUrl(item) { // New function to get the PDF URL
@@ -400,11 +420,14 @@ function saveequipmentid() {
 
 const showDetails = (row) => {
   selectedEquipment.value = row 
-   equipment_id.value=row.equipmentid
-   saveequipmentid() 
-   console.log("equipment_id是",equipment_id.value)
-  detailsVisible.value = true
+  equipment_id.value=row.equipmentid
+  saveequipmentid() 
+  // console.log("equipment_id是",equipment_id.value)
   getallequipments()
+  setTimeout(() => {
+    convertImgUrl()
+  },500)
+  detailsVisible.value = true
 }
 function handleSubmition() {
   newmachinename.value=form.value.name
@@ -504,6 +527,11 @@ onMounted(() => {
 <style scoped>
 .header {
   margin-bottom: 20px;
+}
+
+#add_equipment {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .back-section {

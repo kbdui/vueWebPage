@@ -29,15 +29,14 @@
           <h2>规程操作</h2>
 
           <el-upload
-    class="upload-demo"
-    action="/api/upload"
-    :on-change="handleChange"
-    :show-file-list="false"
-    :http-request="customRequest"
-  >
+            class="upload-demo"
+            action="/api/upload"
+            :on-change="handleChange"
+            :show-file-list="false"
+            :http-request="customRequest"
+          >
     <el-button type="success" size="small">导入</el-button>
   </el-upload>
-          
         </div>
   
         <div class="procedures-list">
@@ -70,7 +69,18 @@
       <div class="section">
         <div class="section-header">
           <h2>对比实验</h2>
-            <el-button type="success" size="small">导入</el-button>
+          
+          <el-upload
+            class="upload-demo"
+            action="/api/upload"
+            :on-change="handleChange"
+            :show-file-list="false"
+            :http-request="UploadComparision"
+          > <el-button type="success" size="small">导入</el-button>
+        </el-upload>
+
+
+           
         </div>
   
         <div class="comparison-list">
@@ -134,7 +144,7 @@ import TopMessage from './son_components/topMessage.vue';
 const procedures = ref([]);
 const comparisonFiles = ref([]);
 const tmp = ref([]);
-const tmp_com = ref([]);
+const tmp_com = ref();
 const baseurl = inject('baseurl')
 //pdf文件应该都放在相对应的projectid文件夹下的子文件夹才能正确访问到，并且projectid文件夹下应该包含两个文件夹，
 // 分别存放操作规程和对比实验文件
@@ -151,8 +161,6 @@ function loadProjectId() {
       // console.log(project_id.value);
   }
 }
-
-
 const dialogVisible = ref(false);
 const date = ref(''); // 用于存储对比实验首次被申请的时间
 const userAccountList = ref([]); // 用于存储申请人员表的数据
@@ -201,7 +209,7 @@ const handleClose = (done) => {
 // 标记对比实验为已完成
 async function markTestAsComplete() {
   try {
-    const response = await axios.post(baseurl + '/finish_test', 
+    const response = await axios.post(baseurl + '/finish_test_by_project_id', 
       `project_id=${project_id.value}`, 
       {
         headers: {
@@ -404,6 +412,65 @@ function customRequest(options) {
       });
     }
 
+
+// //上传对比试验方法
+// function UploadComparision(options) {
+//       const { file, onProgress, onSuccess, onError } = options;
+
+//       const formData = new FormData();
+//       formData.append('project_id', project_id.value);
+//       formData.append('file', file);
+//       console.log("上传的文件名为：" + file.name);
+//       axios({
+//         method: 'post',
+//         url: baseurl + '/upload_compare_plan',
+//          // 后端接口URL
+//         data: formData,
+//         headers: {
+//           'Content-Type': 'application/x-www-form-urlencoded'
+//         },
+//         onUploadProgress: progressEvent => {
+//           onProgress(progressEvent);
+//         }
+//       })
+//       .then(response => {
+//         onSuccess(response);
+//         ElMessage.success('文件上传成功');
+//       })
+//       .catch(error => {
+//         onError(error);
+//         ElMessage.error('文件上传失败，请重试');
+//       });
+//     }
+function UploadComparision(options) {
+  const { file, onProgress, onSuccess, onError } = options;
+
+  // 创建 FormData 对象并添加文件和项目ID
+  const formData = new FormData();
+  formData.append('project_id', project_id.value); // 假设 project_id 是一个响应式变量或可访问的变量
+  formData.append('file', file); // 'file' 是后端期望的字段名
+
+  // 使用 axios 发送 POST 请求
+  axios({
+    method: 'post',
+    url: baseurl+'/upload_compare_plan', // 后端接口URL
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'  // 让 axios 自动设置 Content-Type
+    },
+    onUploadProgress: progressEvent => {
+      onProgress(progressEvent); // 调用 onProgress 更新上传进度
+    }
+  })
+  .then(response => {
+    onSuccess(response); // 上传成功，调用 onSuccess
+    ElMessage.success('文件上传成功'); // 显示成功消息
+  })
+  .catch(error => {
+    onError(error); // 上传失败，调用 onError
+    ElMessage.error('文件上传失败，请重试'); // 显示错误消息
+  });
+}
 // 删除PDF文件的函数
 function deletePdf(index) {
   // 获取要删除的文件信息
@@ -469,12 +536,6 @@ function deleteComparison() {
   const filepath_ = decodeURIComponent(filename);
   const tmp = baseurl + "/files/";
   const filepathWithoutPrefix = filepath_.replace(tmp, "");
-
-  // // 在文件名前加上 # 号，形成 /#文件名 的格式
-  // const filepathWithHash = "/" + "#" + filepathWithoutPrefix;
-  // // 使用绝对地址才能删除
-  // const Path=project_id.value + filepathWithHash;
-  // console.log("删除的文件路径为：" + Path);
 
   new Promise((resolve, reject) => {
     const confirmed = confirm('此操作将永久删除该文件, 是否继续?');

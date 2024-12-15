@@ -24,7 +24,11 @@
         <div class="standards-list">
           <div v-if="paginatedProjects.length === 0">没有项目数据</div>
           <div v-for="category in uniqueCategories" :key="category">
-            <router-link to="/supportStandardQuery" @click=saveCategory(category) class="action-button"><p>{{ category }}</p></router-link>
+            <router-link to="/supportStandardQuery" @click="saveCategory(category)" class="action-button">
+              <div class="category-button">
+                {{ category }}
+              </div>
+            </router-link>
           </div>
         </div>
       </div>
@@ -125,7 +129,7 @@ projectName: ''//项目名称
   // 计算属性，检查类别是否唯一
   const  uniqueCategories = computed(() => {
     const categoriesSet = new Set();
-    paginatedProjects.value.forEach(project => {
+    projectData.value.forEach(project => {
       if (project.categories) {
       categoriesSet.add(project.categories);
       }
@@ -313,6 +317,10 @@ handleCloseDialog()
     .action-button {
       background-color: #67c23a;
       border-color: #67c23a;
+     display: flex;
+     color: green;
+     padding: 10px 20px;
+     background-color: white;
     }
     
     .action-button:hover {

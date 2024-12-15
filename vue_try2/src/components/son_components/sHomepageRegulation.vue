@@ -70,8 +70,8 @@
 
   const completeProject = (row) => {
     row.projectTest.state = 'Finish'
-    axios.post(baseurl + '/finish_test', {
-      project_id: row.projectTest.testid
+    axios.post(baseurl + '/finish_test_by_test_id', {
+      test_id: row.projectTest.testid
     },{
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -93,44 +93,72 @@
     showDetailsModal.value = false
     selectedProject.value = null
   }
-  const exportList = () => {
-    const tempDiv = document.createElement('div')
-    tempDiv.className = 'pdf-content'
+  // const exportList = () => {
+  //   const tempDiv = document.createElement('div')
+  //   tempDiv.className = 'pdf-content'
 
-    allProjects.value.forEach(item => {
-      const listDiv = document.createElement('div')
-      listDiv.innerHTML = `
-        <h2>对比测试清单</h2>
-        <div class="list-info">
-          <h3>项目基本信息：</h3>
-          <p>项目编号：${item.projectTest.testid}</p>
-          <p>项目类别：${item.project.categories}</p>
-          <p>项目类型：${item.project.projecttype}</p>
-          <p>项目名称：${item.project.projectname}</p>
-          <p>项目状态：${item.projectTest.state}</p>
-        </div>
-        <hr>
-      `
-      tempDiv.appendChild(listDiv)
-    })
+  //   allProjects.value.forEach(item => {
+  //     const listDiv = document.createElement('div')
+  //     listDiv.innerHTML = `
+  //       <h2>对比测试清单</h2>
+  //       <div class="list-info">
+  //         <h3>项目基本信息：</h3>
+  //         <p>项目编号：${item.projectTest.testid}</p>
+  //         <p>项目类别：${item.project.categories}</p>
+  //         <p>项目类型：${item.project.projecttype}</p>
+  //         <p>项目名称：${item.project.projectname}</p>
+  //         <p>项目状态：${item.projectTest.state}</p>
+  //       </div>
+  //       <hr>
+  //     `
+  //     tempDiv.appendChild(listDiv)
+  //   })
 
-    document.body.appendChild(tempDiv)
+  //   document.body.appendChild(tempDiv)
 
-    const opt = {
-      margin: 1,
-      filename: '对比测试清单.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  //   const opt = {
+  //     margin: 1,
+  //     filename: '对比测试清单.pdf',
+  //     image: { type: 'jpeg', quality: 0.98 },
+  //     html2canvas: { scale: 2 },
+  //     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  //   }
+
+  //   html2pdf().set(opt).from(tempDiv).save().then(() => {
+  //     document.body.removeChild(tempDiv)
+  //     ElMessage({
+  //       type: 'success',
+  //       message: 'PDF导出成功',
+  //     })
+  //   })
+  // }
+
+  // 导出对比测试清单Excel
+  async function exportList() {
+    try {
+        const response = await axios({
+        url: baseurl + `/export_compare_plan_excel`,
+        method: 'get',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        responseType: 'blob' // 指定响应类型为blob
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        console.log("下载地址为：" + url);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', "对比测试清单.xlsx"); // 设置下载的文件名
+        document.body.appendChild(link);
+        link.click(); // 触发下载
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url); // 释放URL对象
+    } catch (error) {
+        console.error('导出Excel失败:', error);
+        ElMessage.error('导出Excel失败');
     }
-
-    html2pdf().set(opt).from(tempDiv).save().then(() => {
-      document.body.removeChild(tempDiv)
-      ElMessage({
-        type: 'success',
-        message: 'PDF导出成功',
-      })
-    })
   }
 
   // 获取所有对比实验

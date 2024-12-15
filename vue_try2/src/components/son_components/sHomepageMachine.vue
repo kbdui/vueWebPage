@@ -4,7 +4,7 @@
     <el-button 
         type="success" 
         class="export-btn"
-        @click="exportToPDF"
+        @click="exportToExcel"
     >
         导出设备采购清单
     </el-button>
@@ -149,9 +149,7 @@
 <script setup>
 import { onMounted, ref, inject } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import html2pdf from 'html2pdf.js';
 import axios from 'axios'
-import { computed } from 'vue'
 const activeTab = ref('lists')
 const subTab = ref('equipment')
 const detailsVisible = ref(false)
@@ -242,63 +240,65 @@ function deleteList(item){
   })
 })
 }
+
 // Export to PDF
-const  procurementLists=ref([])
-procurementLists.value=allEquipmentOrders.value
-console.log("procurementLists.value",procurementLists.value)
-const exportToPDF = () => {
-  // Create a temporary div for PDF content
-  const tempDiv = document.createElement('div')
-  tempDiv.className = 'pdf-content'
+// const  procurementLists=ref([])
+// procurementLists.value=allEquipmentOrders.value
+// console.log("procurementLists.value",procurementLists.value)
+// const exportToPDF = () => {
+//   // Create a temporary div for PDF content
+//   const tempDiv = document.createElement('div')
+//   tempDiv.className = 'pdf-content'
   
-  allEquipmentOrders.value.forEach(list => {
-    const listDiv = document.createElement('div')
-    listDiv.innerHTML = `
-      <h2>采购清单</h2>
-      <div class="list-info">
-        <p>用户名：${list.user.name}</p>
-        <p>订单ID：${list.order_id}</p>
-        <p>订单时间：${list.order_time}</p>
-        <p>订单状态：${list.order_state}</p>
-      </div>
-      <div class="equipment-details">
-        <h3>设备信息：</h3>
-        ${list.detail.map(item => `
-          <div class="equipment-item">
-            <p>设备名称：${item.scheme_name} x${item.num}</p>
-            <p>设备ID：${item.scheme_id}</p>
-            <p>来源：${item.source}</p>
-            <p>方案编号：${item.scheme_number}</p>
-          </div>
-        `).join('')}
-      </div>
-      <hr>
-    `
-    tempDiv.appendChild(listDiv)
-  })
+//   allEquipmentOrders.value.forEach(list => {
+//     const listDiv = document.createElement('div')
+//     listDiv.innerHTML = `
+//       <h2>采购清单</h2>
+//       <div class="list-info">
+//         <p>用户名：${list.user.name}</p>
+//         <p>订单ID：${list.order_id}</p>
+//         <p>订单时间：${list.order_time}</p>
+//         <p>订单状态：${list.order_state}</p>
+//       </div>
+//       <div class="equipment-details">
+//         <h3>设备信息：</h3>
+//         ${list.detail.map(item => `
+//           <div class="equipment-item">
+//             <p>设备名称：${item.scheme_name} x${item.num}</p>
+//             <p>设备ID：${item.scheme_id}</p>
+//             <p>来源：${item.source}</p>
+//             <p>方案编号：${item.scheme_number}</p>
+//           </div>
+//         `).join('')}
+//       </div>
+//       <hr>
+//     `
+//     tempDiv.appendChild(listDiv)
+//   })
 
-  document.body.appendChild(tempDiv)
+//   document.body.appendChild(tempDiv)
 
-  const opt = {
-    margin: 1,
-    filename: '设备采购清单.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { 
-      unit: 'in', 
-      format: 'a4', 
-      orientation: 'portrait'
-    }
-  }
+//   const opt = {
+//     margin: 1,
+//     filename: '设备采购清单.pdf',
+//     image: { type: 'jpeg', quality: 0.98 },
+//     html2canvas: { scale: 2 },
+//     jsPDF: { 
+//       unit: 'in', 
+//       format: 'a4', 
+//       orientation: 'portrait'
+//     }
+//   }
 
-  html2pdf().set(opt).from(tempDiv).save().then(() => {
-    document.body.removeChild(tempDiv)
-    ElMessage({
-      type: 'success',
-      message: 'PDF导出成功',
-    })
-  })
-}
+//   html2pdf().set(opt).from(tempDiv).save().then(() => {
+//     document.body.removeChild(tempDiv)
+//     ElMessage({
+//       type: 'success',
+//       message: 'PDF导出成功',
+//     })
+//   })
+// }
+
 // 添加状态样式处理方法
 const getStatusClass = (status) => {
   if (status.includes('计划采购')) {
@@ -308,6 +308,34 @@ const getStatusClass = (status) => {
     return 'status-completed'
   }
   return ''
+}
+
+// 导出设备采购清单excel
+async function exportToExcel() {
+  try {
+      const response = await axios({
+      url: baseurl + `/export_equip_excel`,
+      method: 'get',
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      responseType: 'blob' // 指定响应类型为blob
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      console.log("下载地址为：" + url);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', "设备采购清单.xlsx"); // 设置下载的文件名
+      document.body.appendChild(link);
+      link.click(); // 触发下载
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // 释放URL对象
+  } catch (error) {
+      console.error('导出Excel失败:', error);
+      ElMessage.error('导出Excel失败');
+  }
 }
 
 onMounted(() => {

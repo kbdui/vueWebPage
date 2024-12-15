@@ -45,7 +45,7 @@
     <div class="status-wrapper">
 
       <el-space align="right">
-        <el-check-tag success>对比实验申请状态：<el-tag type="success" size="default" class="status-tag">{{ statusText }}</el-tag></el-check-tag>
+        <!-- <el-check-tag success>对比实验申请状态：<el-tag type="success" size="default" class="status-tag">{{ statusText }}</el-tag></el-check-tag> -->
         <el-button 
           type="success" 
           @click="showDialog"
@@ -161,7 +161,7 @@ const showDialog = () => {
 
 // 提交申请对比实验的函数
 const submitApplication = async () => {
-  console.log('项目ID为：' + project_id.value + "\n" + "账户ID为：" + user_data.value.accountid);
+  // console.log('项目ID为：' + project_id.value + "\n" + "账户ID为：" + user_data.value.accountid);
   try {
     const response = await axios.post(baseurl + '/create_compare_plan', {
       project_id: project_id.value,
@@ -171,16 +171,23 @@ const submitApplication = async () => {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
     });
+
     // 检查响应状态
-    if (response.status === 200) {
+    if (response.status === 200&&response.data.data===true) {
       ElMessage.success('对比实验申请成功');
-      dialogVisible.value = false; // 关闭对话框
-    } else {
-      ElMessage.error('对比实验申请失败，请重试');
+      dialogVisible.value = false; 
+    console.log('申请对比实验成功'+ response.data);
+    }
+    if(response.data.data===false){
+      ElMessage.error('请勿重复申请！');
+    } 
+    if(response.status !== 200){
+      ElMessage.error('申请对比实验失败，请重试');
     }
   } catch (error) {
     console.error('申请对比实验失败：', error);
     ElMessage.error('申请对比实验失败，请重试');
+    console.log(error.response.data);
   }
 };
 

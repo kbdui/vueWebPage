@@ -147,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 // import jsPDF from 'jspdf'
@@ -320,31 +320,58 @@ const handleSelect1 = (key, keyPath) => {
 // }
 
 
-  // 获取培训清单
+  // 获取对应项目ID的培训清单
   const allTrainList = ref([])
   function getTrainList() {
-  axios.post(baseurl + '/observe_progress', {
-      project_id: input3.value
-  },{
-      headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-      }
-  }).then(function (response){
-      allTrainList.value = response.data.data ;
-      console.log("返回的数据为：", allTrainList.value);
-  }).catch(function (error){
-      if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-      } else if (error.request) {
-      console.log(error.request);
-      } else {
-      console.log('Error', error.message);
-      }
-      console.log(error.config)
-      ElMessage.error('获取培训清单失败')
-  })
+    axios.post(baseurl + '/observe_progress', {
+        project_id: input3.value
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+        allTrainList.value = response.data.data ;
+        console.log("返回的数据为：", allTrainList.value);
+    }).catch(function (error){
+        if (error.response) {
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        } else if (error.request) {
+        console.log(error.request);
+        } else {
+        console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('获取培训清单失败')
+    })
+  }
+
+// 获取所有清单
+function getAllList() {
+  axios.post(baseurl + '/get_c_by_user_id', {
+        user_id: 0
+    },{
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }).then(function (response){
+        allTrainList.value = response.data.data;
+        allAuthList.value = response.data.data;
+        console.log("返回的数据为：", allTrainList.value);
+    }).catch(function (error){
+        if (error.response) {
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        } else if (error.request) {
+        console.log(error.request);
+        } else {
+        console.log('Error', error.message);
+        }
+        console.log(error.config)
+        ElMessage.error('获取所有培训清单失败')
+    })
 }
 
 
@@ -421,6 +448,10 @@ const handleSelect1 = (key, keyPath) => {
         ElMessage.error('导出Excel失败');
     }
   }
+
+  onMounted(() => {
+    getAllList()
+  })
 
 </script>
 

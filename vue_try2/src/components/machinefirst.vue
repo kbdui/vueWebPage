@@ -61,7 +61,7 @@
         <div class="equipment-grid" v-if="equipmentDetails.length > 0">
           <div v-for="item in equipmentDetails" :key="item.id" class="equipment-card">
             <div class="equipment-image">
-              <img :src="item.picture_url" alt="设备照片">
+              <img :src=item.picture_url width="256px" height="170px" alt="设备照片">
             </div>
             <div class="equipment-info">
               <div class="equipment-name">设备名称: {{ item.scheme_name }}</div>
@@ -69,12 +69,12 @@
               <div class="number">生产编号: {{ item.scheme_number }}</div>
               <div class="ID">设备ID: {{ item.scheme_id }}</div>
               <el-link 
-                type="primary" 
-                class="pdf-link"
-                @click="viewPdf(item)"
-              >
-                设备详情(点击后查看设备详情.pdf)
-              </el-link>
+                  type="primary" 
+                  class="pdf-link"
+                  @click="downloadPDF(item)"
+                >
+                  查看设备详情
+                </el-link>
               <div class="quantity-section">
                 <span>需求数量</span>
                 <el-input-number 
@@ -159,22 +159,45 @@ const baseurl = inject('baseurl')
                 console.log(error)
             })
  }
- function getallequipments()
- {
+
+ function getallequipments() {
     axios.post(baseurl + '/schemes_by_equipment',{
-      equipment_id : equipment_id.value
- },
- {
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  }
- }).then(function(response){
-   console.log(response.data.data)
-  equipmentDetails.value=response.data.data
- }).catch(function(error){
-  console.log(error)
- })
+          equipment_id : equipment_id.value
+    },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(function(response){
+      console.log(response.data.data)
+      equipmentDetails.value=response.data.data
+    }).catch(function(error){
+      console.log(error)
+    })
 }
+
+// 转换图片地址
+async function convertImgUrl() {
+  for(let i = 0; i < equipmentDetails.value.length; i++) {
+    try {
+        const fullFileName =  decodeURIComponent(equipmentDetails.value[i].picture_url);
+        const response = await axios({
+        url: baseurl + `/download`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data: `fileName=${fullFileName}`, // 传递完整的文件名
+        responseType: 'blob' // 指定响应类型为blob
+        });
+        equipmentDetails.value[i].picture_url = window.URL.createObjectURL(new Blob([response.data]));
+        console.log("图片地址转换成功：" + equipmentDetails.value[i].picture_url);
+    } catch (error) {
+        // ElMessage.error('获取图片失败');
+    }
+  }
+}
+
  function loadprojectid() {
     const savedData = localStorage.getItem('project_id');
     if (savedData) {
@@ -251,16 +274,54 @@ function saveequipmentid() {
 
 const showDetails = (row) => {
   selectedEquipment.value = row 
-   equipment_id.value=row.equipmentid
-   saveequipmentid() 
-   console.log("equipment_id是",equipment_id.value)
-  detailsVisible.value = true
+  equipment_id.value = row.equipmentid
+  saveequipmentid() 
+  console.log("equipment_id是",equipment_id.value)
   getallequipments()
+  setTimeout(() => {
+    convertImgUrl()
+  },500)
+  detailsVisible.value = true
 }
 
-const viewPdf = (item) => {
-  ElMessage.success(`查看${item.scheme_detail}的PDF详情`)
+async function downloadPDF(item) {
+  const filename = item.scheme_detail;
+  console.log("项目ID为:" + project_id.value + "\n" + "下载的文件名为：" + decodeURIComponent(filename));
+  const strtmp="D:/files/";
+  const Path=filename.toString().replace(strtmp, "");
+  try {
+      const fullFileName =  decodeURIComponent(Path);
+
+      console.log("用来下载的文件地址为fullFileName:" + fullFileName);
+      const response = await axios({
+      url: baseurl + `/download`,
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      data: `fileName=${fullFileName}`, // 传递完整的文件名
+      responseType: 'blob' // 指定响应类型为blob
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      console.log("下载地址为：" + url);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fullFileName); // 设置下载的文件名
+      document.body.appendChild(link);
+      link.click(); // 触发下载
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // 释放URL对象
+  } catch (error) {
+      console.error('下载设备详情失败:', error);
+      ElMessage.error('下载设备详情失败');
+  }
 }
+
+// const viewPdf = (item) => {
+//   ElMessage.success(`查看${item.scheme_detail}的PDF详情`)
+// }
 
 
 // 打开/关闭小窗口

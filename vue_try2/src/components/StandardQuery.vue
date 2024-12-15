@@ -284,10 +284,34 @@ const handleCommand = (command) => {
 }
 
 const handleAddApplication = () => {
-  console.log('Application data:', applicationForm.value)
-  // For demonstration, we'll just show a success message
-  ElMessage.success('申请已添加')
-  handleCloseDialog()
+  const formData = new FormData();
+formData.append('categories', applicationForm.value.categories);
+formData.append('project_type', applicationForm.value.subCategory);
+// formData.append('standardName', applicationForm.value.standardName);
+formData.append('standard_number', applicationForm.value.standardNumber);
+formData.append('project_name', applicationForm.value.projectName);
+console.log("formDasdsdsdta",applicationForm.value.standardNumber)
+axios.post(baseurl + '/get_new_project', formData, {
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  }
+})
+.then(response => {
+  if (response.data.data) {
+    ElMessage.success('申请已成功提交');
+    search()
+  } else {
+    ElMessage.error('申请提交失败: ' + response.data.message);
+  }
+})
+.catch(error => {
+  console.error('申请提交错误:', error);
+  ElMessage.error('申请提交过程中发生错误');
+});
+console.log('Application data:', applicationForm.value)
+// For demonstration, we'll just show a success message
+ElMessage.success('申请已添加')
+handleCloseDialog()
 }
 
 const  openAddApplicationDialog = () => {
@@ -296,14 +320,7 @@ const  openAddApplicationDialog = () => {
 
 const handleCloseDialog = () => {
   addApplicationDialogVisible.value = false
-  // Reset form data
-  applicationForm.value = {
-    category: '',
-    subCategory: '',
-    standardName: '',
-    standardNumber: '',
-    projectName: ''
-  }
+
 }
 
 const handleSearch = () => {
@@ -315,8 +332,16 @@ const handlePageChange = (newPage) => {
   currentPage.value = newPage;
   // 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
+function onload(){
+  const savedCategory = localStorage.getItem('test_category');
+  if (savedCategory) {
+    test_category.value = savedCategory; // Restore the selected category from localStorage
+    console.log("data", test_category.value);
+  }
+}
  onMounted(() => {
   search()
+  onload()
  
 })
 </script>

@@ -23,7 +23,11 @@
       <div class="standards-list">
         <div v-if="paginatedProjects.length === 0">没有项目数据</div>
         <div v-for="category in uniqueCategories" :key="category">
-          <router-link to="/standard" class="action-button" @click=saveCategory(category)><p>{{ category }}</p></router-link>
+          <router-link to="/standard" @click="saveCategory(category)" class="action-button">
+            <div class="category-button">
+              {{ category }}
+            </div>
+          </router-link>
         </div>
       </div>
     </div>
@@ -241,5 +245,13 @@ return filteredProjects.slice(start, end);
   :deep(.el-pagination .el-pager li.active) {
     background-color: #409EFF;
     color: white;
+  }
+  .action-button {
+    background-color: #67c23a;
+    border-color: #67c23a;
+   display: flex;
+   color: green;
+   padding: 10px 20px;
+   background-color: white;
   }
   </style>

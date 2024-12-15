@@ -17,7 +17,7 @@
     <div class="standards-list">
       <div v-for="project in paginatedProjects" :key="project.projectid" class="standard-item">
         <div v-if="projects.length === 0">没有项目数据</div>
-          <router-link to="/details/" class="action-button"
+          <router-link to="/supportDetails/" class="action-button"
            @click="handleClick(project.projectid, project.standardnumber, project.projecttype, project.projectname)"
           >
             <strong>项目名称：</strong> {{ project.projectname }}

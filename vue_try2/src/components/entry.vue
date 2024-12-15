@@ -45,7 +45,7 @@
   import { ElMessage } from 'element-plus'
   import { RouterLink, useRouter } from 'vue-router'
   import { useRoute } from 'vue-router'
-  import { user_data } from '../status.js'
+  import { test_category, user_data } from '../status.js'
   import axios from 'axios'
   import Top from './Top.vue'
   
@@ -127,8 +127,9 @@ return filteredProjects.slice(start, end);
     ElMessage.success('查看增加申请')
   }
   const saveCategory = (category) => {
-      test_category.value = category
-      console.log('Saved category:', category)
+     localStorage.setItem('test_category', category)
+     test_category.value=category
+     console.log('S category:', category)
     }
     
   // const user_data = ref({

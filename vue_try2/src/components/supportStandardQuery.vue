@@ -258,11 +258,11 @@ applicationDialogVisible.value = true
 }
 const addApplicationDialogVisible = ref(false)
 const applicationForm = ref({
-category: '',
-subCategory: '',
-standardName: '',
-standardNumber: '',
-projectName: ''
+categories: '',//大类
+subCategory: '',//类别
+standardName: '',//标准名称
+standardNumber: '',//标准编号
+projectName: ''//项目名称
 })
 const handleCommand = (command) => {
 if (command === 'logout') {
@@ -279,7 +279,30 @@ else if(command === 'jumpToHomepage2'){
 }
 
 const handleAddApplication = () => {
-// Here you would typically send the form data to your backend
+const formData = new FormData();
+formData.append('categories', applicationForm.value.subCategory);
+formData.append('project_type', applicationForm.value.categories);
+// formData.append('standardName', applicationForm.value.standardName);
+formData.append('standard_number', applicationForm.value.standardNumber);
+formData.append('project_name', applicationForm.value.projectName);
+console.log("formDasdsdsdta",applicationForm.value.standardNumber)
+axios.post(baseurl + '/get_new_project', formData, {
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  }
+})
+.then(response => {
+  if (response.data.data) {
+    ElMessage.success('申请已成功提交');
+    search()
+  } else {
+    ElMessage.error('申请提交失败: ' + response.data.message);
+  }
+})
+.catch(error => {
+  console.error('申请提交错误:', error);
+  ElMessage.error('申请提交过程中发生错误');
+});
 console.log('Application data:', applicationForm.value)
 // For demonstration, we'll just show a success message
 ElMessage.success('申请已添加')
@@ -288,19 +311,13 @@ handleCloseDialog()
 
 const  openAddApplicationDialog = () => {
 addApplicationDialogVisible.value = true
+
 }
 
 const handleCloseDialog = () => {
 addApplicationDialogVisible.value = false
 }
-// Reset form data
-applicationForm.value = {
-  category: '',
-  subCategory: '',
-  standardName: '',
-  standardNumber: '',
-  projectName: ''
-}
+
   
 function handleClick(projectId, standardNumber, projecttype, projectname) {
       project_id.value = projectId
@@ -372,7 +389,7 @@ const handleExcelUpload = async () => {
       document.body.removeChild(input);
     }
   };
-
+}
 const handleSearch = () => {
   // Implement search logic here
   console.log('Searching for:', searchQuery.value);
@@ -382,10 +399,18 @@ const handlePageChange = (newPage) => {
   currentPage.value = newPage;
   // 可以在这里添加逻辑，比如重新获取数据或者更新视图
 };
+
+function onload(){
+  const savedCategory = localStorage.getItem('selected_category');
+  if (savedCategory) {
+    selected_category.value = savedCategory; // Restore the selected category from localStorage
+    console.log("data", selected_category.value);
+  }
 }
 // const handleRowClick = (row) => {
 onMounted(() => {
 search()
+onload()
 })
 </script>
 <style scoped>
